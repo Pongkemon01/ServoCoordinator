@@ -49,6 +49,11 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <semaphore.h>
+#include <queue.h>
+
+#ifdef CONFIG_MM_IOB
+#  include <nuttx/mm/iob.h>
+#endif
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -187,6 +192,31 @@ struct sock_intf_s
 #endif
 };
 
+/* Each socket refers to a connection structure of type FAR void *.  Each
+ * socket type will have a different connection structure type bound to its
+ * sockets.  The fields at the the beginning of each connection type must
+ * begin the same content prologue as struct socket_conn_s and must be cast
+ * compatible with struct socket_conn_s.  Connection-specific content may
+ * then follow the common prologue fields.
+ */
+
+struct devif_callback_s;  /* Forward reference */
+
+struct socket_conn_s
+{
+  /* Common prologue of all connection structures. */
+
+  dq_entry_t node;        /* Supports a doubly linked list */
+
+  /* This is a list of connection callbacks.  Each callback represents a
+   * thread that is stalled, waiting for a device-specific event.
+   */
+
+  FAR struct devif_callback_s *list;
+
+  /* Connection-specific content may follow */
+};
+
 /* This is the internal representation of a socket reference by a file
  * descriptor.
  */
@@ -212,7 +242,7 @@ struct socket
 #endif
 #endif
 
-  FAR void     *s_conn;      /* Connection: struct tcp_conn_s or udp_conn_s */
+  FAR void     *s_conn;      /* Connection inherits from struct socket_conn_s */
 
   /* Socket interface */
 
@@ -394,8 +424,7 @@ int net_lockedwait(sem_t *sem);
  ****************************************************************************/
 
 #ifdef CONFIG_MM_IOB
-struct iob_s;  /* Forward reference */
-FAR struct iob_s *net_ioballoc(bool throttled);
+FAR struct iob_s *net_ioballoc(bool throttled, enum iob_user_e consumerid);
 #endif
 
 /****************************************************************************

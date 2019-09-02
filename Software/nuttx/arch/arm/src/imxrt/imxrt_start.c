@@ -55,6 +55,7 @@
 #include "imxrt_clockconfig.h"
 #include "imxrt_mpuinit.h"
 #include "imxrt_userspace.h"
+#include "imxrt_serial.h"
 #include "imxrt_start.h"
 #include "imxrt_gpio.h"
 
@@ -381,7 +382,7 @@ void __start(void)
   /* Perform early serial initialization */
 
 #ifdef USE_EARLYSERIALINIT
-  up_earlyserialinit();
+  imxrt_earlyserialinit();
 #endif
 
   /* Then start NuttX */

@@ -80,7 +80,7 @@
 #define STM32_SRAM3_BASE     0x3004c000     /* 0x30040000-0x30047fff: System SRAM3 */
 #define STM32_SRAM123_BASE   0x30000000     /* 0x30000000-0x30047fff: System SRAM123 */
 #define STM32_SRAM4_BASE     0x38000000     /* 0x38000000-0x3800ffff: System SRAM4 */
-#define STM32_BBRAM_BASE     0x38800000     /* 0x38800000-0x38800fff: System BBRAM */
+#define STM32_BBSRAM_BASE    0x38800000     /* 0x38800000-0x38800fff: System Backup SRAM */
 
 /* Peripheral Base Addresses ********************************************************/
 
@@ -232,6 +232,12 @@
 #define STM32_HSEM_BASE        0x58026400     /* 0x58026400-0x580267ff HSEM */
 
 #define STM32_SYSMEM_UID       0x1ff1e800
-#define STM32_DEBUGMCU_BASE    0xe00e1000
+
+/* The DBGMCU registers are accessible to the debugger via the APB-D bus
+ * at base address 0xe00e1000. They are also accessible by the processor 
+ * core at base address 0x5c001000. 
+ */
+
+#define STM32_DEBUGMCU_BASE    0x5c001000
 
 #endif /* __ARCH_ARM_SRC_STM32H7_HARDWARE_STM32H7X3XX_MEMORYMAP_H */

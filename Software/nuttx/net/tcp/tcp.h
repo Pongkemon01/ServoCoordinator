@@ -1,7 +1,7 @@
 /****************************************************************************
  * net/tcp/tcp.h
  *
- *   Copyright (C) 2014-2016, 2018 Gregory Nutt. All rights reserved.
+ *   Copyright (C) 2014-2016, 2018-2019 Gregory Nutt. All rights reserved.
  *   Author: Gregory Nutt <gnutt@nuttx.org>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -88,12 +88,15 @@
 #  define TCP_WBIOB(wrb)             ((wrb)->wb_iob)
 #  define TCP_WBCOPYOUT(wrb,dest,n)  (iob_copyout(dest,(wrb)->wb_iob,(n),0))
 #  define TCP_WBCOPYIN(wrb,src,n) \
-     (iob_copyin((wrb)->wb_iob,src,(n),0,false))
+     (iob_copyin((wrb)->wb_iob,src,(n),0,false,\
+                 IOBUSER_NET_TCP_WRITEBUFFER))
 #  define TCP_WBTRYCOPYIN(wrb,src,n) \
-     (iob_trycopyin((wrb)->wb_iob,src,(n),0,false))
+     (iob_trycopyin((wrb)->wb_iob,src,(n),0,false,\
+                    IOBUSER_NET_TCP_WRITEBUFFER))
 
 #  define TCP_WBTRIM(wrb,n) \
-     do { (wrb)->wb_iob = iob_trimhead((wrb)->wb_iob,(n)); } while (0)
+     do { (wrb)->wb_iob = iob_trimhead((wrb)->wb_iob,(n),\
+                            IOBUSER_NET_TCP_WRITEBUFFER); } while (0)
 
 #ifdef CONFIG_DEBUG_FEATURES
 #  define TCP_WBDUMP(msg,wrb,len,offset) \
@@ -123,7 +126,38 @@ struct tcp_hdr_s;         /* Forward reference */
 
 struct tcp_conn_s
 {
+  /* Common prologue of all connection structures. */
+
   dq_entry_t node;        /* Implements a doubly linked list */
+
+  /* TCP callbacks:
+   *
+   * Data transfer events are retained in 'list'.  Event handlers in 'list'
+   * are called for events specified in the flags set within struct
+   * devif_callback_s
+   *
+   * When an callback is executed from 'list', the input flags are normally
+   * returned, however, the implementation may set one of the following:
+   *
+   *   TCP_CLOSE   - Gracefully close the current connection
+   *   TCP_ABORT   - Abort (reset) the current connection on an error that
+   *                 prevents TCP_CLOSE from working.
+   *
+   * And/Or set/clear the following:
+   *
+   *   TCP_NEWDATA - May be cleared to indicate that the data was consumed
+   *                 and that no further process of the new data should be
+   *                 attempted.
+   *   TCP_SNDACK  - If TCP_NEWDATA is cleared, then TCP_SNDACK may be set
+   *                 to indicate that an ACK should be included in the response.
+   *                 (In TCP_NEWDATA is cleared bu TCP_SNDACK is not set, then
+   *                 dev->d_len should also be cleared).
+   */
+
+  FAR struct devif_callback_s *list;
+
+  /* TCP-specific content follows */
+
   union ip_binding_u u;   /* IP address binding */
   uint8_t  rcvseq[4];     /* The sequence number that we expect to
                            * receive next */
@@ -217,32 +251,6 @@ struct tcp_conn_s
   uint8_t    keepcnt;     /* Number of retries before the socket is closed */
   uint8_t    keepretries; /* Number of retries attempted */
 #endif
-
-  /* Application callbacks:
-   *
-   * Data transfer events are retained in 'list'.  Event handlers in 'list'
-   * are called for events specified in the flags set within struct
-   * devif_callback_s
-   *
-   * When an callback is executed from 'list', the input flags are normally
-   * returned, however, the implementation may set one of the following:
-   *
-   *   TCP_CLOSE   - Gracefully close the current connection
-   *   TCP_ABORT   - Abort (reset) the current connection on an error that
-   *                 prevents TCP_CLOSE from working.
-   *
-   * And/Or set/clear the following:
-   *
-   *   TCP_NEWDATA - May be cleared to indicate that the data was consumed
-   *                 and that no further process of the new data should be
-   *                 attempted.
-   *   TCP_SNDACK  - If TCP_NEWDATA is cleared, then TCP_SNDACK may be set
-   *                 to indicate that an ACK should be included in the response.
-   *                 (In TCP_NEWDATA is cleared bu TCP_SNDACK is not set, then
-   *                 dev->d_len should also be cleared).
-   */
-
-  FAR struct devif_callback_s *list;
 
   /* connevents is a list of callbacks for each socket the uses this
    * connection (there can be more that one in the event that the the socket
@@ -1631,8 +1639,7 @@ int tcp_writebuffer_notifier_setup(worker_t worker,
  *   > 0   - The signal notification is in place.  The returned value is a
  *           key that may be used later in a call to
  *           tcp_notifier_teardown().
- *   == 0  - There is already buffered read-ahead data.  No signal
- *           notification will be provided.
+ *   == 0  - No connection has been established.
  *   < 0   - An unexpected error occurred and no signal will be sent.  The
  *           returned value is a negated errno value that indicates the
  *           nature of the failure.
