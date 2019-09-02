@@ -1,0 +1,995 @@
+EESchema Schematic File Version 4
+LIBS:coordinator-cache
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 4 6
+Title "6DOF Parallel Robot"
+Date "19 August 2019"
+Rev "1.0.0"
+Comp "Kasetsart University"
+Comment1 "Faculty of Engineering"
+Comment2 "Department of Computer Engineering"
+Comment3 "Asst.Prof.Akrapong Patchararungruang, Ph.D."
+Comment4 ""
+$EndDescr
+$Comp
+L Isolator:TLP291-4 U7
+U 4 1 5D575929
+P 2500 1100
+F 0 "U7" H 2500 1425 50  0000 C CNN
+F 1 "TLP293-4" H 2500 1334 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 900 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 1100 50  0001 L CNN
+	4    2500 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0167
+U 1 1 5D577BF0
+P 2800 1200
+F 0 "#PWR0167" H 2800 950 50  0001 C CNN
+F 1 "GND" H 2805 1027 50  0000 C CNN
+F 2 "" H 2800 1200 50  0001 C CNN
+F 3 "" H 2800 1200 50  0001 C CNN
+	1    2800 1200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R16
+U 1 1 5D5782BF
+P 2050 1000
+F 0 "R16" V 2150 950 50  0000 C CNN
+F 1 "4.7K" V 1950 1000 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 2090 990 50  0001 C CNN
+F 3 "~" H 2050 1000 50  0001 C CNN
+	1    2050 1000
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1900 1000 1800 1000
+Wire Wire Line
+	2800 1000 2900 1000
+Text GLabel 1800 1200 0    50   Input ~ 0
+M1_ALARM_EXT
+Text GLabel 2900 1000 2    50   Input ~ 0
+M1_ALARM_N
+$Comp
+L Isolator:TLP291-4 U8
+U 1 1 5D57E29B
+P 2500 2050
+F 0 "U8" H 2500 2375 50  0000 C CNN
+F 1 "TLP293-4" H 2500 2284 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 1850 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 2050 50  0001 L CNN
+	1    2500 2050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0168
+U 1 1 5D57E2A6
+P 2800 2150
+F 0 "#PWR0168" H 2800 1900 50  0001 C CNN
+F 1 "GND" H 2805 1977 50  0000 C CNN
+F 2 "" H 2800 2150 50  0001 C CNN
+F 3 "" H 2800 2150 50  0001 C CNN
+	1    2800 2150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R17
+U 1 1 5D57E2AE
+P 2050 1950
+F 0 "R17" V 2150 1900 50  0000 C CNN
+F 1 "4.7K" V 1950 1950 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 2090 1940 50  0001 C CNN
+F 3 "~" H 2050 1950 50  0001 C CNN
+	1    2050 1950
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1900 1950 1800 1950
+Wire Wire Line
+	2800 1950 2900 1950
+Text GLabel 1800 2150 0    50   Input ~ 0
+M1_COMPLETE_EXT
+Text GLabel 2900 1950 2    50   Input ~ 0
+M1_COMPLETE_N
+Wire Notes Line
+	500  3600 11150 3600
+Wire Notes Line
+	4050 500  4050 7700
+Wire Wire Line
+	1800 1200 2200 1200
+$Comp
+L power:+24V #PWR0169
+U 1 1 5D6BDC3E
+P 1800 1000
+F 0 "#PWR0169" H 1800 850 50  0001 C CNN
+F 1 "+24V" H 1815 1173 50  0000 C CNN
+F 2 "" H 1800 1000 50  0001 C CNN
+F 3 "" H 1800 1000 50  0001 C CNN
+	1    1800 1000
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+24V #PWR0170
+U 1 1 5D6DAAE4
+P 1800 1950
+F 0 "#PWR0170" H 1800 1800 50  0001 C CNN
+F 1 "+24V" H 1815 2123 50  0000 C CNN
+F 2 "" H 1800 1950 50  0001 C CNN
+F 3 "" H 1800 1950 50  0001 C CNN
+	1    1800 1950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2200 2150 1800 2150
+$Comp
+L Isolator:TLP291-4 U9
+U 2 1 5D70C529
+P 5850 1100
+F 0 "U9" H 5850 1425 50  0000 C CNN
+F 1 "TLP293-4" H 5850 1334 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5650 900 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5850 1100 50  0001 L CNN
+	2    5850 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0171
+U 1 1 5D70C52F
+P 6150 1200
+F 0 "#PWR0171" H 6150 950 50  0001 C CNN
+F 1 "GND" H 6155 1027 50  0000 C CNN
+F 2 "" H 6150 1200 50  0001 C CNN
+F 3 "" H 6150 1200 50  0001 C CNN
+	1    6150 1200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R22
+U 1 1 5D70C535
+P 5400 1000
+F 0 "R22" V 5500 950 50  0000 C CNN
+F 1 "4.7K" V 5300 1000 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5440 990 50  0001 C CNN
+F 3 "~" H 5400 1000 50  0001 C CNN
+	1    5400 1000
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	5250 1000 5150 1000
+Wire Wire Line
+	6150 1000 6250 1000
+Text GLabel 5150 1200 0    50   Input ~ 0
+M2_ALARM_EXT
+Text GLabel 6250 1000 2    50   Input ~ 0
+M2_ALARM_N
+$Comp
+L Isolator:TLP291-4 U9
+U 3 1 5D70C53F
+P 5850 2050
+F 0 "U9" H 5850 2375 50  0000 C CNN
+F 1 "TLP293-4" H 5850 2284 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5650 1850 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5850 2050 50  0001 L CNN
+	3    5850 2050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0172
+U 1 1 5D70C545
+P 6150 2150
+F 0 "#PWR0172" H 6150 1900 50  0001 C CNN
+F 1 "GND" H 6155 1977 50  0000 C CNN
+F 2 "" H 6150 2150 50  0001 C CNN
+F 3 "" H 6150 2150 50  0001 C CNN
+	1    6150 2150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R23
+U 1 1 5D70C54B
+P 5400 1950
+F 0 "R23" V 5500 1900 50  0000 C CNN
+F 1 "4.7K" V 5300 1950 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5440 1940 50  0001 C CNN
+F 3 "~" H 5400 1950 50  0001 C CNN
+	1    5400 1950
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	5250 1950 5150 1950
+Wire Wire Line
+	6150 1950 6250 1950
+Text GLabel 5150 2150 0    50   Input ~ 0
+M2_COMPLETE_EXT
+Text GLabel 6250 1950 2    50   Input ~ 0
+M2_COMPLETE_N
+Wire Wire Line
+	5150 1200 5550 1200
+$Comp
+L power:+24V #PWR0173
+U 1 1 5D70C556
+P 5150 1000
+F 0 "#PWR0173" H 5150 850 50  0001 C CNN
+F 1 "+24V" H 5165 1173 50  0000 C CNN
+F 2 "" H 5150 1000 50  0001 C CNN
+F 3 "" H 5150 1000 50  0001 C CNN
+	1    5150 1000
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+24V #PWR0174
+U 1 1 5D70C55C
+P 5150 1950
+F 0 "#PWR0174" H 5150 1800 50  0001 C CNN
+F 1 "+24V" H 5165 2123 50  0000 C CNN
+F 2 "" H 5150 1950 50  0001 C CNN
+F 3 "" H 5150 1950 50  0001 C CNN
+	1    5150 1950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5550 2150 5150 2150
+$Comp
+L Isolator:TLP291-4 U10
+U 4 1 5D73AD56
+P 9350 1100
+F 0 "U10" H 9350 1425 50  0000 C CNN
+F 1 "TLP293-4" H 9350 1334 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 9150 900 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9350 1100 50  0001 L CNN
+	4    9350 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0175
+U 1 1 5D73AD5C
+P 9650 1200
+F 0 "#PWR0175" H 9650 950 50  0001 C CNN
+F 1 "GND" H 9655 1027 50  0000 C CNN
+F 2 "" H 9650 1200 50  0001 C CNN
+F 3 "" H 9650 1200 50  0001 C CNN
+	1    9650 1200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R28
+U 1 1 5D73AD62
+P 8900 1000
+F 0 "R28" V 9000 950 50  0000 C CNN
+F 1 "4.7K" V 8800 1000 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8940 990 50  0001 C CNN
+F 3 "~" H 8900 1000 50  0001 C CNN
+	1    8900 1000
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	8750 1000 8650 1000
+Wire Wire Line
+	9650 1000 9750 1000
+Text GLabel 8650 1200 0    50   Input ~ 0
+M3_ALARM_EXT
+$Comp
+L Isolator:TLP291-4 U11
+U 1 1 5D73AD6C
+P 9350 2050
+F 0 "U11" H 9350 2375 50  0000 C CNN
+F 1 "TLP293-4" H 9350 2284 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 9150 1850 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9350 2050 50  0001 L CNN
+	1    9350 2050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0176
+U 1 1 5D73AD72
+P 9650 2150
+F 0 "#PWR0176" H 9650 1900 50  0001 C CNN
+F 1 "GND" H 9655 1977 50  0000 C CNN
+F 2 "" H 9650 2150 50  0001 C CNN
+F 3 "" H 9650 2150 50  0001 C CNN
+	1    9650 2150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R29
+U 1 1 5D73AD78
+P 8900 1950
+F 0 "R29" V 9000 1900 50  0000 C CNN
+F 1 "4.7K" V 8800 1950 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8940 1940 50  0001 C CNN
+F 3 "~" H 8900 1950 50  0001 C CNN
+	1    8900 1950
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	8750 1950 8650 1950
+Wire Wire Line
+	9650 1950 9750 1950
+Text GLabel 8650 2150 0    50   Input ~ 0
+M3_COMPLETE_EXT
+Wire Wire Line
+	8650 1200 9050 1200
+$Comp
+L power:+24V #PWR0177
+U 1 1 5D73AD83
+P 8650 1000
+F 0 "#PWR0177" H 8650 850 50  0001 C CNN
+F 1 "+24V" H 8665 1173 50  0000 C CNN
+F 2 "" H 8650 1000 50  0001 C CNN
+F 3 "" H 8650 1000 50  0001 C CNN
+	1    8650 1000
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+24V #PWR0178
+U 1 1 5D73AD89
+P 8650 1950
+F 0 "#PWR0178" H 8650 1800 50  0001 C CNN
+F 1 "+24V" H 8665 2123 50  0000 C CNN
+F 2 "" H 8650 1950 50  0001 C CNN
+F 3 "" H 8650 1950 50  0001 C CNN
+	1    8650 1950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9050 2150 8650 2150
+Text GLabel 9750 1000 2    50   Input ~ 0
+M3_ALARM_N
+Text GLabel 9750 1950 2    50   Input ~ 0
+M3_COMPLETE_N
+$Comp
+L Isolator:TLP291-4 U8
+U 2 1 5D7459E0
+P 2500 3050
+F 0 "U8" H 2500 3375 50  0000 C CNN
+F 1 "TLP293-4" H 2500 3284 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 2850 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 3050 50  0001 L CNN
+	2    2500 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0179
+U 1 1 5D7459E6
+P 2800 3150
+F 0 "#PWR0179" H 2800 2900 50  0001 C CNN
+F 1 "GND" H 2805 2977 50  0000 C CNN
+F 2 "" H 2800 3150 50  0001 C CNN
+F 3 "" H 2800 3150 50  0001 C CNN
+	1    2800 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R18
+U 1 1 5D7459EC
+P 2050 2950
+F 0 "R18" V 2150 2900 50  0000 C CNN
+F 1 "4.7K" V 1950 2950 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 2090 2940 50  0001 C CNN
+F 3 "~" H 2050 2950 50  0001 C CNN
+	1    2050 2950
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1900 2950 1800 2950
+Wire Wire Line
+	2800 2950 2900 2950
+Text GLabel 1800 3150 0    50   Input ~ 0
+M1_HOME_EXT
+Text GLabel 2900 2950 2    50   Input ~ 0
+M1_HOME_N
+$Comp
+L power:+24V #PWR0180
+U 1 1 5D7459F6
+P 1800 2950
+F 0 "#PWR0180" H 1800 2800 50  0001 C CNN
+F 1 "+24V" H 1815 3123 50  0000 C CNN
+F 2 "" H 1800 2950 50  0001 C CNN
+F 3 "" H 1800 2950 50  0001 C CNN
+	1    1800 2950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2200 3150 1800 3150
+$Comp
+L Isolator:TLP291-4 U9
+U 4 1 5D74E6D5
+P 5850 3050
+F 0 "U9" H 5850 3375 50  0000 C CNN
+F 1 "TLP293-4" H 5850 3284 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5650 2850 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5850 3050 50  0001 L CNN
+	4    5850 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0181
+U 1 1 5D74E6DB
+P 6150 3150
+F 0 "#PWR0181" H 6150 2900 50  0001 C CNN
+F 1 "GND" H 6155 2977 50  0000 C CNN
+F 2 "" H 6150 3150 50  0001 C CNN
+F 3 "" H 6150 3150 50  0001 C CNN
+	1    6150 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R24
+U 1 1 5D74E6E1
+P 5400 2950
+F 0 "R24" V 5500 2900 50  0000 C CNN
+F 1 "4.7K" V 5300 2950 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5440 2940 50  0001 C CNN
+F 3 "~" H 5400 2950 50  0001 C CNN
+	1    5400 2950
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	5250 2950 5150 2950
+Wire Wire Line
+	6150 2950 6250 2950
+Text GLabel 5150 3150 0    50   Input ~ 0
+M2_HOME_EXT
+Text GLabel 6250 2950 2    50   Input ~ 0
+M2_HOME_N
+$Comp
+L power:+24V #PWR0182
+U 1 1 5D74E6EB
+P 5150 2950
+F 0 "#PWR0182" H 5150 2800 50  0001 C CNN
+F 1 "+24V" H 5165 3123 50  0000 C CNN
+F 2 "" H 5150 2950 50  0001 C CNN
+F 3 "" H 5150 2950 50  0001 C CNN
+	1    5150 2950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5550 3150 5150 3150
+$Comp
+L Isolator:TLP291-4 U11
+U 2 1 5D75446F
+P 9350 3050
+F 0 "U11" H 9350 3375 50  0000 C CNN
+F 1 "TLP293-4" H 9350 3284 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 9150 2850 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9350 3050 50  0001 L CNN
+	2    9350 3050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0183
+U 1 1 5D754475
+P 9650 3150
+F 0 "#PWR0183" H 9650 2900 50  0001 C CNN
+F 1 "GND" H 9655 2977 50  0000 C CNN
+F 2 "" H 9650 3150 50  0001 C CNN
+F 3 "" H 9650 3150 50  0001 C CNN
+	1    9650 3150
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R30
+U 1 1 5D75447B
+P 8900 2950
+F 0 "R30" V 9000 2900 50  0000 C CNN
+F 1 "4.7K" V 8800 2950 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8940 2940 50  0001 C CNN
+F 3 "~" H 8900 2950 50  0001 C CNN
+	1    8900 2950
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	8750 2950 8650 2950
+Wire Wire Line
+	9650 2950 9750 2950
+Text GLabel 8650 3150 0    50   Input ~ 0
+M3_HOME_EXT
+Text GLabel 9750 2950 2    50   Input ~ 0
+M3_HOME_N
+$Comp
+L power:+24V #PWR0184
+U 1 1 5D754485
+P 8650 2950
+F 0 "#PWR0184" H 8650 2800 50  0001 C CNN
+F 1 "+24V" H 8665 3123 50  0000 C CNN
+F 2 "" H 8650 2950 50  0001 C CNN
+F 3 "" H 8650 2950 50  0001 C CNN
+	1    8650 2950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9050 3150 8650 3150
+$Comp
+L Isolator:TLP291-4 U12
+U 2 1 5D766854
+P 2500 4150
+F 0 "U12" H 2500 4475 50  0000 C CNN
+F 1 "TLP293-4" H 2500 4384 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 3950 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 4150 50  0001 L CNN
+	2    2500 4150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0185
+U 1 1 5D76685A
+P 2800 4250
+F 0 "#PWR0185" H 2800 4000 50  0001 C CNN
+F 1 "GND" H 2805 4077 50  0000 C CNN
+F 2 "" H 2800 4250 50  0001 C CNN
+F 3 "" H 2800 4250 50  0001 C CNN
+	1    2800 4250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R34
+U 1 1 5D766860
+P 2050 4050
+F 0 "R34" V 2150 4000 50  0000 C CNN
+F 1 "4.7K" V 1950 4050 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 2090 4040 50  0001 C CNN
+F 3 "~" H 2050 4050 50  0001 C CNN
+	1    2050 4050
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1900 4050 1800 4050
+Wire Wire Line
+	2800 4050 2900 4050
+Text GLabel 1800 4250 0    50   Input ~ 0
+M4_ALARM_EXT
+Text GLabel 2900 4050 2    50   Input ~ 0
+M4_ALARM_N
+$Comp
+L Isolator:TLP291-4 U12
+U 3 1 5D76686A
+P 2500 5100
+F 0 "U12" H 2500 5425 50  0000 C CNN
+F 1 "TLP293-4" H 2500 5334 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 4900 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 5100 50  0001 L CNN
+	3    2500 5100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0186
+U 1 1 5D766870
+P 2800 5200
+F 0 "#PWR0186" H 2800 4950 50  0001 C CNN
+F 1 "GND" H 2805 5027 50  0000 C CNN
+F 2 "" H 2800 5200 50  0001 C CNN
+F 3 "" H 2800 5200 50  0001 C CNN
+	1    2800 5200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R35
+U 1 1 5D766876
+P 2050 5000
+F 0 "R35" V 2150 4950 50  0000 C CNN
+F 1 "4.7K" V 1950 5000 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 2090 4990 50  0001 C CNN
+F 3 "~" H 2050 5000 50  0001 C CNN
+	1    2050 5000
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1900 5000 1800 5000
+Wire Wire Line
+	2800 5000 2900 5000
+Text GLabel 1800 5200 0    50   Input ~ 0
+M4_COMPLETE_EXT
+Text GLabel 2900 5000 2    50   Input ~ 0
+M4_COMPLETE_N
+Wire Wire Line
+	1800 4250 2200 4250
+$Comp
+L power:+24V #PWR0187
+U 1 1 5D766881
+P 1800 4050
+F 0 "#PWR0187" H 1800 3900 50  0001 C CNN
+F 1 "+24V" H 1815 4223 50  0000 C CNN
+F 2 "" H 1800 4050 50  0001 C CNN
+F 3 "" H 1800 4050 50  0001 C CNN
+	1    1800 4050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+24V #PWR0188
+U 1 1 5D766887
+P 1800 5000
+F 0 "#PWR0188" H 1800 4850 50  0001 C CNN
+F 1 "+24V" H 1815 5173 50  0000 C CNN
+F 2 "" H 1800 5000 50  0001 C CNN
+F 3 "" H 1800 5000 50  0001 C CNN
+	1    1800 5000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2200 5200 1800 5200
+$Comp
+L Isolator:TLP291-4 U12
+U 4 1 5D76688E
+P 2500 6100
+F 0 "U12" H 2500 6425 50  0000 C CNN
+F 1 "TLP293-4" H 2500 6334 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 5900 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 6100 50  0001 L CNN
+	4    2500 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0189
+U 1 1 5D766894
+P 2800 6200
+F 0 "#PWR0189" H 2800 5950 50  0001 C CNN
+F 1 "GND" H 2805 6027 50  0000 C CNN
+F 2 "" H 2800 6200 50  0001 C CNN
+F 3 "" H 2800 6200 50  0001 C CNN
+	1    2800 6200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R36
+U 1 1 5D76689A
+P 2050 6000
+F 0 "R36" V 2150 5950 50  0000 C CNN
+F 1 "4.7K" V 1950 6000 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 2090 5990 50  0001 C CNN
+F 3 "~" H 2050 6000 50  0001 C CNN
+	1    2050 6000
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	1900 6000 1800 6000
+Wire Wire Line
+	2800 6000 2900 6000
+Text GLabel 1800 6200 0    50   Input ~ 0
+M4_HOME_EXT
+Text GLabel 2900 6000 2    50   Input ~ 0
+M4_HOME_N
+$Comp
+L power:+24V #PWR0190
+U 1 1 5D7668A4
+P 1800 6000
+F 0 "#PWR0190" H 1800 5850 50  0001 C CNN
+F 1 "+24V" H 1815 6173 50  0000 C CNN
+F 2 "" H 1800 6000 50  0001 C CNN
+F 3 "" H 1800 6000 50  0001 C CNN
+	1    1800 6000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2200 6200 1800 6200
+$Comp
+L Isolator:TLP291-4 U13
+U 4 1 5D772B49
+P 5850 4150
+F 0 "U13" H 5850 4475 50  0000 C CNN
+F 1 "TLP293-4" H 5850 4384 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5650 3950 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5850 4150 50  0001 L CNN
+	4    5850 4150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0191
+U 1 1 5D772B4F
+P 6150 4250
+F 0 "#PWR0191" H 6150 4000 50  0001 C CNN
+F 1 "GND" H 6155 4077 50  0000 C CNN
+F 2 "" H 6150 4250 50  0001 C CNN
+F 3 "" H 6150 4250 50  0001 C CNN
+	1    6150 4250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R40
+U 1 1 5D772B55
+P 5400 4050
+F 0 "R40" V 5500 4000 50  0000 C CNN
+F 1 "4.7K" V 5300 4050 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5440 4040 50  0001 C CNN
+F 3 "~" H 5400 4050 50  0001 C CNN
+	1    5400 4050
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	5250 4050 5150 4050
+Wire Wire Line
+	6150 4050 6250 4050
+Text GLabel 5150 4250 0    50   Input ~ 0
+M5_ALARM_EXT
+Text GLabel 6250 4050 2    50   Input ~ 0
+M5_ALARM_N
+$Comp
+L Isolator:TLP291-4 U14
+U 1 1 5D772B5F
+P 5850 5100
+F 0 "U14" H 5850 5425 50  0000 C CNN
+F 1 "TLP293-4" H 5850 5334 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5650 4900 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5850 5100 50  0001 L CNN
+	1    5850 5100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0192
+U 1 1 5D772B65
+P 6150 5200
+F 0 "#PWR0192" H 6150 4950 50  0001 C CNN
+F 1 "GND" H 6155 5027 50  0000 C CNN
+F 2 "" H 6150 5200 50  0001 C CNN
+F 3 "" H 6150 5200 50  0001 C CNN
+	1    6150 5200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R41
+U 1 1 5D772B6B
+P 5400 5000
+F 0 "R41" V 5500 4950 50  0000 C CNN
+F 1 "4.7K" V 5300 5000 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5440 4990 50  0001 C CNN
+F 3 "~" H 5400 5000 50  0001 C CNN
+	1    5400 5000
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	5250 5000 5150 5000
+Wire Wire Line
+	6150 5000 6250 5000
+Text GLabel 5150 5200 0    50   Input ~ 0
+M5_COMPLETE_EXT
+Text GLabel 6250 5000 2    50   Input ~ 0
+M5_COMPLETE_N
+Wire Wire Line
+	5150 4250 5550 4250
+$Comp
+L power:+24V #PWR0193
+U 1 1 5D772B76
+P 5150 4050
+F 0 "#PWR0193" H 5150 3900 50  0001 C CNN
+F 1 "+24V" H 5165 4223 50  0000 C CNN
+F 2 "" H 5150 4050 50  0001 C CNN
+F 3 "" H 5150 4050 50  0001 C CNN
+	1    5150 4050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+24V #PWR0194
+U 1 1 5D772B7C
+P 5150 5000
+F 0 "#PWR0194" H 5150 4850 50  0001 C CNN
+F 1 "+24V" H 5165 5173 50  0000 C CNN
+F 2 "" H 5150 5000 50  0001 C CNN
+F 3 "" H 5150 5000 50  0001 C CNN
+	1    5150 5000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5550 5200 5150 5200
+$Comp
+L Isolator:TLP291-4 U14
+U 2 1 5D772B83
+P 5850 6100
+F 0 "U14" H 5850 6425 50  0000 C CNN
+F 1 "TLP293-4" H 5850 6334 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5650 5900 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5850 6100 50  0001 L CNN
+	2    5850 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0195
+U 1 1 5D772B89
+P 6150 6200
+F 0 "#PWR0195" H 6150 5950 50  0001 C CNN
+F 1 "GND" H 6155 6027 50  0000 C CNN
+F 2 "" H 6150 6200 50  0001 C CNN
+F 3 "" H 6150 6200 50  0001 C CNN
+	1    6150 6200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R42
+U 1 1 5D772B8F
+P 5400 6000
+F 0 "R42" V 5500 5950 50  0000 C CNN
+F 1 "4.7K" V 5300 6000 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5440 5990 50  0001 C CNN
+F 3 "~" H 5400 6000 50  0001 C CNN
+	1    5400 6000
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	5250 6000 5150 6000
+Text GLabel 5150 6200 0    50   Input ~ 0
+M5_HOME_EXT
+$Comp
+L power:+24V #PWR0196
+U 1 1 5D772B99
+P 5150 6000
+F 0 "#PWR0196" H 5150 5850 50  0001 C CNN
+F 1 "+24V" H 5165 6173 50  0000 C CNN
+F 2 "" H 5150 6000 50  0001 C CNN
+F 3 "" H 5150 6000 50  0001 C CNN
+	1    5150 6000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5550 6200 5150 6200
+$Comp
+L Isolator:TLP291-4 U15
+U 2 1 5D77C6E9
+P 9300 4150
+F 0 "U15" H 9300 4475 50  0000 C CNN
+F 1 "TLP293-4" H 9300 4384 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 9100 3950 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9300 4150 50  0001 L CNN
+	2    9300 4150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0197
+U 1 1 5D77C6EF
+P 9600 4250
+F 0 "#PWR0197" H 9600 4000 50  0001 C CNN
+F 1 "GND" H 9605 4077 50  0000 C CNN
+F 2 "" H 9600 4250 50  0001 C CNN
+F 3 "" H 9600 4250 50  0001 C CNN
+	1    9600 4250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R46
+U 1 1 5D77C6F5
+P 8850 4050
+F 0 "R46" V 8950 4000 50  0000 C CNN
+F 1 "4.7K" V 8750 4050 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8890 4040 50  0001 C CNN
+F 3 "~" H 8850 4050 50  0001 C CNN
+	1    8850 4050
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	8700 4050 8600 4050
+Wire Wire Line
+	9600 4050 9700 4050
+Text GLabel 8600 4250 0    50   Input ~ 0
+M6_ALARM_EXT
+Text GLabel 9700 4050 2    50   Input ~ 0
+M6_ALARM_N
+$Comp
+L Isolator:TLP291-4 U15
+U 3 1 5D77C6FF
+P 9300 5100
+F 0 "U15" H 9300 5425 50  0000 C CNN
+F 1 "TLP293-4" H 9300 5334 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 9100 4900 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9300 5100 50  0001 L CNN
+	3    9300 5100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0198
+U 1 1 5D77C705
+P 9600 5200
+F 0 "#PWR0198" H 9600 4950 50  0001 C CNN
+F 1 "GND" H 9605 5027 50  0000 C CNN
+F 2 "" H 9600 5200 50  0001 C CNN
+F 3 "" H 9600 5200 50  0001 C CNN
+	1    9600 5200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R47
+U 1 1 5D77C70B
+P 8850 5000
+F 0 "R47" V 8950 4950 50  0000 C CNN
+F 1 "4.7K" V 8750 5000 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8890 4990 50  0001 C CNN
+F 3 "~" H 8850 5000 50  0001 C CNN
+	1    8850 5000
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	8700 5000 8600 5000
+Wire Wire Line
+	9600 5000 9700 5000
+Text GLabel 8600 5200 0    50   Input ~ 0
+M6_COMPLETE_EXT
+Text GLabel 9700 5000 2    50   Input ~ 0
+M6_COMPLETE_N
+Wire Wire Line
+	8600 4250 9000 4250
+$Comp
+L power:+24V #PWR0199
+U 1 1 5D77C716
+P 8600 4050
+F 0 "#PWR0199" H 8600 3900 50  0001 C CNN
+F 1 "+24V" H 8615 4223 50  0000 C CNN
+F 2 "" H 8600 4050 50  0001 C CNN
+F 3 "" H 8600 4050 50  0001 C CNN
+	1    8600 4050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+24V #PWR0200
+U 1 1 5D77C71C
+P 8600 5000
+F 0 "#PWR0200" H 8600 4850 50  0001 C CNN
+F 1 "+24V" H 8615 5173 50  0000 C CNN
+F 2 "" H 8600 5000 50  0001 C CNN
+F 3 "" H 8600 5000 50  0001 C CNN
+	1    8600 5000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9000 5200 8600 5200
+Wire Wire Line
+	9600 6000 9700 6000
+Text GLabel 9700 6000 2    50   Input ~ 0
+M6_HOME_N
+Wire Wire Line
+	9000 6200 8600 6200
+$Comp
+L power:+24V #PWR0202
+U 1 1 5D77C739
+P 8600 6000
+F 0 "#PWR0202" H 8600 5850 50  0001 C CNN
+F 1 "+24V" H 8615 6173 50  0000 C CNN
+F 2 "" H 8600 6000 50  0001 C CNN
+F 3 "" H 8600 6000 50  0001 C CNN
+	1    8600 6000
+	1    0    0    -1  
+$EndComp
+Text GLabel 8600 6200 0    50   Input ~ 0
+M6_HOME_EXT
+Wire Wire Line
+	8700 6000 8600 6000
+$Comp
+L Device:R_US R48
+U 1 1 5D77C72F
+P 8850 6000
+F 0 "R48" V 8950 5950 50  0000 C CNN
+F 1 "4.7K" V 8750 6000 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8890 5990 50  0001 C CNN
+F 3 "~" H 8850 6000 50  0001 C CNN
+	1    8850 6000
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR0201
+U 1 1 5D77C729
+P 9600 6200
+F 0 "#PWR0201" H 9600 5950 50  0001 C CNN
+F 1 "GND" H 9605 6027 50  0000 C CNN
+F 2 "" H 9600 6200 50  0001 C CNN
+F 3 "" H 9600 6200 50  0001 C CNN
+	1    9600 6200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Isolator:TLP291-4 U15
+U 4 1 5D77C723
+P 9300 6100
+F 0 "U15" H 9300 6425 50  0000 C CNN
+F 1 "TLP293-4" H 9300 6334 50  0000 C CNN
+F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 9100 5900 50  0001 L CIN
+F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9300 6100 50  0001 L CNN
+	4    9300 6100
+	1    0    0    -1  
+$EndComp
+Text GLabel 6250 6000 2    50   Input ~ 0
+M5_HOME_N
+Wire Wire Line
+	6150 6000 6250 6000
+Wire Notes Line
+	7400 500  7400 6500
+$EndSCHEMATC

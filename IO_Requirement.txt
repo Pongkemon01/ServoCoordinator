@@ -1,3 +1,38 @@
+Note
+===
+Nuttx QEncoder module use TDTS = TCK_INT by leaving it as default (00).
+Nuttx cannot operate in tickless mode because all required timers are used as encoder counters.
+System clock configuration is in board.h as:
+    - SYS_CLK         = 216MHz
+    - USB_CLK         =  48MHz
+    - APB1_CLK(PCLK1) =  54MHz (Timer1,8,9,10,11 operate at 108MHz (2x))
+    - APB2_CLK(PCLK2) = 108MHz (Timer2,3,4,5,6,7,12,13,14 operate at 216MHz (2x))
+STM32F7 has a dedicated timer all SysTick to periodically interrupt the system.  Nuttx uses this timer for system clock. (See stm32_timerisr.c)
+SysTick input clock frequency is 27MHz (216MHz / 8).
+The Nuttx default SysTick period is 10ms (100Hz). This value can be changed by defining CONFIG_USEC_PER_TICK in "defconfig" (undefined by default).
+Starting additional drivers such as quadratic encoder must be manually include into "stm32_appinitialize.c".
+
+Nuttx Kconfig modifications
+===
+The line 'default "coordinator" if ARCH_BOARD_COORDINATOR' must be add to configs/Kconfig.
+The lines 
+  if ARCH_BOARD_COORDINATOR
+  source "configs/coordinator/Kconfig"
+  endif
+must be added to configs/Kconfig.
+Also, the lines
+   config ARCH_BOARD_COORDINATOR
+        bool "PTTEP Coordinator(STM32F767ZI)"
+        depends on ARCH_CHIP_STM32F767ZI
+        select ARCH_HAVE_LEDS
+        select ARCH_HAVE_BUTTONS
+        select ARCH_HAVE_IRQBUTTONS
+        ---help---
+                This is the coordinator board for PTTEP project. It is based on
+                STM32F767ZI built as Nucleo-144 board.
+must be added to configs/Kconfig.
+
+
 I/O requirement (Total 31 inputs and 42 outputs = 75 GPIOs)
 ===
 Encoder+Home : 3-bit input per motor. Total 12+6 inputs.
@@ -9,31 +44,63 @@ I2C for extension (Optional) : SCL SDA
 
 I/O assignment (79 GPIO pins available)
 ===
-Emergency button : PE0
-Encoder : PE[13:2]
-Home : PG0, PG1, PG2, PG3, PG9, PG14 (All PG)
-Control signal (input){alrm_stat+pos_cmplt}: {PF6+PF0}, {PF7+PF1}, {PF8+PF2}, {PF9+PF3}, {PF10+PF4}, {PF12+PF5}
+CAUTION!!!: SB13 must be desoldered for PA1 (used by Ethernet) to be available
+            JP7 must be removed to detached PB13 from Ethernet TXD
+Optional: As Ethernet module is disabled, these SB can be desolderd to release some more IO pins:
+    SB164 (PC1), SB160 (PA2), SB178 (PC4), SB181 (PC5), SB182 (PG13), SB183 (PG11)
 
-Status LED : PC0, PC2, PC3, PC6, PC7, PC8, PC9, PC10, PC11, PC12, PD15, PF13 (All PC) (2 Ps)
-{Pulse+Direction} : {PD0+PD6}, {PD1+PD7}, {PD2+PD11}, {PD3+PD12}, {PD4+PD13}, {PD5+PD14}
-Control signal (output){sv_on+alrm_res+dev_clr} : {PB5+PB0+PA3}, {PB6+PB1+PA4}, {PB8+PB2+PA5}, {PB19+PA0+PA6}, {PB12+PF14+PA7}, {PB15+PF15+PA15}
+- Fixed assignments
+  ===
+Encoders: PA0, PA1, PA15, PB3, PB4, PB5, PC6, PC7, PD12, PD13, PE9, PE11
+  Enc0: GPIO_TIM1_CH1IN_2 (PE9) + GPIO_TIM1_CH2IN_2 (PE11)
+  Enc1: GPIO_TIM2_CH1IN_2 (PA15) + GPIO_TIM2_CH2IN_2 (PB3)
+  Enc2: GPIO_TIM3_CH1IN_2 (PB4) + GPIO_TIM3_CH2IN_2 (PB5)
+  Enc3: GPIO_TIM4_CH1IN_2 (PD12) + GPIO_TIM4_CH2IN_2 (PD13)
+  Enc4: GPIO_TIM5_CH1IN_1 (PA0) + GPIO_TIM5_CH2IN_1 (PA1)  (PA1 is not available on Zio connector. Must be wired to Morpho connector)
+  Enc5: GPIO_TIM8_CH1IN_1 (PC6) + GPIO_TIM8_CH2IN_1 (PC7)
+
+Motor pluse: PA6, PB8, PB9, PB15, PE5, PF9
+  Motor0(Timer9): GPIO_TIM9_CH1OUT_2 (PE5)
+  Motor1(Timer10): GPIO_TIM10_CH1OUT_1 (PB8)
+  Motor2(Timer11): GPIO_TIM11_CH1OUT_1 (PB9)
+  Motor3(Timer12): GPIO_TIM12_CH2OUT_1 (PB15) (Channel 1 out is not available on Nucleo-144. Thus, channel 2 is used.)
+  Motor4(Timer13): GPIO_TIM13_CH1OUT_1 (PA6)
+  Motor5(Timer14): GPIO_TIM14_CH1OUT_2 (PF9)
 
 I2C(module 2)(Optional) : SCL=PB10, SDA=PB11
+PA4(in), PA5(in) : Available for external interrupt pins
+
+- Free assignments
+  ===
+  PA (3 pins) : 3, 4, 5
+  PB (4 pins) : 0, 1, 2, 6, 12, 13 (JP7 must be removed)
+  PC (8 pins) : 0, 2, 3, 8, 9, 10, 11, 12
+  PD (13 pins): 0, 1, 2, 3, 4, 5, 6, 7, 11, 14, 15
+  PE (12 pins): 0, 2, 3, 4, 6, 7, 8, 10, 12, 13, 14, 15
+  PF (14 pins): 0, 1, 2, 3, 4, 5, 7, 8, 10, 12, 13, 14, 15
+  PG (6 pins) : 0, 1, 2, 3, 9, 14
+
+Emergency button : PA3
+Home : PG0, PG1, PG2, PG3, PG9, PG14 (All PG)
+Control signal (input){alrm_stat+pos_cmplt}: {PE0+PE8}, {PE2+PE10}, {PE3+PE12}, {PE4+PE13}, {PE6+PE14}, {PE7+PE15} (ALL PE)
+
+Control signal (output){sv_on+alrm_res+dev_clr} : {PF0+PB0+PF7}, {PF1+PB1+PF8}, {PF2+PB2+PF10}, {PF3+PB6+PF12}, {PF4+PB12+PF13}, {PF5+PB13+PF14} (PB+PF)
+Status LED : PD0, PD1, PD2, PD3, PD4, PD5, PD6, PD7, PD11, PD14, PD15, PF15
+Direction : PC0, PC2, PC3, PC8, PC9, PC10
 
 Pin direction
 ===
-PA : Output
-PB : Output (Except PB10 and PB11 opereates as I2C)
+PA : Input
+PB : Output
 PC : Output
 PD : Output
 PE : Input
-PF : Input (Except PF13, PF14, and PF15 are output)
+PF : Output
 PG : Input
 
 Unused I/O
 ===
-PE14(in), PE15(in) : Available for external interrupt pins
-PB3(JTDO), PB4(NJTRST)
+PC11, PC12 (out)
 
 Special function on GPIO after reset
 ===

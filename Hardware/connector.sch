@@ -1,0 +1,1383 @@
+EESchema Schematic File Version 4
+LIBS:coordinator-cache
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 6 6
+Title "6DOF Parallel Robot"
+Date "19 August 2019"
+Rev "1.0.0"
+Comp "Kasetsart University"
+Comment1 "Faculty of Engineering"
+Comment2 "Department of Computer Engineering"
+Comment3 "Asst.Prof.Akrapong Patchararungruang, Ph.D."
+Comment4 ""
+$EndDescr
+$Comp
+L Connector:DB25_Female_MountingHoles CON2
+U 1 1 5D8D6351
+P 2300 1950
+F 0 "CON2" H 2480 1952 50  0000 L CNN
+F 1 "DB25 Main Motor Signal" H 1850 3350 50  0000 L CNN
+F 2 "Connector_Dsub:DSUB-25_Female_Vertical_P2.77x2.84mm_MountingHoles" H 2300 1950 50  0001 C CNN
+F 3 " ~" H 2300 1950 50  0001 C CNN
+	1    2300 1950
+	1    0    0    -1  
+$EndComp
+Text GLabel 1900 1250 0    50   Input ~ 0
+M1_PULSE_N
+Text GLabel 1900 1050 0    50   Input ~ 0
+M1_PULSE_P
+Text GLabel 1900 1450 0    50   Input ~ 0
+M1_DIR_P
+Text GLabel 1900 1650 0    50   Input ~ 0
+M1_DIR_N
+Text GLabel 1900 1850 0    50   Input ~ 0
+M1_OUTA_P
+Text GLabel 1900 2050 0    50   Input ~ 0
+M1_OUTA_N
+Text GLabel 1900 2250 0    50   Input ~ 0
+M1_OUTB_P
+Text GLabel 1900 2450 0    50   Input ~ 0
+M1_OUTB_N
+Text GLabel 1700 1350 0    50   Input ~ 0
+M1_SRV_ON_EXT
+Text GLabel 1700 1550 0    50   Input ~ 0
+M1_ALRM_RES_EXT
+Text GLabel 1700 1950 0    50   Input ~ 0
+M1_DEV_CLR_EXT
+Text GLabel 1700 2150 0    50   Input ~ 0
+M1_ALARM_EXT
+Text GLabel 1700 2550 0    50   Input ~ 0
+M1_COMPLETE_EXT
+Text GLabel 3250 2500 0    50   Input ~ 0
+M1_HOME_EXT
+Text Notes 2750 1900 0    50   ~ 0
+Pin description\n1 = +24V    14 = -\n2 = GND     15 = CMD_PLS\n3 = COM+   16 = /CMD_PLS\n4 = SVON    17 = CMD_DIR\n5 = RESET   18 = /CMD_DIR\n6 = -       19 = OUT_A\n7 = PCLR    20 = /OUT_A\n8 = ALRM+   21 = OUT_B\n9 = ALRM-   22 = /OUT_B\n10 = POSIN  23 = OUT_Z\n11 = COM-  24 = /OUT_Z\n12 = GND    25 = -\n13 = +24V\n
+Wire Wire Line
+	2000 750  1700 750 
+Wire Wire Line
+	2000 950  1700 950 
+Wire Wire Line
+	2000 1350 1700 1350
+Wire Wire Line
+	2000 1550 1700 1550
+Wire Wire Line
+	2000 1950 1700 1950
+Wire Wire Line
+	2000 2150 1700 2150
+Wire Wire Line
+	2000 2550 1700 2550
+Wire Wire Line
+	2000 2750 1700 2750
+Wire Wire Line
+	2000 2950 1700 2950
+Wire Wire Line
+	2000 3150 1700 3150
+Wire Wire Line
+	2000 2850 1900 2850
+Wire Wire Line
+	2000 2650 1900 2650
+Wire Wire Line
+	2000 2450 1900 2450
+Wire Wire Line
+	2000 2250 1900 2250
+Wire Wire Line
+	2000 2050 1900 2050
+Wire Wire Line
+	2000 1850 1900 1850
+Wire Wire Line
+	2000 1650 1900 1650
+Wire Wire Line
+	2000 1450 1900 1450
+Wire Wire Line
+	2000 1250 1900 1250
+Wire Wire Line
+	2000 1050 1900 1050
+NoConn ~ 2000 1750
+NoConn ~ 2000 3050
+NoConn ~ 2000 850 
+NoConn ~ 1900 2650
+NoConn ~ 1900 2850
+Wire Wire Line
+	1700 2950 1700 2850
+Wire Wire Line
+	1050 1150 2000 1150
+Wire Wire Line
+	1100 2350 2000 2350
+$Comp
+L power:GNDPWR #PWR0210
+U 1 1 5D8ED370
+P 1700 950
+F 0 "#PWR0210" H 1700 750 50  0001 C CNN
+F 1 "GNDPWR" V 1704 841 50  0000 R CNN
+F 2 "" H 1700 900 50  0001 C CNN
+F 3 "" H 1700 900 50  0001 C CNN
+	1    1700 950 
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GNDPWR #PWR0211
+U 1 1 5D8EF2F8
+P 1700 2850
+F 0 "#PWR0211" H 1700 2650 50  0001 C CNN
+F 1 "GNDPWR" V 1704 2741 50  0000 R CNN
+F 2 "" H 1700 2800 50  0001 C CNN
+F 3 "" H 1700 2800 50  0001 C CNN
+	1    1700 2850
+	0    1    1    0   
+$EndComp
+Connection ~ 1700 2850
+Wire Wire Line
+	1700 2850 1700 2750
+$Comp
+L power:+24V #PWR0212
+U 1 1 5D8F0727
+P 1700 750
+F 0 "#PWR0212" H 1700 600 50  0001 C CNN
+F 1 "+24V" V 1715 878 50  0000 L CNN
+F 2 "" H 1700 750 50  0001 C CNN
+F 3 "" H 1700 750 50  0001 C CNN
+	1    1700 750 
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+24V #PWR0213
+U 1 1 5D8F1E79
+P 1050 1150
+F 0 "#PWR0213" H 1050 1000 50  0001 C CNN
+F 1 "+24V" V 1065 1278 50  0000 L CNN
+F 2 "" H 1050 1150 50  0001 C CNN
+F 3 "" H 1050 1150 50  0001 C CNN
+	1    1050 1150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+24V #PWR0214
+U 1 1 5D8F258D
+P 1700 3150
+F 0 "#PWR0214" H 1700 3000 50  0001 C CNN
+F 1 "+24V" V 1715 3278 50  0000 L CNN
+F 2 "" H 1700 3150 50  0001 C CNN
+F 3 "" H 1700 3150 50  0001 C CNN
+	1    1700 3150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GNDPWR #PWR0215
+U 1 1 5D8F3C61
+P 1100 2350
+F 0 "#PWR0215" H 1100 2150 50  0001 C CNN
+F 1 "GNDPWR" V 1104 2241 50  0000 R CNN
+F 2 "" H 1100 2300 50  0001 C CNN
+F 3 "" H 1100 2300 50  0001 C CNN
+	1    1100 2350
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 CON8
+U 1 1 5D8F44ED
+P 3450 2400
+F 0 "CON8" H 3530 2392 50  0000 L CNN
+F 1 "Home Sensor" H 3200 2150 50  0000 L CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 3450 2400 50  0001 C CNN
+F 3 "~" H 3450 2400 50  0001 C CNN
+	1    3450 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+24V #PWR0216
+U 1 1 5D8F505F
+P 3150 2350
+F 0 "#PWR0216" H 3150 2200 50  0001 C CNN
+F 1 "+24V" H 3165 2523 50  0000 C CNN
+F 2 "" H 3150 2350 50  0001 C CNN
+F 3 "" H 3150 2350 50  0001 C CNN
+	1    3150 2350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3250 2400 3150 2400
+Wire Wire Line
+	3150 2400 3150 2350
+$Comp
+L Connector:DB25_Female_MountingHoles CON3
+U 1 1 5D914001
+P 5850 1950
+F 0 "CON3" H 6030 1952 50  0000 L CNN
+F 1 "DB25 Main Motor Signal" H 5400 3350 50  0000 L CNN
+F 2 "Connector_Dsub:DSUB-25_Female_Vertical_P2.77x2.84mm_MountingHoles" H 5850 1950 50  0001 C CNN
+F 3 " ~" H 5850 1950 50  0001 C CNN
+	1    5850 1950
+	1    0    0    -1  
+$EndComp
+Text GLabel 5450 1250 0    50   Input ~ 0
+M2_PULSE_N
+Text GLabel 5450 1050 0    50   Input ~ 0
+M2_PULSE_P
+Text GLabel 5450 1450 0    50   Input ~ 0
+M2_DIR_P
+Text GLabel 5450 1650 0    50   Input ~ 0
+M2_DIR_N
+Text GLabel 5450 1850 0    50   Input ~ 0
+M2_OUTA_P
+Text GLabel 5450 2050 0    50   Input ~ 0
+M2_OUTA_N
+Text GLabel 5450 2250 0    50   Input ~ 0
+M2_OUTB_P
+Text GLabel 5450 2450 0    50   Input ~ 0
+M2_OUTB_N
+Text GLabel 5250 1350 0    50   Input ~ 0
+M2_SRV_ON_EXT
+Text GLabel 5250 1550 0    50   Input ~ 0
+M2_ALRM_RES_EXT
+Text GLabel 5250 1950 0    50   Input ~ 0
+M2_DEV_CLR_EXT
+Text GLabel 5250 2150 0    50   Input ~ 0
+M2_ALARM_EXT
+Text GLabel 5250 2550 0    50   Input ~ 0
+M2_COMPLETE_EXT
+Text GLabel 6800 2500 0    50   Input ~ 0
+M2_HOME_EXT
+Text Notes 6300 1900 0    50   ~ 0
+Pin description\n1 = +24V    14 = -\n2 = GND     15 = CMD_PLS\n3 = COM+   16 = /CMD_PLS\n4 = SVON    17 = CMD_DIR\n5 = RESET   18 = /CMD_DIR\n6 = -       19 = OUT_A\n7 = PCLR    20 = /OUT_A\n8 = ALRM+   21 = OUT_B\n9 = ALRM-   22 = /OUT_B\n10 = POSIN  23 = OUT_Z\n11 = COM-  24 = /OUT_Z\n12 = GND    25 = -\n13 = +24V\n
+Wire Wire Line
+	5550 750  5250 750 
+Wire Wire Line
+	5550 950  5250 950 
+Wire Wire Line
+	5550 1350 5250 1350
+Wire Wire Line
+	5550 1550 5250 1550
+Wire Wire Line
+	5550 1950 5250 1950
+Wire Wire Line
+	5550 2150 5250 2150
+Wire Wire Line
+	5550 2550 5250 2550
+Wire Wire Line
+	5550 2750 5250 2750
+Wire Wire Line
+	5550 2950 5250 2950
+Wire Wire Line
+	5550 3150 5250 3150
+Wire Wire Line
+	5550 2850 5450 2850
+Wire Wire Line
+	5550 2650 5450 2650
+Wire Wire Line
+	5550 2450 5450 2450
+Wire Wire Line
+	5550 2250 5450 2250
+Wire Wire Line
+	5550 2050 5450 2050
+Wire Wire Line
+	5550 1850 5450 1850
+Wire Wire Line
+	5550 1650 5450 1650
+Wire Wire Line
+	5550 1450 5450 1450
+Wire Wire Line
+	5550 1250 5450 1250
+Wire Wire Line
+	5550 1050 5450 1050
+NoConn ~ 5550 1750
+NoConn ~ 5550 3050
+NoConn ~ 5550 850 
+NoConn ~ 5450 2650
+NoConn ~ 5450 2850
+Wire Wire Line
+	5250 2950 5250 2850
+Wire Wire Line
+	4600 1150 5550 1150
+Wire Wire Line
+	4650 2350 5550 2350
+$Comp
+L power:GNDPWR #PWR0217
+U 1 1 5D914032
+P 5250 950
+F 0 "#PWR0217" H 5250 750 50  0001 C CNN
+F 1 "GNDPWR" V 5254 841 50  0000 R CNN
+F 2 "" H 5250 900 50  0001 C CNN
+F 3 "" H 5250 900 50  0001 C CNN
+	1    5250 950 
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GNDPWR #PWR0218
+U 1 1 5D914038
+P 5250 2850
+F 0 "#PWR0218" H 5250 2650 50  0001 C CNN
+F 1 "GNDPWR" V 5254 2741 50  0000 R CNN
+F 2 "" H 5250 2800 50  0001 C CNN
+F 3 "" H 5250 2800 50  0001 C CNN
+	1    5250 2850
+	0    1    1    0   
+$EndComp
+Connection ~ 5250 2850
+Wire Wire Line
+	5250 2850 5250 2750
+$Comp
+L power:+24V #PWR0219
+U 1 1 5D914040
+P 5250 750
+F 0 "#PWR0219" H 5250 600 50  0001 C CNN
+F 1 "+24V" V 5265 878 50  0000 L CNN
+F 2 "" H 5250 750 50  0001 C CNN
+F 3 "" H 5250 750 50  0001 C CNN
+	1    5250 750 
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+24V #PWR0220
+U 1 1 5D914046
+P 4600 1150
+F 0 "#PWR0220" H 4600 1000 50  0001 C CNN
+F 1 "+24V" V 4615 1278 50  0000 L CNN
+F 2 "" H 4600 1150 50  0001 C CNN
+F 3 "" H 4600 1150 50  0001 C CNN
+	1    4600 1150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+24V #PWR0221
+U 1 1 5D91404C
+P 5250 3150
+F 0 "#PWR0221" H 5250 3000 50  0001 C CNN
+F 1 "+24V" V 5265 3278 50  0000 L CNN
+F 2 "" H 5250 3150 50  0001 C CNN
+F 3 "" H 5250 3150 50  0001 C CNN
+	1    5250 3150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GNDPWR #PWR0222
+U 1 1 5D914052
+P 4650 2350
+F 0 "#PWR0222" H 4650 2150 50  0001 C CNN
+F 1 "GNDPWR" V 4654 2241 50  0000 R CNN
+F 2 "" H 4650 2300 50  0001 C CNN
+F 3 "" H 4650 2300 50  0001 C CNN
+	1    4650 2350
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 CON9
+U 1 1 5D914058
+P 7000 2400
+F 0 "CON9" H 7080 2392 50  0000 L CNN
+F 1 "Home Sensor" H 6750 2150 50  0000 L CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 7000 2400 50  0001 C CNN
+F 3 "~" H 7000 2400 50  0001 C CNN
+	1    7000 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+24V #PWR0223
+U 1 1 5D91405E
+P 6700 2350
+F 0 "#PWR0223" H 6700 2200 50  0001 C CNN
+F 1 "+24V" H 6715 2523 50  0000 C CNN
+F 2 "" H 6700 2350 50  0001 C CNN
+F 3 "" H 6700 2350 50  0001 C CNN
+	1    6700 2350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6800 2400 6700 2400
+Wire Wire Line
+	6700 2400 6700 2350
+$Comp
+L Connector:DB25_Female_MountingHoles CON4
+U 1 1 5D91D4EF
+P 9400 1950
+F 0 "CON4" H 9580 1952 50  0000 L CNN
+F 1 "DB25 Main Motor Signal" H 8950 3350 50  0000 L CNN
+F 2 "Connector_Dsub:DSUB-25_Female_Vertical_P2.77x2.84mm_MountingHoles" H 9400 1950 50  0001 C CNN
+F 3 " ~" H 9400 1950 50  0001 C CNN
+	1    9400 1950
+	1    0    0    -1  
+$EndComp
+Text GLabel 9000 1250 0    50   Input ~ 0
+M3_PULSE_N
+Text GLabel 9000 1050 0    50   Input ~ 0
+M3_PULSE_P
+Text GLabel 9000 1450 0    50   Input ~ 0
+M3_DIR_P
+Text GLabel 9000 1650 0    50   Input ~ 0
+M3_DIR_N
+Text GLabel 9000 1850 0    50   Input ~ 0
+M3_OUTA_P
+Text GLabel 9000 2050 0    50   Input ~ 0
+M3_OUTA_N
+Text GLabel 9000 2250 0    50   Input ~ 0
+M3_OUTB_P
+Text GLabel 9000 2450 0    50   Input ~ 0
+M3_OUTB_N
+Text GLabel 8800 1350 0    50   Input ~ 0
+M3_SRV_ON_EXT
+Text GLabel 8800 1550 0    50   Input ~ 0
+M3_ALRM_RES_EXT
+Text GLabel 8800 1950 0    50   Input ~ 0
+M3_DEV_CLR_EXT
+Text GLabel 8800 2150 0    50   Input ~ 0
+M3_ALARM_EXT
+Text GLabel 8800 2550 0    50   Input ~ 0
+M3_COMPLETE_EXT
+Text GLabel 10350 2500 0    50   Input ~ 0
+M3_HOME_EXT
+Text Notes 9850 1900 0    50   ~ 0
+Pin description\n1 = +24V    14 = -\n2 = GND     15 = CMD_PLS\n3 = COM+   16 = /CMD_PLS\n4 = SVON    17 = CMD_DIR\n5 = RESET   18 = /CMD_DIR\n6 = -       19 = OUT_A\n7 = PCLR    20 = /OUT_A\n8 = ALRM+   21 = OUT_B\n9 = ALRM-   22 = /OUT_B\n10 = POSIN  23 = OUT_Z\n11 = COM-  24 = /OUT_Z\n12 = GND    25 = -\n13 = +24V\n
+Wire Wire Line
+	9100 750  8800 750 
+Wire Wire Line
+	9100 950  8800 950 
+Wire Wire Line
+	9100 1350 8800 1350
+Wire Wire Line
+	9100 1550 8800 1550
+Wire Wire Line
+	9100 1950 8800 1950
+Wire Wire Line
+	9100 2150 8800 2150
+Wire Wire Line
+	9100 2550 8800 2550
+Wire Wire Line
+	9100 2750 8800 2750
+Wire Wire Line
+	9100 2950 8800 2950
+Wire Wire Line
+	9100 3150 8800 3150
+Wire Wire Line
+	9100 2850 9000 2850
+Wire Wire Line
+	9100 2650 9000 2650
+Wire Wire Line
+	9100 2450 9000 2450
+Wire Wire Line
+	9100 2250 9000 2250
+Wire Wire Line
+	9100 2050 9000 2050
+Wire Wire Line
+	9100 1850 9000 1850
+Wire Wire Line
+	9100 1650 9000 1650
+Wire Wire Line
+	9100 1450 9000 1450
+Wire Wire Line
+	9100 1250 9000 1250
+Wire Wire Line
+	9100 1050 9000 1050
+NoConn ~ 9100 1750
+NoConn ~ 9100 3050
+NoConn ~ 9100 850 
+NoConn ~ 9000 2650
+NoConn ~ 9000 2850
+Wire Wire Line
+	8800 2950 8800 2850
+Wire Wire Line
+	8150 1150 9100 1150
+Wire Wire Line
+	8200 2350 9100 2350
+$Comp
+L power:GNDPWR #PWR0224
+U 1 1 5D91D520
+P 8800 950
+F 0 "#PWR0224" H 8800 750 50  0001 C CNN
+F 1 "GNDPWR" V 8804 841 50  0000 R CNN
+F 2 "" H 8800 900 50  0001 C CNN
+F 3 "" H 8800 900 50  0001 C CNN
+	1    8800 950 
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GNDPWR #PWR0225
+U 1 1 5D91D526
+P 8800 2850
+F 0 "#PWR0225" H 8800 2650 50  0001 C CNN
+F 1 "GNDPWR" V 8804 2741 50  0000 R CNN
+F 2 "" H 8800 2800 50  0001 C CNN
+F 3 "" H 8800 2800 50  0001 C CNN
+	1    8800 2850
+	0    1    1    0   
+$EndComp
+Connection ~ 8800 2850
+Wire Wire Line
+	8800 2850 8800 2750
+$Comp
+L power:+24V #PWR0226
+U 1 1 5D91D52E
+P 8800 750
+F 0 "#PWR0226" H 8800 600 50  0001 C CNN
+F 1 "+24V" V 8815 878 50  0000 L CNN
+F 2 "" H 8800 750 50  0001 C CNN
+F 3 "" H 8800 750 50  0001 C CNN
+	1    8800 750 
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+24V #PWR0227
+U 1 1 5D91D534
+P 8150 1150
+F 0 "#PWR0227" H 8150 1000 50  0001 C CNN
+F 1 "+24V" V 8165 1278 50  0000 L CNN
+F 2 "" H 8150 1150 50  0001 C CNN
+F 3 "" H 8150 1150 50  0001 C CNN
+	1    8150 1150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+24V #PWR0228
+U 1 1 5D91D53A
+P 8800 3150
+F 0 "#PWR0228" H 8800 3000 50  0001 C CNN
+F 1 "+24V" V 8815 3278 50  0000 L CNN
+F 2 "" H 8800 3150 50  0001 C CNN
+F 3 "" H 8800 3150 50  0001 C CNN
+	1    8800 3150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GNDPWR #PWR0229
+U 1 1 5D91D540
+P 8200 2350
+F 0 "#PWR0229" H 8200 2150 50  0001 C CNN
+F 1 "GNDPWR" V 8204 2241 50  0000 R CNN
+F 2 "" H 8200 2300 50  0001 C CNN
+F 3 "" H 8200 2300 50  0001 C CNN
+	1    8200 2350
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 CON10
+U 1 1 5D91D546
+P 10550 2400
+F 0 "CON10" H 10630 2392 50  0000 L CNN
+F 1 "Home Sensor" H 10300 2150 50  0000 L CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 10550 2400 50  0001 C CNN
+F 3 "~" H 10550 2400 50  0001 C CNN
+	1    10550 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+24V #PWR0230
+U 1 1 5D91D54C
+P 10250 2350
+F 0 "#PWR0230" H 10250 2200 50  0001 C CNN
+F 1 "+24V" H 10265 2523 50  0000 C CNN
+F 2 "" H 10250 2350 50  0001 C CNN
+F 3 "" H 10250 2350 50  0001 C CNN
+	1    10250 2350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10350 2400 10250 2400
+Wire Wire Line
+	10250 2400 10250 2350
+$Comp
+L Connector:DB25_Female_MountingHoles CON5
+U 1 1 5D9442C7
+P 2300 4950
+F 0 "CON5" H 2480 4952 50  0000 L CNN
+F 1 "DB25 Main Motor Signal" H 1850 6350 50  0000 L CNN
+F 2 "Connector_Dsub:DSUB-25_Female_Vertical_P2.77x2.84mm_MountingHoles" H 2300 4950 50  0001 C CNN
+F 3 " ~" H 2300 4950 50  0001 C CNN
+	1    2300 4950
+	1    0    0    -1  
+$EndComp
+Text GLabel 1900 4250 0    50   Input ~ 0
+M4_PULSE_N
+Text GLabel 1900 4050 0    50   Input ~ 0
+M4_PULSE_P
+Text GLabel 1900 4450 0    50   Input ~ 0
+M4_DIR_P
+Text GLabel 1900 4650 0    50   Input ~ 0
+M4_DIR_N
+Text GLabel 1900 4850 0    50   Input ~ 0
+M4_OUTA_P
+Text GLabel 1900 5050 0    50   Input ~ 0
+M4_OUTA_N
+Text GLabel 1900 5250 0    50   Input ~ 0
+M4_OUTB_P
+Text GLabel 1900 5450 0    50   Input ~ 0
+M4_OUTB_N
+Text GLabel 1700 4350 0    50   Input ~ 0
+M4_SRV_ON_EXT
+Text GLabel 1700 4550 0    50   Input ~ 0
+M4_ALRM_RES_EXT
+Text GLabel 1700 4950 0    50   Input ~ 0
+M4_DEV_CLR_EXT
+Text GLabel 1700 5150 0    50   Input ~ 0
+M4_ALARM_EXT
+Text GLabel 1700 5550 0    50   Input ~ 0
+M4_COMPLETE_EXT
+Text GLabel 3250 5500 0    50   Input ~ 0
+M4_HOME_EXT
+Text Notes 2750 4900 0    50   ~ 0
+Pin description\n1 = +24V    14 = -\n2 = GND     15 = CMD_PLS\n3 = COM+   16 = /CMD_PLS\n4 = SVON    17 = CMD_DIR\n5 = RESET   18 = /CMD_DIR\n6 = -       19 = OUT_A\n7 = PCLR    20 = /OUT_A\n8 = ALRM+   21 = OUT_B\n9 = ALRM-   22 = /OUT_B\n10 = POSIN  23 = OUT_Z\n11 = COM-  24 = /OUT_Z\n12 = GND    25 = -\n13 = +24V\n
+Wire Wire Line
+	2000 3750 1700 3750
+Wire Wire Line
+	2000 3950 1700 3950
+Wire Wire Line
+	2000 4350 1700 4350
+Wire Wire Line
+	2000 4550 1700 4550
+Wire Wire Line
+	2000 4950 1700 4950
+Wire Wire Line
+	2000 5150 1700 5150
+Wire Wire Line
+	2000 5550 1700 5550
+Wire Wire Line
+	2000 5750 1700 5750
+Wire Wire Line
+	2000 5950 1700 5950
+Wire Wire Line
+	2000 6150 1700 6150
+Wire Wire Line
+	2000 5850 1900 5850
+Wire Wire Line
+	2000 5650 1900 5650
+Wire Wire Line
+	2000 5450 1900 5450
+Wire Wire Line
+	2000 5250 1900 5250
+Wire Wire Line
+	2000 5050 1900 5050
+Wire Wire Line
+	2000 4850 1900 4850
+Wire Wire Line
+	2000 4650 1900 4650
+Wire Wire Line
+	2000 4450 1900 4450
+Wire Wire Line
+	2000 4250 1900 4250
+Wire Wire Line
+	2000 4050 1900 4050
+NoConn ~ 2000 4750
+NoConn ~ 2000 6050
+NoConn ~ 2000 3850
+NoConn ~ 1900 5650
+NoConn ~ 1900 5850
+Wire Wire Line
+	1700 5950 1700 5850
+Wire Wire Line
+	1050 4150 2000 4150
+Wire Wire Line
+	1100 5350 2000 5350
+$Comp
+L power:GNDPWR #PWR0231
+U 1 1 5D9442F8
+P 1700 3950
+F 0 "#PWR0231" H 1700 3750 50  0001 C CNN
+F 1 "GNDPWR" V 1704 3841 50  0000 R CNN
+F 2 "" H 1700 3900 50  0001 C CNN
+F 3 "" H 1700 3900 50  0001 C CNN
+	1    1700 3950
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GNDPWR #PWR0232
+U 1 1 5D9442FE
+P 1700 5850
+F 0 "#PWR0232" H 1700 5650 50  0001 C CNN
+F 1 "GNDPWR" V 1704 5741 50  0000 R CNN
+F 2 "" H 1700 5800 50  0001 C CNN
+F 3 "" H 1700 5800 50  0001 C CNN
+	1    1700 5850
+	0    1    1    0   
+$EndComp
+Connection ~ 1700 5850
+Wire Wire Line
+	1700 5850 1700 5750
+$Comp
+L power:+24V #PWR0233
+U 1 1 5D944306
+P 1700 3750
+F 0 "#PWR0233" H 1700 3600 50  0001 C CNN
+F 1 "+24V" V 1715 3878 50  0000 L CNN
+F 2 "" H 1700 3750 50  0001 C CNN
+F 3 "" H 1700 3750 50  0001 C CNN
+	1    1700 3750
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+24V #PWR0234
+U 1 1 5D94430C
+P 1050 4150
+F 0 "#PWR0234" H 1050 4000 50  0001 C CNN
+F 1 "+24V" V 1065 4278 50  0000 L CNN
+F 2 "" H 1050 4150 50  0001 C CNN
+F 3 "" H 1050 4150 50  0001 C CNN
+	1    1050 4150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+24V #PWR0235
+U 1 1 5D944312
+P 1700 6150
+F 0 "#PWR0235" H 1700 6000 50  0001 C CNN
+F 1 "+24V" V 1715 6278 50  0000 L CNN
+F 2 "" H 1700 6150 50  0001 C CNN
+F 3 "" H 1700 6150 50  0001 C CNN
+	1    1700 6150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GNDPWR #PWR0236
+U 1 1 5D944318
+P 1100 5350
+F 0 "#PWR0236" H 1100 5150 50  0001 C CNN
+F 1 "GNDPWR" V 1104 5241 50  0000 R CNN
+F 2 "" H 1100 5300 50  0001 C CNN
+F 3 "" H 1100 5300 50  0001 C CNN
+	1    1100 5350
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 CON11
+U 1 1 5D94431E
+P 3450 5400
+F 0 "CON11" H 3530 5392 50  0000 L CNN
+F 1 "Home Sensor" H 3200 5150 50  0000 L CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 3450 5400 50  0001 C CNN
+F 3 "~" H 3450 5400 50  0001 C CNN
+	1    3450 5400
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+24V #PWR0237
+U 1 1 5D944324
+P 3150 5350
+F 0 "#PWR0237" H 3150 5200 50  0001 C CNN
+F 1 "+24V" H 3165 5523 50  0000 C CNN
+F 2 "" H 3150 5350 50  0001 C CNN
+F 3 "" H 3150 5350 50  0001 C CNN
+	1    3150 5350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3250 5400 3150 5400
+Wire Wire Line
+	3150 5400 3150 5350
+$Comp
+L Connector:DB25_Female_MountingHoles CON6
+U 1 1 5D94432D
+P 5850 4950
+F 0 "CON6" H 6030 4952 50  0000 L CNN
+F 1 "DB25 Main Motor Signal" H 5400 6350 50  0000 L CNN
+F 2 "Connector_Dsub:DSUB-25_Female_Vertical_P2.77x2.84mm_MountingHoles" H 5850 4950 50  0001 C CNN
+F 3 " ~" H 5850 4950 50  0001 C CNN
+	1    5850 4950
+	1    0    0    -1  
+$EndComp
+Text GLabel 5450 4250 0    50   Input ~ 0
+M5_PULSE_N
+Text GLabel 5450 4050 0    50   Input ~ 0
+M5_PULSE_P
+Text GLabel 5450 4450 0    50   Input ~ 0
+M5_DIR_P
+Text GLabel 5450 4650 0    50   Input ~ 0
+M5_DIR_N
+Text GLabel 5450 4850 0    50   Input ~ 0
+M5_OUTA_P
+Text GLabel 5450 5050 0    50   Input ~ 0
+M5_OUTA_N
+Text GLabel 5450 5250 0    50   Input ~ 0
+M5_OUTB_P
+Text GLabel 5450 5450 0    50   Input ~ 0
+M5_OUTB_N
+Text GLabel 5250 4350 0    50   Input ~ 0
+M5_SRV_ON_EXT
+Text GLabel 5250 4550 0    50   Input ~ 0
+M5_ALRM_RES_EXT
+Text GLabel 5250 4950 0    50   Input ~ 0
+M5_DEV_CLR_EXT
+Text GLabel 5250 5150 0    50   Input ~ 0
+M5_ALARM_EXT
+Text GLabel 5250 5550 0    50   Input ~ 0
+M5_COMPLETE_EXT
+Text GLabel 6800 5500 0    50   Input ~ 0
+M5_HOME_EXT
+Text Notes 6300 4900 0    50   ~ 0
+Pin description\n1 = +24V    14 = -\n2 = GND     15 = CMD_PLS\n3 = COM+   16 = /CMD_PLS\n4 = SVON    17 = CMD_DIR\n5 = RESET   18 = /CMD_DIR\n6 = -       19 = OUT_A\n7 = PCLR    20 = /OUT_A\n8 = ALRM+   21 = OUT_B\n9 = ALRM-   22 = /OUT_B\n10 = POSIN  23 = OUT_Z\n11 = COM-  24 = /OUT_Z\n12 = GND    25 = -\n13 = +24V\n
+Wire Wire Line
+	5550 3750 5250 3750
+Wire Wire Line
+	5550 3950 5250 3950
+Wire Wire Line
+	5550 4350 5250 4350
+Wire Wire Line
+	5550 4550 5250 4550
+Wire Wire Line
+	5550 4950 5250 4950
+Wire Wire Line
+	5550 5150 5250 5150
+Wire Wire Line
+	5550 5550 5250 5550
+Wire Wire Line
+	5550 5750 5250 5750
+Wire Wire Line
+	5550 5950 5250 5950
+Wire Wire Line
+	5550 6150 5250 6150
+Wire Wire Line
+	5550 5850 5450 5850
+Wire Wire Line
+	5550 5650 5450 5650
+Wire Wire Line
+	5550 5450 5450 5450
+Wire Wire Line
+	5550 5250 5450 5250
+Wire Wire Line
+	5550 5050 5450 5050
+Wire Wire Line
+	5550 4850 5450 4850
+Wire Wire Line
+	5550 4650 5450 4650
+Wire Wire Line
+	5550 4450 5450 4450
+Wire Wire Line
+	5550 4250 5450 4250
+Wire Wire Line
+	5550 4050 5450 4050
+NoConn ~ 5550 4750
+NoConn ~ 5550 6050
+NoConn ~ 5550 3850
+NoConn ~ 5450 5650
+NoConn ~ 5450 5850
+Wire Wire Line
+	5250 5950 5250 5850
+Wire Wire Line
+	4600 4150 5550 4150
+Wire Wire Line
+	4650 5350 5550 5350
+$Comp
+L power:GNDPWR #PWR0238
+U 1 1 5D94435E
+P 5250 3950
+F 0 "#PWR0238" H 5250 3750 50  0001 C CNN
+F 1 "GNDPWR" V 5254 3841 50  0000 R CNN
+F 2 "" H 5250 3900 50  0001 C CNN
+F 3 "" H 5250 3900 50  0001 C CNN
+	1    5250 3950
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GNDPWR #PWR0239
+U 1 1 5D944364
+P 5250 5850
+F 0 "#PWR0239" H 5250 5650 50  0001 C CNN
+F 1 "GNDPWR" V 5254 5741 50  0000 R CNN
+F 2 "" H 5250 5800 50  0001 C CNN
+F 3 "" H 5250 5800 50  0001 C CNN
+	1    5250 5850
+	0    1    1    0   
+$EndComp
+Connection ~ 5250 5850
+Wire Wire Line
+	5250 5850 5250 5750
+$Comp
+L power:+24V #PWR0240
+U 1 1 5D94436C
+P 5250 3750
+F 0 "#PWR0240" H 5250 3600 50  0001 C CNN
+F 1 "+24V" V 5265 3878 50  0000 L CNN
+F 2 "" H 5250 3750 50  0001 C CNN
+F 3 "" H 5250 3750 50  0001 C CNN
+	1    5250 3750
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+24V #PWR0241
+U 1 1 5D944372
+P 4600 4150
+F 0 "#PWR0241" H 4600 4000 50  0001 C CNN
+F 1 "+24V" V 4615 4278 50  0000 L CNN
+F 2 "" H 4600 4150 50  0001 C CNN
+F 3 "" H 4600 4150 50  0001 C CNN
+	1    4600 4150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+24V #PWR0242
+U 1 1 5D944378
+P 5250 6150
+F 0 "#PWR0242" H 5250 6000 50  0001 C CNN
+F 1 "+24V" V 5265 6278 50  0000 L CNN
+F 2 "" H 5250 6150 50  0001 C CNN
+F 3 "" H 5250 6150 50  0001 C CNN
+	1    5250 6150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GNDPWR #PWR0243
+U 1 1 5D94437E
+P 4650 5350
+F 0 "#PWR0243" H 4650 5150 50  0001 C CNN
+F 1 "GNDPWR" V 4654 5241 50  0000 R CNN
+F 2 "" H 4650 5300 50  0001 C CNN
+F 3 "" H 4650 5300 50  0001 C CNN
+	1    4650 5350
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 CON12
+U 1 1 5D944384
+P 7000 5400
+F 0 "CON12" H 7080 5392 50  0000 L CNN
+F 1 "Home Sensor" H 6750 5150 50  0000 L CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 7000 5400 50  0001 C CNN
+F 3 "~" H 7000 5400 50  0001 C CNN
+	1    7000 5400
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+24V #PWR0244
+U 1 1 5D94438A
+P 6700 5350
+F 0 "#PWR0244" H 6700 5200 50  0001 C CNN
+F 1 "+24V" H 6715 5523 50  0000 C CNN
+F 2 "" H 6700 5350 50  0001 C CNN
+F 3 "" H 6700 5350 50  0001 C CNN
+	1    6700 5350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6800 5400 6700 5400
+Wire Wire Line
+	6700 5400 6700 5350
+Text GLabel 9000 4250 0    50   Input ~ 0
+M6_PULSE_N
+Text GLabel 9000 4050 0    50   Input ~ 0
+M6_PULSE_P
+Text GLabel 9000 4450 0    50   Input ~ 0
+M6_DIR_P
+Text GLabel 9000 4650 0    50   Input ~ 0
+M6_DIR_N
+Text GLabel 9000 4850 0    50   Input ~ 0
+M6_OUTA_P
+Text GLabel 9000 5050 0    50   Input ~ 0
+M6_OUTA_N
+Text GLabel 9000 5250 0    50   Input ~ 0
+M6_OUTB_P
+Text GLabel 9000 5450 0    50   Input ~ 0
+M6_OUTB_N
+Text GLabel 8800 4350 0    50   Input ~ 0
+M6_SRV_ON_EXT
+Text GLabel 8800 4550 0    50   Input ~ 0
+M6_ALRM_RES_EXT
+Text GLabel 8800 4950 0    50   Input ~ 0
+M6_DEV_CLR_EXT
+Text GLabel 8800 5150 0    50   Input ~ 0
+M6_ALARM_EXT
+Text GLabel 8800 5550 0    50   Input ~ 0
+M6_COMPLETE_EXT
+Text GLabel 10350 5500 0    50   Input ~ 0
+M6_HOME_EXT
+Text Notes 9850 4900 0    50   ~ 0
+Pin description\n1 = +24V    14 = -\n2 = GND     15 = CMD_PLS\n3 = COM+   16 = /CMD_PLS\n4 = SVON    17 = CMD_DIR\n5 = RESET   18 = /CMD_DIR\n6 = -       19 = OUT_A\n7 = PCLR    20 = /OUT_A\n8 = ALRM+   21 = OUT_B\n9 = ALRM-   22 = /OUT_B\n10 = POSIN  23 = OUT_Z\n11 = COM-  24 = /OUT_Z\n12 = GND    25 = -\n13 = +24V\n
+Wire Wire Line
+	9100 3750 8800 3750
+Wire Wire Line
+	9100 3950 8800 3950
+Wire Wire Line
+	9100 4350 8800 4350
+Wire Wire Line
+	9100 4550 8800 4550
+Wire Wire Line
+	9100 4950 8800 4950
+Wire Wire Line
+	9100 5150 8800 5150
+Wire Wire Line
+	9100 5550 8800 5550
+Wire Wire Line
+	9100 5750 8800 5750
+Wire Wire Line
+	9100 5950 8800 5950
+Wire Wire Line
+	9100 6150 8800 6150
+Wire Wire Line
+	9100 5850 9000 5850
+Wire Wire Line
+	9100 5650 9000 5650
+Wire Wire Line
+	9100 5450 9000 5450
+Wire Wire Line
+	9100 5250 9000 5250
+Wire Wire Line
+	9100 5050 9000 5050
+Wire Wire Line
+	9100 4850 9000 4850
+Wire Wire Line
+	9100 4650 9000 4650
+Wire Wire Line
+	9100 4450 9000 4450
+Wire Wire Line
+	9100 4250 9000 4250
+Wire Wire Line
+	9100 4050 9000 4050
+NoConn ~ 9100 4750
+NoConn ~ 9100 6050
+NoConn ~ 9100 3850
+NoConn ~ 9000 5650
+NoConn ~ 9000 5850
+Wire Wire Line
+	8800 5950 8800 5850
+Wire Wire Line
+	8150 4150 9100 4150
+Wire Wire Line
+	8200 5350 9100 5350
+$Comp
+L power:GNDPWR #PWR0245
+U 1 1 5D9443C4
+P 8800 3950
+F 0 "#PWR0245" H 8800 3750 50  0001 C CNN
+F 1 "GNDPWR" V 8804 3841 50  0000 R CNN
+F 2 "" H 8800 3900 50  0001 C CNN
+F 3 "" H 8800 3900 50  0001 C CNN
+	1    8800 3950
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GNDPWR #PWR0246
+U 1 1 5D9443CA
+P 8800 5850
+F 0 "#PWR0246" H 8800 5650 50  0001 C CNN
+F 1 "GNDPWR" V 8804 5741 50  0000 R CNN
+F 2 "" H 8800 5800 50  0001 C CNN
+F 3 "" H 8800 5800 50  0001 C CNN
+	1    8800 5850
+	0    1    1    0   
+$EndComp
+Connection ~ 8800 5850
+Wire Wire Line
+	8800 5850 8800 5750
+$Comp
+L power:+24V #PWR0247
+U 1 1 5D9443D2
+P 8800 3750
+F 0 "#PWR0247" H 8800 3600 50  0001 C CNN
+F 1 "+24V" V 8815 3878 50  0000 L CNN
+F 2 "" H 8800 3750 50  0001 C CNN
+F 3 "" H 8800 3750 50  0001 C CNN
+	1    8800 3750
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+24V #PWR0248
+U 1 1 5D9443D8
+P 8150 4150
+F 0 "#PWR0248" H 8150 4000 50  0001 C CNN
+F 1 "+24V" V 8165 4278 50  0000 L CNN
+F 2 "" H 8150 4150 50  0001 C CNN
+F 3 "" H 8150 4150 50  0001 C CNN
+	1    8150 4150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+24V #PWR0249
+U 1 1 5D9443DE
+P 8800 6150
+F 0 "#PWR0249" H 8800 6000 50  0001 C CNN
+F 1 "+24V" V 8815 6278 50  0000 L CNN
+F 2 "" H 8800 6150 50  0001 C CNN
+F 3 "" H 8800 6150 50  0001 C CNN
+	1    8800 6150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GNDPWR #PWR0250
+U 1 1 5D9443E4
+P 8200 5350
+F 0 "#PWR0250" H 8200 5150 50  0001 C CNN
+F 1 "GNDPWR" V 8204 5241 50  0000 R CNN
+F 2 "" H 8200 5300 50  0001 C CNN
+F 3 "" H 8200 5300 50  0001 C CNN
+	1    8200 5350
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 CON13
+U 1 1 5D9443EA
+P 10550 5400
+F 0 "CON13" H 10630 5392 50  0000 L CNN
+F 1 "Home Sensor" H 10300 5150 50  0000 L CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 10550 5400 50  0001 C CNN
+F 3 "~" H 10550 5400 50  0001 C CNN
+	1    10550 5400
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+24V #PWR0251
+U 1 1 5D9443F0
+P 10250 5350
+F 0 "#PWR0251" H 10250 5200 50  0001 C CNN
+F 1 "+24V" H 10265 5523 50  0000 C CNN
+F 2 "" H 10250 5350 50  0001 C CNN
+F 3 "" H 10250 5350 50  0001 C CNN
+	1    10250 5350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10350 5400 10250 5400
+Wire Wire Line
+	10250 5400 10250 5350
+$Comp
+L Connector_Generic:Conn_01x02 CON16
+U 1 1 5DA63DF6
+P 5850 7150
+F 0 "CON16" H 5930 7142 50  0000 L CNN
+F 1 "+24V Power in" H 5930 7051 50  0000 L CNN
+F 2 "TerminalBlock_Philmore:TerminalBlock_Philmore_TB132_1x02_P5.00mm_Horizontal" H 5850 7150 50  0001 C CNN
+F 3 "~" H 5850 7150 50  0001 C CNN
+	1    5850 7150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDPWR #PWR0252
+U 1 1 5DA64894
+P 5550 7250
+F 0 "#PWR0252" H 5550 7050 50  0001 C CNN
+F 1 "GNDPWR" H 5554 7096 50  0000 C CNN
+F 2 "" H 5550 7200 50  0001 C CNN
+F 3 "" H 5550 7200 50  0001 C CNN
+	1    5550 7250
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+24V #PWR0253
+U 1 1 5DA65B4C
+P 5150 7150
+F 0 "#PWR0253" H 5150 7000 50  0001 C CNN
+F 1 "+24V" H 5165 7323 50  0000 C CNN
+F 2 "" H 5150 7150 50  0001 C CNN
+F 3 "" H 5150 7150 50  0001 C CNN
+	1    5150 7150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5650 7150 5550 7150
+Wire Wire Line
+	5550 7250 5650 7250
+$Comp
+L Device:D_Small_ALT D7
+U 1 1 5DB37A87
+P 5450 7150
+F 0 "D7" H 5450 7355 50  0000 C CNN
+F 1 "1N4001" H 5450 7264 50  0000 C CNN
+F 2 "Diode_THT:D_T-1_P12.70mm_Horizontal" V 5450 7150 50  0001 C CNN
+F 3 "~" V 5450 7150 50  0001 C CNN
+	1    5450 7150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5150 7150 5350 7150
+$Comp
+L Connector_Generic:Conn_01x02 CON14
+U 1 1 5DB6EA9F
+P 1900 7150
+F 0 "CON14" H 1980 7142 50  0000 L CNN
+F 1 "Emergency Stop" H 1650 6900 50  0000 L CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 1900 7150 50  0001 C CNN
+F 3 "~" H 1900 7150 50  0001 C CNN
+	1    1900 7150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0254
+U 1 1 5DB78D99
+P 1500 7250
+F 0 "#PWR0254" H 1500 7000 50  0001 C CNN
+F 1 "GND" H 1505 7077 50  0000 C CNN
+F 2 "" H 1500 7250 50  0001 C CNN
+F 3 "" H 1500 7250 50  0001 C CNN
+	1    1500 7250
+	1    0    0    -1  
+$EndComp
+Text GLabel 1700 7150 0    50   Input ~ 0
+EMERGENCY_N
+Wire Wire Line
+	1500 7250 1700 7250
+$Comp
+L Connector_Generic:Conn_01x06 CON15
+U 1 1 5DB93D54
+P 4000 7050
+F 0 "CON15" H 4080 7042 50  0000 L CNN
+F 1 "Expansion" H 4080 6951 50  0000 L CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical" H 4000 7050 50  0001 C CNN
+F 3 "~" H 4000 7050 50  0001 C CNN
+	1    4000 7050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0255
+U 1 1 5DB95305
+P 3800 7350
+F 0 "#PWR0255" H 3800 7100 50  0001 C CNN
+F 1 "GND" H 3805 7177 50  0000 C CNN
+F 2 "" H 3800 7350 50  0001 C CNN
+F 3 "" H 3800 7350 50  0001 C CNN
+	1    3800 7350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3V3 #PWR0256
+U 1 1 5DB96201
+P 3800 7050
+F 0 "#PWR0256" H 3800 6900 50  0001 C CNN
+F 1 "+3V3" V 3815 7178 50  0000 L CNN
+F 2 "" H 3800 7050 50  0001 C CNN
+F 3 "" H 3800 7050 50  0001 C CNN
+	1    3800 7050
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R_US R?
+U 1 1 5DB9A307
+P 3350 6600
+AR Path="/5D7E7CD7/5DB9A307" Ref="R?"  Part="1" 
+AR Path="/5D8D603A/5DB9A307" Ref="R61"  Part="1" 
+F 0 "R61" V 3450 6550 50  0000 C CNN
+F 1 "4.7K" V 3250 6600 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 3390 6590 50  0001 C CNN
+F 3 "~" H 3350 6600 50  0001 C CNN
+	1    3350 6600
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_US R?
+U 1 1 5DBA3FF6
+P 3650 6600
+AR Path="/5D7E7CD7/5DBA3FF6" Ref="R?"  Part="1" 
+AR Path="/5D8D603A/5DBA3FF6" Ref="R62"  Part="1" 
+F 0 "R62" V 3750 6550 50  0000 C CNN
+F 1 "4.7K" V 3550 6600 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 3690 6590 50  0001 C CNN
+F 3 "~" H 3650 6600 50  0001 C CNN
+	1    3650 6600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3V3 #PWR0257
+U 1 1 5DBA473C
+P 3500 6450
+F 0 "#PWR0257" H 3500 6300 50  0001 C CNN
+F 1 "+3V3" H 3515 6623 50  0000 C CNN
+F 2 "" H 3500 6450 50  0001 C CNN
+F 3 "" H 3500 6450 50  0001 C CNN
+	1    3500 6450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3350 6450 3500 6450
+Wire Wire Line
+	3500 6450 3650 6450
+Connection ~ 3500 6450
+Wire Wire Line
+	3650 6750 3650 6850
+Wire Wire Line
+	3650 6850 3800 6850
+Wire Wire Line
+	3350 6750 3350 6950
+Wire Wire Line
+	3350 6950 3800 6950
+Text GLabel 3200 6950 0    50   Input ~ 0
+I2C_SDA
+Text GLabel 3200 6850 0    50   Input ~ 0
+I2C_SCL
+Text GLabel 3200 7150 0    50   Input ~ 0
+EXT_INT1
+Text GLabel 3200 7250 0    50   Input ~ 0
+EXT_INT2
+Wire Wire Line
+	3200 6850 3650 6850
+Connection ~ 3650 6850
+Wire Wire Line
+	3200 6950 3350 6950
+Connection ~ 3350 6950
+Wire Wire Line
+	3200 7150 3800 7150
+Wire Wire Line
+	3200 7250 3800 7250
+NoConn ~ 9400 6350
+$Comp
+L Connector:DB25_Female_MountingHoles CON7
+U 1 1 5D944393
+P 9400 4950
+F 0 "CON7" H 9580 4952 50  0000 L CNN
+F 1 "DB25 Main Motor Signal" H 8950 6350 50  0000 L CNN
+F 2 "Connector_Dsub:DSUB-25_Female_Vertical_P2.77x2.84mm_MountingHoles" H 9400 4950 50  0001 C CNN
+F 3 " ~" H 9400 4950 50  0001 C CNN
+	1    9400 4950
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDPWR #PWR?
+U 1 1 5DE9E5BA
+P 2300 3350
+F 0 "#PWR?" H 2300 3150 50  0001 C CNN
+F 1 "GNDPWR" H 2304 3196 50  0000 C CNN
+F 2 "" H 2300 3300 50  0001 C CNN
+F 3 "" H 2300 3300 50  0001 C CNN
+	1    2300 3350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDPWR #PWR?
+U 1 1 5DEA0F62
+P 5850 3350
+F 0 "#PWR?" H 5850 3150 50  0001 C CNN
+F 1 "GNDPWR" H 5854 3196 50  0000 C CNN
+F 2 "" H 5850 3300 50  0001 C CNN
+F 3 "" H 5850 3300 50  0001 C CNN
+	1    5850 3350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDPWR #PWR?
+U 1 1 5DEA2263
+P 9400 3350
+F 0 "#PWR?" H 9400 3150 50  0001 C CNN
+F 1 "GNDPWR" H 9404 3196 50  0000 C CNN
+F 2 "" H 9400 3300 50  0001 C CNN
+F 3 "" H 9400 3300 50  0001 C CNN
+	1    9400 3350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDPWR #PWR?
+U 1 1 5DEA3735
+P 2300 6350
+F 0 "#PWR?" H 2300 6150 50  0001 C CNN
+F 1 "GNDPWR" H 2304 6196 50  0000 C CNN
+F 2 "" H 2300 6300 50  0001 C CNN
+F 3 "" H 2300 6300 50  0001 C CNN
+	1    2300 6350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDPWR #PWR?
+U 1 1 5DEA4622
+P 5850 6350
+F 0 "#PWR?" H 5850 6150 50  0001 C CNN
+F 1 "GNDPWR" H 5854 6196 50  0000 C CNN
+F 2 "" H 5850 6300 50  0001 C CNN
+F 3 "" H 5850 6300 50  0001 C CNN
+	1    5850 6350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDPWR #PWR?
+U 1 1 5DEA52AE
+P 9400 6350
+F 0 "#PWR?" H 9400 6150 50  0001 C CNN
+F 1 "GNDPWR" H 9404 6196 50  0000 C CNN
+F 2 "" H 9400 6300 50  0001 C CNN
+F 3 "" H 9400 6300 50  0001 C CNN
+	1    9400 6350
+	1    0    0    -1  
+$EndComp
+$EndSCHEMATC
