@@ -2660,7 +2660,7 @@ if ARCH_BOARD_Z80SIM
 source "boards/z80/z80/z80sim/Kconfig"
 endif
 if ARCH_BOARD_COORDINATOR
-source "configs/coordinator/Kconfig"
+source "boards/arm/stm32f7/coordinator/Kconfig"
 endif
 
 config BOARD_CRASHDUMP
