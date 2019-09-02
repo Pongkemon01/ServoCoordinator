@@ -59,6 +59,15 @@ SYSCALL_LOOKUP(sched_yield,                0, STUB_sched_yield)
 SYSCALL_LOOKUP(set_errno,                  1, STUB_set_errno)
 SYSCALL_LOOKUP(uname,                      1, STUB_uname)
 
+/* User identity */
+
+#ifdef CONFIG_SCHED_USER_IDENTITY
+SYSCALL_LOOKUP(setuid,                     1, STUB_setuid)
+SYSCALL_LOOKUP(getuid,                     0, STUB_getuid)
+SYSCALL_LOOKUP(setgid,                     1, STUB_setgid)
+SYSCALL_LOOKUP(getgid,                     0, STUB_getgid)
+#endif
+
 /* Semaphores */
 
 SYSCALL_LOOKUP(sem_destroy,                1, STUB_sem_destroy)
@@ -81,6 +90,9 @@ SYSCALL_LOOKUP(sem_unlink,                 1, STUB_sem_unlink)
 
 #ifndef CONFIG_BUILD_KERNEL
 SYSCALL_LOOKUP(task_create,                5, STUB_task_create)
+#ifdef CONFIG_BUILD_PROTECTED
+SYSCALL_LOOKUP(nx_task_spawn,              1, STUB_nx_task_spawn)
+#endif
 #else
 SYSCALL_LOOKUP(pgalloc,                    2, STUB_pgalloc)
 #endif

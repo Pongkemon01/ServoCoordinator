@@ -70,8 +70,8 @@
 
 #define STM32_ETH_MACMDIOAR_OFFSET   0x0200 /* Ethernet MAC MDIO address register */
 #define STM32_ETH_MACMDIODR_OFFSET   0x0204 /* Ethernet MAC MDIO data register */
+#define STM32_ETH_MACA0HR_OFFSET     0x0300 /* Address 0 high register */
 #define STM32_ETH_MACA0LR_OFFSET     0x0304 /* Address 0 low register */
-#define STM32_ETH_MACA0HR_OFFSET     0x0308 /* Address 0 high register */
 
 /* MTL Registers */
 
@@ -247,7 +247,7 @@
 #  define ETH_MACQTXFCR_PLT_M256        (4 << ETH_MACQTXFCR_PLT_SHIFT) /* 100 PT - 256 slot times */
 #  define ETH_MACQTXFCR_PLT_M512        (5 << ETH_MACQTXFCR_PLT_SHIFT) /* 101 PT - 512 slot times */
 #define ETH_MACQTXFCR_DZPQ              (1 << 7)  /* Bit 7: Zero-quanta pause disable */
-#define ETH_MACQTXFCR_PT_SHIFT          (4)       /* Bits 16-31: Pause Time */
+#define ETH_MACQTXFCR_PT_SHIFT          (16)      /* Bits 16-31: Pause Time */
 #define ETH_MACQTXFCR_PT_MASK           (0xFFFF << ETH_MACQTXFCR_PT_SHIFT)
 #define ETH_MACQTXFCR_PT(n)             ((uint32_t)(n) << ETH_MACQTXFCR_PT_SHIFT)
 

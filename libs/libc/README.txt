@@ -29,6 +29,7 @@ in the include/ directory provides the prototype for library functions.  So
 we have:
 
   audio     - This part of the audio system: nuttx/audio/audio.h
+  builtin   - Support for builtin applications.  Used by nuttx/binfmt and NSH.
   dlfcn     - dlfcn.h
   endian    - endian.h
   hex2bin   - hex2bin.h
@@ -36,12 +37,14 @@ we have:
   locale    - locale.h
   lzf       - lzf.h
   fixedmath - fixedmath.h
+  grp       - grp.h
   inttypes  - inttypes.h
   machine   - Various architecture-specific implementations.
   math      - math.h
   modlib    - Part of module and shared library logic: nuttx/lib/modlib.h
   net       - Various network-related header files: netinet/ether.h, arpa/inet.h
   pthread   - pthread.h
+  pwd       - pwd.h
   queue     - queue.h
   sched     - sched.h
   semaphore - semaphore.h
