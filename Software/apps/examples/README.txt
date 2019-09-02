@@ -5,8 +5,9 @@ examples
 
     The examples directory contains several sample applications that
     can be linked with NuttX.  The specific example is selected in the
-    configs/<board-name>/defconfig file via the CONFIG_EXAMPLES_xyz
-    setting where xyz is the name of the example. For example,
+    boards/<arch-name>/<chip-name>/<board-name>/configs/<config>/defconfig
+    file via the CONFIG_EXAMPLES_xyz setting where xyz is the name of the
+    example.  For example,
 
       CONFIG_EXAMPLES_HELLO=y
 
@@ -79,7 +80,7 @@ examples/alarm
 
     CONFIG_EXAMPLES_ALARM - Enable the RTC driver alarm test
     CONFIG_EXAMPLES_ALARM_PROGNAME - If CONFIG_BUILD_LOADABLE=y, then this is
-      the name of the program that will be use when the NSH ELF program is
+      the name of the program that will be used when the NSH ELF program is
       installed.
     CONFIG_EXAMPLES_ALARM_PRIORITY - Alarm daemon priority
     CONFIG_EXAMPLES_ALARM_STACKSIZE - Alarm daemon stack size
@@ -411,7 +412,7 @@ examples/ft80x
 
   This examples has ports of several FTDI demos for the FTDI/BridgeTek FT80x
   GUI chip.  As an example configuration, see
-  nuttx/configs/viewtool-stm32f107/ft80x/defconfig.
+  nuttx/boards/arm/stm32/viewtool-stm32f107/configs/ft80x/defconfig.
 
 examples/ftpc
 ^^^^^^^^^^^^^
@@ -1738,7 +1739,7 @@ examples/thttpd
 ^^^^^^^^^^^^^^^
 
   An example that builds netutils/thttpd with some simple NXFLAT
-  CGI programs.  see configs/README.txt for most THTTPD settings.
+  CGI programs.  see boards/README.txt for most THTTPD settings.
   In addition to those, this example accepts:
 
     CONFIG_EXAMPLES_THTTPD_NOMAC    - (May be defined to use software assigned MAC)
@@ -1799,7 +1800,7 @@ examples/timer
     CONFIG_EXAMPLES_TIMER_PRIORITY - This is the priority of the timer task:
       Default: 100
     CONFIG_EXAMPLES_TIMER_PROGNAME - This is the name of the program that
-      will be use when the NSH ELF program is installed.  Default: "timer"
+      will be used when the NSH ELF program is installed.  Default: "timer"
 
 examples/touchscreen
 ^^^^^^^^^^^^^^^^^^^^
@@ -1888,7 +1889,7 @@ examples/unionfs
     CONFIG_EXAMPLES_UNIONFS_RAMDEVNO_B - ROMFS file system 2 RAM disk device number
     CONFIG_EXAMPLES_UNIONFS_SECTORSIZE - ROM disk sector size.
 
-  See the README.txt file at nuttx/configs/sim/README.txt for a walk-through of
+  See the README.txt file at nuttx/boards/sim/sim/sim/README.txt for a walk-through of
   the output of this text.
 
 examples/usbserial
