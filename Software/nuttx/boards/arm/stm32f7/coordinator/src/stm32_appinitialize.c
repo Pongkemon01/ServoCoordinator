@@ -51,7 +51,9 @@
 #ifdef CONFIG_STM32_ROMFS
 #include "stm32_romfs.h"
 #endif
+#include <nuttx/usb/cdcacm.h>
 #include <arch/board/motor.h>
+#include "home.h"
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -191,6 +193,17 @@ int board_app_initialize(uintptr_t arg)
 
 // Modified by Akrapong on 14 Aug 2019 for PTTEP project
 
+#if defined(CONFIG_CDCACM)
+  _info("Init CDCADM usb device\n");
+  ret = cdcacm_initialize(0, NULL);
+  if(ret != OK)
+    {
+      syslog(LOG_ERR,
+             "ERROR: Failed to register CDCACM usb driver: %d\n",
+             ret);
+    }
+#endif
+
 #if defined(CONFIG_SENSORS_QENCODER)
   /* Initialize and register the qencoder driver */
   _info("Init quadratic encoders\n");
@@ -238,6 +251,14 @@ int board_app_initialize(uintptr_t arg)
              ret);
     }
 #endif
+
+#ifdef CONFIG_STM32F7_TIM6
+  if(home_initialize() != OK)
+    {
+      _err("Cannot register home sensor\n");
+    }
+#endif
+
   _info("Init Motor\n");
 
   (void)motor_initialize();

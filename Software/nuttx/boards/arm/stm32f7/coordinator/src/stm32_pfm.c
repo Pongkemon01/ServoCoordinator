@@ -367,6 +367,7 @@ static int stm32_pfm_setclock(FAR struct stm32_pfm_priv_s *pfm, uint32_t freq)
         break;
 #endif
       default:
+        _err("..Unknown timer!!..");
         return -EINVAL;
     }
 
@@ -417,10 +418,10 @@ static int stm32_pfm_setuppfm(FAR struct stm32_pfm_priv_s *pfm)
   retval = stm32_pfm_setclock(pfm, CONFIG_STM32_PFM_FREQ);
   if( retval <= 0 )
   {
-    return retval;
+    return -EINVAL;
   }
   stm32_pfm_setchannel(pfm);
-  return retval;
+  return OK;
 }
 
 

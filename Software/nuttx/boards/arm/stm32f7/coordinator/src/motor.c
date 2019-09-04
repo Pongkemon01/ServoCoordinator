@@ -319,6 +319,7 @@ static int motor_enter_uninit(FAR struct motor_priv_s* priv)
 
   DEBUGASSERT(priv != NULL);
 
+  _info("Enter uninit\n");
   motor_servo_off(priv->cfg);
   if(priv->state == MOTOR_READY)
   {
@@ -340,6 +341,7 @@ static int motor_enter_unavailable(FAR struct motor_priv_s* priv)
   irqstate_t flags;
   DEBUGASSERT(priv != NULL);
   
+  _info("Enter unavailable\n");
   motor_servo_off(priv->cfg);
   if(priv->state == MOTOR_READY)
   {
@@ -361,6 +363,7 @@ static int motor_enter_alarm(FAR struct motor_priv_s* priv)
    irqstate_t flags;
  DEBUGASSERT(priv != NULL);
   
+  _info("Enter alarm\n");
   motor_servo_off(priv->cfg);
   if(priv->state == MOTOR_READY)
   {
@@ -396,6 +399,7 @@ static int motor_enter_ready(FAR struct motor_priv_s* priv)
   }
 
   /* Only the motor with UNITIT state can reach here */
+  _info("Enter ready\n");
 
   /* Config GPIO pins */
   retval = motor_init_gpio(priv->cfg);
@@ -420,6 +424,7 @@ static int motor_enter_ready(FAR struct motor_priv_s* priv)
 
   motor_servo_on(priv->cfg);
   motor_led_green_on(priv->cfg);
+  motor_led_red_off(priv->cfg);
 
   flags = enter_critical_section();
   priv->state = MOTOR_READY;
@@ -444,7 +449,7 @@ static int motor_emergency(int irq, FAR void *context, FAR void *arg)
 
   if(motor_emergency_stat())
   {
-    _info("EMERGENCY ASSERT!!!\n")
+    _alert("EMERGENCY ASSERT!!!\n");
     /* Emergency button armed. Stop all motor and turn on all LEDs */
     for(i = 0;i < 6;i++)
     {
@@ -453,7 +458,7 @@ static int motor_emergency(int irq, FAR void *context, FAR void *arg)
   }
   else
   {
-    _info("Emergency released\n")
+    _info("Emergency released\n");
     /* Emergency button unarmed. Release all unavailable motor */
     for(i = 0;i < 6;i++)
     {
@@ -587,7 +592,7 @@ errout:
 }
 
 /************************************************************************************
- * Name: qe_close
+ * Name: motor_close
  *
  * Description:
  *   This function is called when the motor device is closed.
@@ -648,22 +653,31 @@ errout:
  * Description:
  *   Read rough motor status. The returned data is a byte, which each bit represents
  *   occurence of any error of each motor (LSB represents motor0). 0 means the 
- *   particular motor is normal (i.e., ready for operation)
+ *   particular motor is normal (i.e., ready for operation). The MSB (i.e.bit8 
+ *   represent the emergency status)
  *
  ************************************************************************************/
 
 static ssize_t motor_read(FAR struct file *filep, FAR char *buffer, size_t buflen)
 {
-  char v = 0;
+  char v;
 
-  for(int i=0;i <= 5;i++)
+  if(motor_priv[0].state != MOTOR_READY)
+    v = 1;
+  else
+    v = 0;
+
+  for(int i=1;i <= 5;i++)
   {
+    v <<= 1;
     if(motor_priv[i].state != MOTOR_READY)
     {
       v |= 1;
     }
-    v <<= 1;
   }
+
+  if(motor_emergency_stat())
+    v |= 0x80;
 
   *buffer = v;
 
@@ -809,10 +823,6 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
  * Pubic Functions
  ************************************************************************************/
 
-/****************************************************************************
- * Public Functions
- ****************************************************************************/
-
 int motor_initialize()
 {
   char devpath[15];
@@ -831,7 +841,7 @@ int motor_initialize()
     /* 2. Init GPIO */
     if( motor_init_gpio(motor_priv[i].cfg) != OK )
     {
-      _info("Failed to init GPIO\n");
+      _err("Failed to init GPIO\n");
       continue;  /* Skip this motor */
     }
 
@@ -840,7 +850,6 @@ int motor_initialize()
 
     if(motor_priv[i].pfm != NULL)
     {
-      _info("Allocate PFM success...");
       /* If PFM allocation is success */
       if( motor_enter_ready(&(motor_priv[i])) == OK)
       {
@@ -848,26 +857,27 @@ int motor_initialize()
         (void)stm32_gpiosetevent((motor_priv[i].cfg)->alrm_pin, true, false,
                        false, motor_alarm, (void *)(&(motor_priv[i])));
         snprintf(devpath, 14, "/dev/motor%d", i);
-        (void)register_driver(devpath, &g_motorops, 0666, &(motor_priv[i]));
+        if(register_driver(devpath, &g_motorops, 0666, &(motor_priv[i])) != OK)
+          _err("Unable to register %s\n", devpath);
         _info("Done\n");
       }
       else
       {
         motor_priv[i].state = MOTOR_UNAVAILABLE;
-        _info("Failed to enter READY\n");
+        _err("Failed to enter READY\n");
       }
     }
     else
     {
       motor_priv[i].state = MOTOR_UNAVAILABLE;
-      _info("Failed to allocate PFM\n");
+      _err("Failed to allocate PFM\n");
     }
   }
 
   /* Finally, check the emergency signal */
   if(motor_emergency_stat())
   {
-    _info("EMERGENCY ASSERT!!!\n")
+    _alert("EMERGENCY ASSERT!!!\n");
     /* Emergency button armed. Stop all motor and turn on all LEDs */
     for(int i = 0;i < 6;i++)
     {

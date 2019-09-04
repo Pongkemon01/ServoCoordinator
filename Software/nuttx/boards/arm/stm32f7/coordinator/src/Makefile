@@ -102,6 +102,10 @@ ifeq ($(CONFIG_STM32F7_PFM),y)
 CSRCS += stm32_pfm.c
 endif
 
+ifeq ($(CONFIG_STM32F7_TIM6),y)
+CSRCS += home.c
+endif
+
 CSRCS += motor.c
 
 include $(TOPDIR)/boards/Board.mk
