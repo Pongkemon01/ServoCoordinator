@@ -242,10 +242,22 @@ static ssize_t ramlog_addchar(FAR struct ramlog_dev_s *priv, char ch)
 
   if (nexthead == priv->rl_tail)
     {
-      /* Yes... Return an indication that nothing was saved in the buffer. */
+      /* Modified by Akrapong Patchararungruang on 04 Sep 2019 to make the
+       * logging buffer fully circular, meaning that the overflow writing
+       * clear out the oldest log (FIFO).
+       */
+      if (++priv->rl_tail >= priv->rl_bufsize)
+        {
+          priv->rl_tail = 0;
+        }
+
+
+      /*
+      / * Yes... Return an indication that nothing was saved in the buffer. * /
 
       leave_critical_section(flags);
       return -EBUSY;
+      */
     }
 
   /* No... copy the byte and re-enable interrupts */
