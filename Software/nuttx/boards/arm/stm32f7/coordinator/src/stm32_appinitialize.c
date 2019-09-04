@@ -54,6 +54,7 @@
 #include <nuttx/usb/cdcacm.h>
 #include <arch/board/motor.h>
 #include "home.h"
+#include "stm32_tim.h"
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -257,6 +258,13 @@ int board_app_initialize(uintptr_t arg)
     {
       _err("Cannot register home sensor\n");
     }
+#endif
+
+#if defined(CONFIG_TIMER) && defined(CONFIG_STM32F7_TIM7)
+  if(stm32_timer_initialize("/dev/timer7", 7) == NULL)
+  {
+    _err("Unable to register /dev/timer7\n");
+  }
 #endif
 
   _info("Init Motor\n");
