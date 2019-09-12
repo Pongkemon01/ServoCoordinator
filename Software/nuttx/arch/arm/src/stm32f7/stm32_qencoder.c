@@ -638,27 +638,31 @@ static int stm32_interrupt(int irq, FAR void *context, FAR void *arg)
 
   DEBUGASSERT(priv != NULL);
 
-  /* Verify that this is an update interrupt.  Nothing else is expected. */
+  /* Verify that this is an update interrupt.  Something else may be
+  originated from other cascaded. */
 
   regval = stm32_getreg16(priv, STM32_GTIM_SR_OFFSET);
-  DEBUGASSERT((regval & ATIM_SR_UIF) != 0);
-
-  /* Clear the UIF interrupt bit */
-
-  stm32_putreg16(priv, STM32_GTIM_SR_OFFSET, regval & ~GTIM_SR_UIF);
-
-  /* Check the direction bit in the CR1 register and add or subtract the
-   * maximum value + 1, as appropriate.
-   */
-
-  regval = stm32_getreg16(priv, STM32_GTIM_CR1_OFFSET);
-  if ((regval & ATIM_CR1_DIR) != 0)
+  if((regval & ATIM_SR_UIF) != 0)
     {
-      priv->position -= (int32_t)0x00010000;
-    }
-   else
-    {
-      priv->position += (int32_t)0x00010000;
+      DEBUGASSERT((regval & ATIM_SR_UIF) != 0);
+
+      /* Clear the UIF interrupt bit */
+
+      stm32_putreg16(priv, STM32_GTIM_SR_OFFSET, regval & ~GTIM_SR_UIF);
+
+      /* Check the direction bit in the CR1 register and add or subtract the
+      * maximum value + 1, as appropriate.
+      */
+
+      regval = stm32_getreg16(priv, STM32_GTIM_CR1_OFFSET);
+      if ((regval & ATIM_CR1_DIR) != 0)
+        {
+          priv->position -= (int32_t)0x00010000;
+        }
+      else
+        {
+          priv->position += (int32_t)0x00010000;
+        }
     }
 
   return OK;

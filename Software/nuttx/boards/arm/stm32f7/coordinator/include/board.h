@@ -56,6 +56,8 @@
 #endif
 #endif
 
+/* #include "hardware/stm32_pinmap.h" */
+
 /************************************************************************************
  * Pre-processor Definitions
  ************************************************************************************/
@@ -492,12 +494,12 @@
  *     Motor5(Timer14): GPIO_TIM14_CH1OUT_2 (PF9)
  *
  */
-#define GPIO_TIM9_OUT       GPIO_TIM9_CH1OUT_2
-#define GPIO_TIM10_OUT      GPIO_TIM10_CH1OUT_1
-#define GPIO_TIM11_OUT      GPIO_TIM11_CH1OUT_1
-#define GPIO_TIM12_OUT      GPIO_TIM12_CH2OUT_1
-#define GPIO_TIM13_OUT      GPIO_TIM13_CH1OUT_1
-#define GPIO_TIM14_OUT      GPIO_TIM14_CH1OUT_2
+#define GPIO_TIM9_CH1OUT    GPIO_TIM9_CH1OUT_2
+#define GPIO_TIM10_CH1OUT   GPIO_TIM10_CH1OUT_1
+#define GPIO_TIM11_CH1OUT   GPIO_TIM11_CH1OUT_1
+#define GPIO_TIM12_CH2OUT   GPIO_TIM12_CH2OUT_1
+#define GPIO_TIM13_CH1OUT   GPIO_TIM13_CH1OUT_1
+#define GPIO_TIM14_CH1OUT   GPIO_TIM14_CH1OUT_2
 
 /* Motor control signals:
  *

@@ -401,7 +401,10 @@ static void stm32_tim_reset(FAR struct stm32_tim_dev_s *dev)
 
 #if defined(HAVE_TIM1_GPIOCONFIG)||defined(HAVE_TIM2_GPIOCONFIG)||\
     defined(HAVE_TIM3_GPIOCONFIG)||defined(HAVE_TIM4_GPIOCONFIG)||\
-    defined(HAVE_TIM5_GPIOCONFIG)||defined(HAVE_TIM8_GPIOCONFIG)
+    defined(HAVE_TIM5_GPIOCONFIG)||defined(HAVE_TIM8_GPIOCONFIG)||\
+    defined(HAVE_TIM9_GPIOCONFIG)||defined(HAVE_TIM10_GPIOCONFIG)||\
+    defined(HAVE_TIM11_GPIOCONFIG)||defined(HAVE_TIM12_GPIOCONFIG)||\
+    defined(HAVE_TIM13_GPIOCONFIG)||defined(HAVE_TIM14_GPIOCONFIG)
 static void stm32_tim_gpioconfig(uint32_t cfg, stm32_tim_channel_t mode)
 {
   /* TODO: Add support for input capture and bipolar dual outputs for TIM8 */
@@ -554,12 +557,11 @@ static void stm32_tim_setperiod(FAR struct stm32_tim_dev_s *dev,
 }
 
 static int stm32_tim_setisr(FAR struct stm32_tim_dev_s *dev,
-                            xcpt_t handler, void *arg, int source)
+                            xcpt_t handler, void *arg, uint16_t source)
 {
   int vectorno;
 
   DEBUGASSERT(dev != NULL);
-  DEBUGASSERT(source == 0);
 
   switch (((struct stm32_tim_priv_s *)dev)->base)
     {
@@ -655,27 +657,27 @@ static int stm32_tim_setisr(FAR struct stm32_tim_dev_s *dev,
   return OK;
 }
 
-static void stm32_tim_enableint(FAR struct stm32_tim_dev_s *dev, int source)
+static void stm32_tim_enableint(FAR struct stm32_tim_dev_s *dev, uint16_t source)
 {
   DEBUGASSERT(dev != NULL);
-  stm32_modifyreg16(dev, STM32_BTIM_DIER_OFFSET, 0, ATIM_DIER_UIE);
+  stm32_modifyreg16(dev, STM32_BTIM_DIER_OFFSET, 0, source);
 }
 
-static void stm32_tim_disableint(FAR struct stm32_tim_dev_s *dev, int source)
+static void stm32_tim_disableint(FAR struct stm32_tim_dev_s *dev, uint16_t source)
 {
   DEBUGASSERT(dev != NULL);
-  stm32_modifyreg16(dev, STM32_BTIM_DIER_OFFSET, ATIM_DIER_UIE, 0);
+  stm32_modifyreg16(dev, STM32_BTIM_DIER_OFFSET, source, 0);
 }
 
-static int stm32_tim_checkint(FAR struct stm32_tim_dev_s *dev, int source)
+static int stm32_tim_checkint(FAR struct stm32_tim_dev_s *dev, uint16_t source)
 {
   uint16_t regval = stm32_getreg16(dev, STM32_BTIM_SR_OFFSET);
   return (regval & source) ? 1 : 0;
 }
 
-static void stm32_tim_ackint(FAR struct stm32_tim_dev_s *dev, int source)
+static void stm32_tim_ackint(FAR struct stm32_tim_dev_s *dev, uint16_t source)
 {
-  stm32_putreg16(dev, STM32_BTIM_SR_OFFSET, ~ATIM_SR_UIF);
+  stm32_putreg16(dev, STM32_BTIM_SR_OFFSET, ~(source));
 }
 
 /************************************************************************************
@@ -788,6 +790,24 @@ static int stm32_tim_setchannel(FAR struct stm32_tim_dev_s *dev, uint8_t channel
       case STM32_TIM_CH_OUTTOGGLE:
           ccmr_val  = (ATIM_CCMR_MODE_OCREFTOG << ATIM_CCMR1_OC1M_SHIFT) +
                        ATIM_CCMR1_OC1PE;
+          ccer_val |= ATIM_CCER_CC1E << (channel << 2);
+          break;
+
+      case STM32_TIM_CH_OUTACT:
+          ccmr_val  = (ATIM_CCMR_MODE_CHACT << ATIM_CCMR1_OC1M_SHIFT);
+                   //    ATIM_CCMR1_OC1PE;
+          ccer_val |= ATIM_CCER_CC1E << (channel << 2);
+          break;
+
+      case STM32_TIM_CH_OUTINACT:
+          ccmr_val  = (ATIM_CCMR_MODE_CHINACT << ATIM_CCMR1_OC1M_SHIFT);
+                    //   ATIM_CCMR1_OC1PE;
+          ccer_val |= ATIM_CCER_CC1E << (channel << 2);
+          break;
+
+      case STM32_TIM_CH_OUTLO:
+          ccmr_val  = (ATIM_CCMR_MODE_OCREFLO << ATIM_CCMR1_OC1M_SHIFT);
+                    //   ATIM_CCMR1_OC1PE;
           ccer_val |= ATIM_CCER_CC1E << (channel << 2);
           break;
 

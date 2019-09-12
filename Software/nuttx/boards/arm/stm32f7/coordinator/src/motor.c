@@ -225,7 +225,8 @@ struct motor_priv_s motor_priv[6] =
 #define motor_setpin(pin)           stm32_gpiowrite(pin,true)
 #define motor_respin(pin)           stm32_gpiowrite(pin,false)
 
-#define motor_emergency_stat()      stm32_gpioread(GPIO_EMERGENGY_STOP)
+/*#define motor_emergency_stat()      stm32_gpioread(GPIO_EMERGENGY_STOP)*/
+#define motor_emergency_stat()      (false)
 #define motor_alarm_stat(cfg)       stm32_gpioread(cfg->alrm_pin)
 #define motor_complete_stat(cfg)    stm32_gpioread(cfg->cmplt_pin)
 
@@ -363,7 +364,7 @@ static int motor_enter_alarm(FAR struct motor_priv_s* priv)
    irqstate_t flags;
  DEBUGASSERT(priv != NULL);
   
-  _info("Enter alarm\n");
+  _info("Enter alarm : %d\n", priv->cfg->motor_id);
   motor_servo_off(priv->cfg);
   if(priv->state == MOTOR_READY)
   {
@@ -393,7 +394,7 @@ static int motor_enter_ready(FAR struct motor_priv_s* priv)
     return OK;
   }
 
-  if(priv->state != MOTOR_UNINIT)
+  if((priv->state != MOTOR_UNINIT) && (priv->state != MOTOR_ALARM))
   {
     return -ENXIO;  /* Motor is unavailable */
   }
@@ -713,9 +714,9 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
   FAR struct motor_priv_s   *motor;
   int                        ret;
 
-  _info("cmd: %d arg: %ld\n", cmd, arg);
   motor = inode->i_private;
   DEBUGASSERT(motor != NULL);
+  _info("cmd: %d arg: %ld\n", cmd, arg);
 
   /* Get exclusive access to the device structures */
 
@@ -769,7 +770,6 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
         break;
 
       case MOTOR_CMD_CLR_ALARM:
-        ret = OK;
         if(motor->state == MOTOR_ALARM)
         {
           motor_alarm_res(motor->cfg);
@@ -779,29 +779,35 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
             _err("Alarm signal persists on motor %d\n", motor->cfg->motor_id);
             ret = -EPERM;
           }
+          else
+          {
+            ret = motor_enter_ready(motor);
+          }
         }
         break;
 
       case MOTOR_CMD_GET_STATE:
-        ret = motor->state;
+        *( (uint32_t*)arg ) = (uint32_t)(motor->state);
+        ret = OK;
         break;
 
       case MOTOR_CMD_GET_STATUS:
-        ret = 0;
+        *( (uint32_t*)arg ) = 0;
         if(motor_complete_stat(motor->cfg))
         {
-          ret |= 1;
+          *( (uint32_t*)arg ) |= 1;
         }
-        ret <<= 1;
+        *( (uint32_t*)arg ) <<= 1;
         if(motor_alarm_stat(motor->cfg))
         {
-          ret |= 1;
+          *( (uint32_t*)arg ) |= 1;
         }
-        ret <<= 1;
+        *( (uint32_t*)arg ) <<= 1;
         if(motor_emergency_stat())
         {
-          ret |= 1;
+          *( (uint32_t*)arg ) |= 1;
         }
+        ret = OK;
         break;
 
       /* Any unrecognized IOCTL commands might be platform-specific ioctl commands */
@@ -854,7 +860,7 @@ int motor_initialize()
       if( motor_enter_ready(&(motor_priv[i])) == OK)
       {
         _info("Entering READY...");
-        (void)stm32_gpiosetevent((motor_priv[i].cfg)->alrm_pin, true, false,
+        (void)stm32_gpiosetevent((motor_priv[i].cfg)->alrm_pin, true, true,
                        false, motor_alarm, (void *)(&(motor_priv[i])));
         snprintf(devpath, 14, "/dev/motor%d", i);
         if(register_driver(devpath, &g_motorops, 0666, &(motor_priv[i])) != OK)

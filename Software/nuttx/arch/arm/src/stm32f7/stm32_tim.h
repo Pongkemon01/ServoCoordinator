@@ -147,6 +147,13 @@ typedef enum
 //STM32_TIM_CH_OUTCOMPARE     = 0x06,
   STM32_TIM_CH_OUTTOGGLE      = 0x08,
 
+  /* Added by pong */
+  STM32_TIM_CH_OUTACT         = 0x0a,
+  STM32_TIM_CH_OUTINACT       = 0x0c,
+  STM32_TIM_CH_OUTLO          = 0x02,
+
+
+
 
   // TODO other modes ... as PWM capture, ENCODER and Hall Sensor
 //STM32_TIM_CH_INCAPTURE      = 0x10,
@@ -178,11 +185,11 @@ struct stm32_tim_ops_s
 
   /* Timer interrupts */
 
-  int  (*setisr)(FAR struct stm32_tim_dev_s *dev, xcpt_t handler, void * arg, int source);
-  void (*enableint)(FAR struct stm32_tim_dev_s *dev, int source);
-  void (*disableint)(FAR struct stm32_tim_dev_s *dev, int source);
-  void (*ackint)(FAR struct stm32_tim_dev_s *dev, int source);
-  int  (*checkint)(FAR struct stm32_tim_dev_s *dev, int source);
+  int  (*setisr)(FAR struct stm32_tim_dev_s *dev, xcpt_t handler, void * arg, uint16_t source);
+  void (*enableint)(FAR struct stm32_tim_dev_s *dev, uint16_t source);
+  void (*disableint)(FAR struct stm32_tim_dev_s *dev, uint16_t source);
+  void (*ackint)(FAR struct stm32_tim_dev_s *dev, uint16_t source);
+  int  (*checkint)(FAR struct stm32_tim_dev_s *dev, uint16_t source);
 };
 
 /************************************************************************************

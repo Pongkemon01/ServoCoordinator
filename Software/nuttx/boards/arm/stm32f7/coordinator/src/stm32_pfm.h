@@ -72,7 +72,7 @@ extern "C"
 
 struct stm32_pfm_dev_s
 {
-  FAR struct stm32_pfm_ops_s    *ops;
+  struct stm32_pfm_ops_s    *ops;
 };
 
 struct stm32_pfm_ops_s

@@ -1,0 +1,7 @@
+# This is the startup script use by NSH
+#
+# Execute the "coordinator" command
+
+usleep 1000000
+coordinator &
+

@@ -41,6 +41,7 @@
  ************************************************************************************/
 
 #include <nuttx/config.h>
+#include <nuttx/fs/ioctl.h>
 
 /* Motor state */
 typedef enum
@@ -52,15 +53,15 @@ typedef enum
 }motor_state_t;
 
 /* Motor commands */
-typedef enum
-{
-    MOTOR_CMD_INIT,
-    MOTOR_CMD_RUN,
-    MOTOR_CMD_STOP,
-    MOTOR_CMD_CLR_ALARM,
-    MOTOR_CMD_GET_STATE,
-    MOTOR_CMD_GET_STATUS,
-}motor_cmd_t;
+#define _MIOCBASE   (_BOARDBASE | 0x0010)
+#define _MIOC(id)   _IOC(_MIOCBASE, id)
+
+#define MOTOR_CMD_INIT        _MIOC(1) /* Arg: None */
+#define MOTOR_CMD_RUN         _MIOC(2) /* Arg: struct motor_run_param_t* pointer */
+#define MOTOR_CMD_STOP        _MIOC(3) /* Arg: None */
+#define MOTOR_CMD_CLR_ALARM   _MIOC(4) /* Arg: None */
+#define MOTOR_CMD_GET_STATE   _MIOC(5) /* Arg: uint32_t* pointer */
+#define MOTOR_CMD_GET_STATUS  _MIOC(6) /* Arg: uint32_t* pointer */
 
 /* RUN command parameter
  * 
