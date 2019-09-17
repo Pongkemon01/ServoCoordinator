@@ -68,6 +68,10 @@ int DoStopMotor( char* strToken );
 int DoRunMotor( char* strToken );
 int DoGetQEValue( char* strToken );
 int DoResQEValue( char* strToken );
+int DoGetIMUSampleRate( char* strToken );
+int DoGetIMUQuaternion( char* strToken );
+int DoGetIMUTaitBryan( char* strToken );
+int DoGetIMULinAccel( char* strToken );
 
 /* Home sensor */
 int DoHomeValue( char* strToken );

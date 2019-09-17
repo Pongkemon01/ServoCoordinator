@@ -50,6 +50,7 @@
 
 #include <nuttx/sensors/qencoder.h>
 #include "driver/motor.h"
+#include "driver/imu.h"
 
 #include "coordinator_actor.h"
 #include "coordinator_usb.h"
@@ -68,6 +69,13 @@
 #define QE_CMD(id,cmd,arg)      (ioctl(iQEncoder[id], cmd, (unsigned long)arg))
 #define QE_GET_VALUE(id,ret)    QE_CMD(id,QEIOC_POSITION,ret)
 #define QE_RESET(id)            QE_CMD(id,QEIOC_RESET,0)
+
+#define IMU_CMD(cmd,arg)        (ioctl(iIMU, cmd, (unsigned long)arg))
+#define IMU_GET_SAMPLE_RATE(arg) IMU_CMD(IMU_CMD_GET_SAMPLE_RATE,arg)   /* Arg: Pointer to uint32_t */
+#define IMU_GET_QUATERNION(arg) IMU_CMD(IMU_CMD_GET_QUATERNION,arg)     /* Arg: Array float[4] */
+#define IMU_GET_TAIT_BRYAN(arg) IMU_CMD(IMU_CMD_GET_TAIT_BRYAN,arg)     /* Arg: Array float[3] for yaw/pitch/roll */
+#define IMU_GET_LIN_ACCEL(arg)  IMU_CMD(IMU_CMD_GET_LIN_ACCEL,arg)      /* Arg: Array float[3] for x/y/z */
+
 /* Writing a specific value to a specific place can cause a software reset 
  * Please refer to NVIC information of ARM Coretex-M7 datasheet
  */
@@ -84,7 +92,7 @@ static char strCommonBuffer[60];
 static int iMotor[6] = { 0, 0, 0, 0, 0, 0 };
 static int iQEncoder[6] = { 0, 0, 0, 0, 0, 0 };
 static int iHomeSensor = 0;
-static int iTimer = 0;  /* Optional timer device */
+static int iIMU = 0;
 
 /****************************************************************************
  * Private Functions
@@ -202,7 +210,7 @@ int InitActor(void)
     }
 
     iHomeSensor = open( "/dev/home", O_RDWR );
-    iTimer = open( "/dev/timer7", O_RDWR );
+    iIMU = open( "/dev/imu", O_RDWR );
 
     return OK;
 }
@@ -599,4 +607,74 @@ int DoHomeValue( char* strToken )
     return( SendResponse( strCommonBuffer, strlen( strCommonBuffer ) ) );    
 }
 
+int DoGetIMUSampleRate( char* strToken )
+{   
+    uint32_t rate;
 
+    if( iIMU <= 0 )
+    {
+        return( SendNAK( strToken, "v=No IMU Found" ) );
+    }
+
+    if( IMU_GET_SAMPLE_RATE( &rate ) != OK )
+    {
+        return( SendNAK( strToken, "v=Fail to Get IMU Sample Rate" ) );
+    }
+
+    sprintf( strCommonBuffer, "!%sA?v=%d\n", strToken, rate );
+    return( SendResponse( strCommonBuffer, strlen( strCommonBuffer ) ) );    
+}
+
+int DoGetIMUQuaternion( char* strToken )
+{   
+    float q[4];
+
+    if( iIMU <= 0 )
+    {
+        return( SendNAK( strToken, "v=No IMU Found" ) );
+    }
+
+    if( IMU_GET_QUATERNION( q ) != OK )
+    {
+        return( SendNAK( strToken, "v=Fail to Get IMU Quaternion" ) );
+    }
+
+    sprintf( strCommonBuffer, "!%sA?v=%f-%f-%f-%f\n", strToken, q[0], q[1], q[2], q[3] );
+    return( SendResponse( strCommonBuffer, strlen( strCommonBuffer ) ) );    
+}
+
+int DoGetIMUTaitBryan( char* strToken )
+{   
+    float e[3];
+
+    if( iIMU <= 0 )
+    {
+        return( SendNAK( strToken, "v=No IMU Found" ) );
+    }
+
+    if( IMU_GET_TAIT_BRYAN( e ) != OK )
+    {
+        return( SendNAK( strToken, "v=Fail to Get IMU Tait-Bryan Angle" ) );
+    }
+
+    sprintf( strCommonBuffer, "!%sA?v=%f-%f-%f\n", strToken, e[0], e[1], e[2] );
+    return( SendResponse( strCommonBuffer, strlen( strCommonBuffer ) ) );    
+}
+
+int DoGetIMULinAccel( char* strToken )
+{   
+    float a[3];
+
+    if( iIMU <= 0 )
+    {
+        return( SendNAK( strToken, "v=No IMU Found" ) );
+    }
+
+    if( IMU_GET_LIN_ACCEL( a ) != OK )
+    {
+        return( SendNAK( strToken, "v=Fail to Get IMU Linear Accelteration" ) );
+    }
+
+    sprintf( strCommonBuffer, "!%sA?v=%f-%f-%f\n", strToken, a[0], a[1], a[2] );
+    return( SendResponse( strCommonBuffer, strlen( strCommonBuffer ) ) );    
+}

@@ -53,6 +53,7 @@
 #endif
 #include <nuttx/usb/cdcacm.h>
 #include <arch/board/motor.h>
+#include <arch/board/imu.h>
 #include "home.h"
 #include "stm32_tim.h"
 /****************************************************************************
@@ -270,6 +271,10 @@ int board_app_initialize(uintptr_t arg)
   _info("Init Motor\n");
 
   (void)motor_initialize();
+
+  _info("Init IMU\n");
+
+  (void)imu_initialize();
 
   UNUSED(ret);
   return OK;
