@@ -73,7 +73,6 @@
 #define IMU_CMD(cmd,arg)        (ioctl(iIMU, cmd, (unsigned long)arg))
 #define IMU_GET_SAMPLE_RATE(arg) IMU_CMD(IMU_CMD_GET_SAMPLE_RATE,arg)   /* Arg: Pointer to uint32_t */
 #define IMU_GET_QUATERNION(arg) IMU_CMD(IMU_CMD_GET_QUATERNION,arg)     /* Arg: Array float[4] */
-#define IMU_GET_TAIT_BRYAN(arg) IMU_CMD(IMU_CMD_GET_TAIT_BRYAN,arg)     /* Arg: Array float[3] for yaw/pitch/roll */
 #define IMU_GET_LIN_ACCEL(arg)  IMU_CMD(IMU_CMD_GET_LIN_ACCEL,arg)      /* Arg: Array float[3] for x/y/z */
 
 /* Writing a specific value to a specific place can cause a software reset 
@@ -640,24 +639,6 @@ int DoGetIMUQuaternion( char* strToken )
     }
 
     sprintf( strCommonBuffer, "!%sA?v=%f-%f-%f-%f\n", strToken, q[0], q[1], q[2], q[3] );
-    return( SendResponse( strCommonBuffer, strlen( strCommonBuffer ) ) );    
-}
-
-int DoGetIMUTaitBryan( char* strToken )
-{   
-    float e[3];
-
-    if( iIMU <= 0 )
-    {
-        return( SendNAK( strToken, "v=No IMU Found" ) );
-    }
-
-    if( IMU_GET_TAIT_BRYAN( e ) != OK )
-    {
-        return( SendNAK( strToken, "v=Fail to Get IMU Tait-Bryan Angle" ) );
-    }
-
-    sprintf( strCommonBuffer, "!%sA?v=%f-%f-%f\n", strToken, e[0], e[1], e[2] );
     return( SendResponse( strCommonBuffer, strlen( strCommonBuffer ) ) );    
 }
 

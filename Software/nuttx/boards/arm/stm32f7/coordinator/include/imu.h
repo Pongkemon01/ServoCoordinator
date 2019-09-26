@@ -52,7 +52,7 @@
 
 #define IMU_CMD_GET_SAMPLE_RATE _IIOC(1) /* Arg: Pointer to uint32_t */
 #define IMU_CMD_GET_QUATERNION  _IIOC(2) /* Arg: Array float[4] */
-#define IMU_CMD_GET_TAIT_BRYAN  _IIOC(3) /* Arg: Array float[3] for yaw/pitch/roll */
+//#define IMU_CMD_GET_TAIT_BRYAN  _IIOC(3) /* Arg: Array float[3] for yaw/pitch/roll */
 #define IMU_CMD_GET_LIN_ACCEL   _IIOC(4) /* Arg: Array float[3] for x/y/z */
 
 /* Public function */

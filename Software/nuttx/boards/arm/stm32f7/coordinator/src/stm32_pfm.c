@@ -340,9 +340,16 @@ static int stm32_pfm_interrupt(int irq, FAR void *context, FAR void *arg)
       }
       break;
 
+    case STM32_PFM_STATE_IDLE:
+      /* We should not be here but its ok */
+      priv->tim->ops->setchannel(priv->tim, priv->compare_channel, STM32_TIM_CH_OUTLO);
+      priv->tim->ops->disableint(priv->tim, (1 << priv->compare_channel));
+      priv->state = STM32_PFM_STATE_IDLE;
+      break;
+
     default:
       /* Fail proof state. All unknown states should be transit to IDLE state */
-      _info("PFM UNKNOWN\n");
+      _warn("PFM TIMER %d UNKNOWN STATE = %d\n", priv->timer_id, priv->state );
       priv->tim->ops->setchannel(priv->tim, priv->compare_channel, STM32_TIM_CH_OUTLO);
       priv->tim->ops->disableint(priv->tim, (1 << priv->compare_channel));
       priv->state = STM32_PFM_STATE_IDLE;
@@ -459,6 +466,9 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
         stm32_pfm1_priv.tim->ops->setperiod(stm32_pfm1_priv.tim, 0xFFFFFFFFUL);
         stm32_pfm1_priv.tim->ops->setisr(stm32_pfm1_priv.tim, stm32_pfm_interrupt, 
                     &stm32_pfm1_priv, (1 << stm32_pfm1_priv.compare_channel));
+        stm32_pfm1_priv.tim->ops->setchannel(stm32_pfm1_priv.tim, stm32_pfm1_priv.compare_channel, STM32_TIM_CH_OUTLO);
+        stm32_pfm1_priv.tim->ops->disableint(stm32_pfm1_priv.tim, (1 << stm32_pfm1_priv.compare_channel));
+
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm1_priv));
       }
       else
@@ -478,6 +488,8 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
         stm32_pfm2_priv.tim->ops->setperiod(stm32_pfm2_priv.tim, 0xFFFFFFFFUL);
         stm32_pfm2_priv.tim->ops->setisr(stm32_pfm2_priv.tim, stm32_pfm_interrupt, 
                     &stm32_pfm2_priv, (1 << stm32_pfm2_priv.compare_channel));
+        stm32_pfm2_priv.tim->ops->setchannel(stm32_pfm2_priv.tim, stm32_pfm2_priv.compare_channel, STM32_TIM_CH_OUTLO);
+        stm32_pfm2_priv.tim->ops->disableint(stm32_pfm2_priv.tim, (1 << stm32_pfm2_priv.compare_channel));
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm2_priv));
       }
       else
@@ -497,6 +509,8 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
         stm32_pfm3_priv.tim->ops->setperiod(stm32_pfm3_priv.tim, 0xFFFFFFFFUL);
         stm32_pfm3_priv.tim->ops->setisr(stm32_pfm3_priv.tim, stm32_pfm_interrupt, 
                     &stm32_pfm3_priv, (1 << stm32_pfm3_priv.compare_channel));
+        stm32_pfm3_priv.tim->ops->setchannel(stm32_pfm3_priv.tim, stm32_pfm3_priv.compare_channel, STM32_TIM_CH_OUTLO);
+        stm32_pfm3_priv.tim->ops->disableint(stm32_pfm3_priv.tim, (1 << stm32_pfm3_priv.compare_channel));
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm3_priv));
       }
       else
@@ -516,6 +530,8 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
         stm32_pfm4_priv.tim->ops->setperiod(stm32_pfm4_priv.tim, 0xFFFFFFFFUL);
         stm32_pfm4_priv.tim->ops->setisr(stm32_pfm4_priv.tim, stm32_pfm_interrupt, 
                     &stm32_pfm4_priv, (1 << stm32_pfm4_priv.compare_channel));
+        stm32_pfm4_priv.tim->ops->setchannel(stm32_pfm4_priv.tim, stm32_pfm4_priv.compare_channel, STM32_TIM_CH_OUTLO);
+        stm32_pfm4_priv.tim->ops->disableint(stm32_pfm4_priv.tim, (1 << stm32_pfm4_priv.compare_channel));
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm4_priv));
       }
       else
@@ -535,7 +551,9 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
         stm32_pfm5_priv.tim->ops->setperiod(stm32_pfm5_priv.tim, 0xFFFFFFFFUL);
         stm32_pfm5_priv.tim->ops->setisr(stm32_pfm5_priv.tim, stm32_pfm_interrupt, 
                     &stm32_pfm5_priv, (1 << stm32_pfm5_priv.compare_channel));
-        return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm5_priv));
+        stm32_pfm5_priv.tim->ops->setchannel(stm32_pfm5_priv.tim, stm32_pfm5_priv.compare_channel, STM32_TIM_CH_OUTLO);
+        stm32_pfm5_priv.tim->ops->disableint(stm32_pfm5_priv.tim, (1 << stm32_pfm5_priv.compare_channel));
+       return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm5_priv));
       }
       else
       {
@@ -554,6 +572,8 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
         stm32_pfm6_priv.tim->ops->setperiod(stm32_pfm6_priv.tim, 0xFFFFFFFFUL);
         stm32_pfm6_priv.tim->ops->setisr(stm32_pfm6_priv.tim, stm32_pfm_interrupt, 
                     &stm32_pfm6_priv, (1 << stm32_pfm6_priv.compare_channel));
+        stm32_pfm6_priv.tim->ops->setchannel(stm32_pfm6_priv.tim, stm32_pfm6_priv.compare_channel, STM32_TIM_CH_OUTLO);
+        stm32_pfm6_priv.tim->ops->disableint(stm32_pfm6_priv.tim, (1 << stm32_pfm6_priv.compare_channel));
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm6_priv));
       }
       else

@@ -272,9 +272,9 @@ int board_app_initialize(uintptr_t arg)
 
   (void)motor_initialize();
 
-  _info("Init IMU\n");
+  //_info("Init IMU\n");
 
-  (void)imu_initialize();
+  //(void)imu_initialize();
 
   UNUSED(ret);
   return OK;

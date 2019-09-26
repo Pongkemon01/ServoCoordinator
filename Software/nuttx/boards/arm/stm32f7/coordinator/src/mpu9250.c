@@ -290,12 +290,12 @@ static struct linear_accel_s /* linear acceleration (acceleration with gravity c
 }LinearAcel;
 
 static float fQuaternion[4] = {1.0f, 0.0f, 0.0f, 0.0f};    // vector to hold quaternion
-static struct euler_t   /* Euler angle of the above quaternion */
-{
-    float roll;
-    float pitch;
-    float yaw;
-}EulerAngle;
+//static struct euler_t   /* Euler angle of the above quaternion */
+//{
+//    float roll;
+//    float pitch;
+//    float yaw;
+//}EulerAngle;
 
 /************************************************************************************
  * Private Functions
@@ -586,20 +586,20 @@ static void MPUSelfTest( float * deviation ) /* deviation must be 6-element arra
     MPUReadBytes( SELF_TEST_Z_GYRO, &(selfTest[5]), 1 );  // Z-axis gyro self-test results
 
     /* Retrieve factory self-test value from self-test code reads */
-    factoryTrim[0] = (float)(2620/1<<FS)*(pow( 1.01 , ((float)selfTest[0] - 1.0) )); // FT[Xa] factory trim calculation
-    factoryTrim[1] = (float)(2620/1<<FS)*(pow( 1.01 , ((float)selfTest[1] - 1.0) )); // FT[Ya] factory trim calculation
-    factoryTrim[2] = (float)(2620/1<<FS)*(pow( 1.01 , ((float)selfTest[2] - 1.0) )); // FT[Za] factory trim calculation
-    factoryTrim[3] = (float)(2620/1<<FS)*(pow( 1.01 , ((float)selfTest[3] - 1.0) )); // FT[Xg] factory trim calculation
-    factoryTrim[4] = (float)(2620/1<<FS)*(pow( 1.01 , ((float)selfTest[4] - 1.0) )); // FT[Yg] factory trim calculation
-    factoryTrim[5] = (float)(2620/1<<FS)*(pow( 1.01 , ((float)selfTest[5] - 1.0) )); // FT[Zg] factory trim calculation
+    factoryTrim[0] = (float)(2620/1<<FS)*(powf( 1.01f , ((float)selfTest[0] - 1.0f) )); // FT[Xa] factory trim calculation
+    factoryTrim[1] = (float)(2620/1<<FS)*(powf( 1.01f , ((float)selfTest[1] - 1.0f) )); // FT[Ya] factory trim calculation
+    factoryTrim[2] = (float)(2620/1<<FS)*(powf( 1.01f , ((float)selfTest[2] - 1.0f) )); // FT[Za] factory trim calculation
+    factoryTrim[3] = (float)(2620/1<<FS)*(powf( 1.01f , ((float)selfTest[3] - 1.0f) )); // FT[Xg] factory trim calculation
+    factoryTrim[4] = (float)(2620/1<<FS)*(powf( 1.01f , ((float)selfTest[4] - 1.0f) )); // FT[Yg] factory trim calculation
+    factoryTrim[5] = (float)(2620/1<<FS)*(powf( 1.01f , ((float)selfTest[5] - 1.0f) )); // FT[Zg] factory trim calculation
  
     /* Report results as a ratio of (STR - FT)/FT; the change from Factory Trim of the Self-Test Response
      * To get percent, must multiply by 100
      */
     for ( ii = 0; ii < 3; ii++ ) 
     {
-        deviation[ii]   = 100.0*((float)(aSTAvg[ii] - aAvg[ii]))/factoryTrim[ii] - 100.;   // Report percent differences
-        deviation[ii+3] = 100.0*((float)(gSTAvg[ii] - gAvg[ii]))/factoryTrim[ii+3] - 100.; // Report percent differences
+        deviation[ii]   = 100.0f*((float)(aSTAvg[ii] - aAvg[ii]))/factoryTrim[ii] - 100.0f;   // Report percent differences
+        deviation[ii+3] = 100.0f*((float)(gSTAvg[ii] - gAvg[ii]))/factoryTrim[ii+3] - 100.0f; // Report percent differences
    }
 }
 
@@ -882,8 +882,8 @@ static float FastSqrt( float x )
     y = *((float *)&i);
 
     /* The next line can be repeated any number of times to increase accuracy */
-    y = 0.5F * (y + x / y);
-    y = 0.5F * (y + x / y); /* 2nd iteration to improve accuracy */
+    y = 0.5f * (y + x / y);
+    y = 0.5f * (y + x / y); /* 2nd iteration to improve accuracy */
 
     return y;
 }
@@ -1077,17 +1077,17 @@ static int UpdateData(int irq, FAR void *context, FAR void *arg)
      * http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles 
      * which has additional links.
      */
-    a12 = 2.0f * ( ( fQuaternion[1] * fQuaternion[2] ) +  ( fQuaternion[0] * fQuaternion[3] ) );
-    a22 = ( fQuaternion[0] * fQuaternion[0] ) + ( fQuaternion[1] * fQuaternion[1] ) - 
-            ( fQuaternion[2] * fQuaternion[2] ) - ( fQuaternion[3] * fQuaternion[3] );
+    //a12 = 2.0f * ( ( fQuaternion[1] * fQuaternion[2] ) +  ( fQuaternion[0] * fQuaternion[3] ) );
+    //a22 = ( fQuaternion[0] * fQuaternion[0] ) + ( fQuaternion[1] * fQuaternion[1] ) - 
+    //        ( fQuaternion[2] * fQuaternion[2] ) - ( fQuaternion[3] * fQuaternion[3] );
     a31 = 2.0f * ( ( fQuaternion[0] * fQuaternion[1] ) + ( fQuaternion[2] * fQuaternion[3] ) );
     a32 = 2.0f * ( ( fQuaternion[1] * fQuaternion[3] ) - ( fQuaternion[0] * fQuaternion[2] ) );
     a33 = ( fQuaternion[0] * fQuaternion[0] ) - ( fQuaternion[1] * fQuaternion[1] ) - 
             ( fQuaternion[2] * fQuaternion[2] ) + ( fQuaternion[3] * fQuaternion[3] );
 
-    EulerAngle.pitch = -asinf(a32);
-    EulerAngle.roll  = atan2f(a31, a33);
-    EulerAngle.yaw   = atan2f(a12, a22);
+    //EulerAngle.pitch = -asinf(a32);
+    //EulerAngle.roll  = atan2f(a31, a33);
+    //EulerAngle.yaw   = atan2f(a12, a22);
     LinearAcel.x = ax + a31;
     LinearAcel.y = ay + a32;
     LinearAcel.z = az - a33;
@@ -1098,7 +1098,7 @@ static int UpdateData(int irq, FAR void *context, FAR void *arg)
         tick_count = 0;
         _info( "Debug at: %ul\n", now );
         _info( " - Quaternion: %f + %fi + %fj + %fk\n", fQuaternion[0], fQuaternion[1], fQuaternion[2], fQuaternion[3] );
-        _info( " - Euler r=%f, p=%f, y=%f\n", EulerAngle.roll, EulerAngle.pitch, EulerAngle.yaw );
+    //    _info( " - Euler r=%f, p=%f, y=%f\n", EulerAngle.roll, EulerAngle.pitch, EulerAngle.yaw );
         _info( " - Linear accel x=%f, y=%f, z=%f\n", LinearAcel.x, LinearAcel.y, LinearAcel.z );
     }
 
@@ -1225,12 +1225,12 @@ static int imu_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
             fp[3] = fQuaternion[3];
             break;
 
-        case IMU_CMD_GET_TAIT_BRYAN: /* Arg: Array float[3] for yaw/pitch/roll */
-            fp = (float*)arg;
-            fp[0] = EulerAngle.yaw;
-            fp[1] = EulerAngle.pitch;
-            fp[2] = EulerAngle.roll;
-            break;
+        //case IMU_CMD_GET_TAIT_BRYAN: /* Arg: Array float[3] for yaw/pitch/roll */
+        //    fp = (float*)arg;
+        //    fp[0] = EulerAngle.yaw;
+        //    fp[1] = EulerAngle.pitch;
+        //    fp[2] = EulerAngle.roll;
+        //    break;
 
         case IMU_CMD_GET_LIN_ACCEL: /* Arg: Array float[3] for x/y/z */
             fp = (float*)arg;

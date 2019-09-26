@@ -62,7 +62,6 @@ static struct s_token_t s_token_table[] =
     { .strToken = "HME", .eToken = DoHomeValue },
     { .strToken = "GIR", .eToken = DoGetIMUSampleRate },
     { .strToken = "GQN", .eToken = DoGetIMUQuaternion },
-    { .strToken = "GTB", .eToken = DoGetIMUTaitBryan },
     { .strToken = "GLA", .eToken = DoGetIMULinAccel },
 
     /* The special token to mark the closing of token table */

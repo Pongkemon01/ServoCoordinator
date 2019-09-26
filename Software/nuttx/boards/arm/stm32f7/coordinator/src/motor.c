@@ -774,6 +774,7 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
         {
           motor_alarm_res(motor->cfg);
           motor_clr_devcount(motor->cfg);
+          usleep(2500);
           if(motor_alarm_stat(motor->cfg))
           {
             _err("Alarm signal persists on motor %d\n", motor->cfg->motor_id);
@@ -861,10 +862,10 @@ int motor_initialize()
       {
         _info("Entering READY...");
         (void)stm32_gpiosetevent((motor_priv[i].cfg)->alrm_pin, true, true,
-                       false, motor_alarm, (void *)(&(motor_priv[i])));
+                        false, motor_alarm, (void *)(&(motor_priv[i])));
         snprintf(devpath, 14, "/dev/motor%d", i);
         if(register_driver(devpath, &g_motorops, 0666, &(motor_priv[i])) != OK)
-          _err("Unable to register %s\n", devpath);
+           _err("Unable to register %s\n", devpath);
         _info("Done\n");
       }
       else

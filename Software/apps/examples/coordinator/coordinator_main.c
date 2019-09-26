@@ -63,6 +63,8 @@ int coordinator_main(int argc, char *argv[])
     char *Token;
     token_op_t ops;
 
+    usleep(3000000);
+
     printf( "Starting coordinator: " );
     printf( "InitUSB..");
     if( InitUSB() <= 0 )
