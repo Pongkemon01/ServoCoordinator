@@ -1,13 +1,12 @@
 EESchema Schematic File Version 4
-LIBS:coordinator-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 6
 Title "6DOF Parallel Robot"
-Date "19 August 2019"
-Rev "1.0.0"
+Date "2019-September-26"
+Rev "2.0.0"
 Comp "Kasetsart University"
 Comment1 "Faculty of Engineering"
 Comment2 "Department of Computer Engineering"

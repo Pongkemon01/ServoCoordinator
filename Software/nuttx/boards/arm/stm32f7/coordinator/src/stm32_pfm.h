@@ -53,7 +53,7 @@
 /* Some constants
  *
  */
-#define CONFIG_STM32_PFM_FREQ    200000  /* Input frequency of the timer */
+#define CONFIG_STM32_PFM_FREQ    400000  /* Input frequency of the timer */
 #define CONFIG_STM32_PFM_SHOT_PEROID  2
 /************************************************************************************
  * Public Types

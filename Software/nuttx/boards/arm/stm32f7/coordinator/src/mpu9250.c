@@ -41,6 +41,8 @@
 #include <nuttx/arch.h>
 #include <nuttx/irq.h>
 #include <nuttx/kmalloc.h>
+#include <nuttx/wqueue.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -53,13 +55,12 @@
 #include <arch/board/imu.h>
 
 #include "stm32_i2c.h"
-#include "stm32_tim.h"
 
 #ifndef CONFIG_I2C
 # error "IMU requires i2c driver"
 #endif
-#ifndef CONFIG_STM32F7_TIM7
-# error "IMU requires Timer 7"
+#ifndef CONFIG_SCHED_HPWORK
+# error "IMU requires a high-priority work queue"
 #endif
 #ifndef CONFIG_CLOCK_MONOTONIC
 # error "IMU requires CONFIG_CLOCK_MONOTONIC"
@@ -67,14 +68,16 @@
 /************************************************************************************
  * Private Data
  ************************************************************************************/
-#define COUNTER_PERIOD          100
-#define TIMER_FREQ              (SAMPLE_RATE * COUNTER_PERIOD)
-#define I2C_SPEED               400000  /* I2C Clock spped */
+#define MPU_WORK_QUEUE          HPWORK
+
+#define I2C_SPEED               350000  /* I2C Clock spped */
 
 #define MPU9250_ADDRESS         (0x68)  /* AD0 = 0 */
 #define AK8963_ADDRESS          (0x0C)  /* Address for direct access */
 
 #define SAMPLE_RATE             100     /* Sensor sample rate (Hz.) max = 1000 */
+
+#define SAMPLE_PERIOD           (1000000/(CONFIG_USEC_PER_TICK * SAMPLE_RATE))
 
 /* See also MPU-9250 Register Map and Descriptions, Revision 4.0, RM-MPU-9250A-00 */
 /* Magnetometer Registers */
@@ -274,7 +277,6 @@ static const struct i2c_config_s   compass_i2c_config =
     .addrlen    = 7                    /* 7-bit address */
 };
 static struct i2c_master_s*  i2c_bus = NULL;
-static struct stm32_tim_dev_s* timer = NULL;
 
 static uint32_t lastupdate = 0, tick_count = 0;
 static float delta_s;    /* Time period used for integration */
@@ -290,12 +292,8 @@ static struct linear_accel_s /* linear acceleration (acceleration with gravity c
 }LinearAcel;
 
 static float fQuaternion[4] = {1.0f, 0.0f, 0.0f, 0.0f};    // vector to hold quaternion
-//static struct euler_t   /* Euler angle of the above quaternion */
-//{
-//    float roll;
-//    float pitch;
-//    float yaw;
-//}EulerAngle;
+
+static struct work_s worker;
 
 /************************************************************************************
  * Private Functions
@@ -378,18 +376,22 @@ static int ReadMagData( int16_t* destination )
 
     retval = COMReadBytes( AK8963_XOUT_L, rawData, 7 ); 
     if( retval != OK )
+    {
+        _err("Failed to read magneto meter data\n");
         return retval;
+    }
 
     if( rawData[6] & 0x08 ) // Check if magnetic sensor overflow set, if not then report data
+    {
+        _err("Magneto overflow\n");
+        return -EOVERFLOW;
+    }
+    else
     {
         destination[0] = ((int16_t)rawData[1] << 8) | rawData[0] ;  // Turn the MSB and LSB into a signed 16-bit value
         destination[1] = ((int16_t)rawData[3] << 8) | rawData[2] ;  // Data stored as little Endian
         destination[2] = ((int16_t)rawData[5] << 8) | rawData[4] ; 
         return OK;
-    }
-    else
-    {
-        return -EOVERFLOW;
     }
 }
 
@@ -508,7 +510,7 @@ static int InitMPU9250(void)
 /************************************************************************************
  * Accelerometer and gyroscope self test; check calibration with respect to
  * factory settings. It returns percent deviation from factory trim values.
- * +/- 0.14 or less deviation is a pass
+ * +/- 14 or less deviation is a pass
  ************************************************************************************/
 static void MPUSelfTest( float * deviation ) /* deviation must be 6-element array */
 {
@@ -983,17 +985,26 @@ static void MadgwickQuaternionUpdate(float ax, float ay, float az, float gx, flo
  * and linear acceleration).
  * This function should be called on every SAMPLE_RATE trig period.
  ************************************************************************************/
-static int UpdateData(int irq, FAR void *context, FAR void *arg)
+static void UpdateData(FAR void *arg)
 {
     uint32_t now;
     int16_t rawAcelTempGy[7], rawMag[3];
-    float a12, a22, a31, a32, a33;
+    float a31, a32, a33;
     float ax, ay, az, gx, gy, gz, mx, my, mz; // variables to hold latest sensor data values 
     int     retval;
 
+    /* Re-enable sensor update */
+    if( work_queue(MPU_WORK_QUEUE, &worker, UpdateData, NULL, SAMPLE_PERIOD) != OK )
+    {
+        _err("Unable to register IMU to work queue\n");
+    }
+
     retval = ReadMPU9250Data( rawAcelTempGy );
     if( retval != OK )
-        return retval;
+    {
+        _err("Failed to read MPU9250\n");
+        return;
+    }
 
     /* Currently, we leave out the bias */
 
@@ -1013,7 +1024,10 @@ static int UpdateData(int irq, FAR void *context, FAR void *arg)
 
     retval = ReadMagData( rawMag );
     if( retval != OK )
-        return retval;
+    {
+        _err("Failed to read Magneto meter\n");
+        return;
+    }
      /*mx = (float)magCount[0]*M_FACTOR*fMagneticAdjFactor[0] - magBias[0];
     my = (float)magCount[1]*M_FACTOR*fMagneticAdjFactor[1] - magBias[1];  
     mz = (float)magCount[2]*M_FACTOR*fMagneticAdjFactor[2] - magBias[2];  
@@ -1053,6 +1067,16 @@ static int UpdateData(int irq, FAR void *context, FAR void *arg)
      * Therefore, we need to realign the parameters passed to 
      * the fusion function as followed.
      */
+    /* 
+     * Normally, the bias of accelerometer is negative meaning that when
+     * the sensor place horizontally flat (accel +z is up). The measurement
+     * is 1G pointing in the opposite direction of +z (i.e., down). Also,
+     * all other axes. Therefore, we negate all value to get correct bias
+     * according to the gravity.
+     */
+    ax = -ax;
+    ay = -ay;
+    az = -az;
     MadgwickQuaternionUpdate( ax, ay, az, gx, gy, gz, my, mx, -mz );
 
     /* Define output variables from updated quaternion---these are Tait-Bryan 
@@ -1077,32 +1101,25 @@ static int UpdateData(int irq, FAR void *context, FAR void *arg)
      * http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles 
      * which has additional links.
      */
-    //a12 = 2.0f * ( ( fQuaternion[1] * fQuaternion[2] ) +  ( fQuaternion[0] * fQuaternion[3] ) );
-    //a22 = ( fQuaternion[0] * fQuaternion[0] ) + ( fQuaternion[1] * fQuaternion[1] ) - 
-    //        ( fQuaternion[2] * fQuaternion[2] ) - ( fQuaternion[3] * fQuaternion[3] );
+
+    /* compensate the accelerometer readings from gravity.  */
     a31 = 2.0f * ( ( fQuaternion[0] * fQuaternion[1] ) + ( fQuaternion[2] * fQuaternion[3] ) );
     a32 = 2.0f * ( ( fQuaternion[1] * fQuaternion[3] ) - ( fQuaternion[0] * fQuaternion[2] ) );
     a33 = ( fQuaternion[0] * fQuaternion[0] ) - ( fQuaternion[1] * fQuaternion[1] ) - 
             ( fQuaternion[2] * fQuaternion[2] ) + ( fQuaternion[3] * fQuaternion[3] );
 
-    //EulerAngle.pitch = -asinf(a32);
-    //EulerAngle.roll  = atan2f(a31, a33);
-    //EulerAngle.yaw   = atan2f(a12, a22);
-    LinearAcel.x = ax + a31;
-    LinearAcel.y = ay + a32;
+    LinearAcel.x = ax - a32;
+    LinearAcel.y = ay - a31;
     LinearAcel.z = az - a33;
+
 
     /* For debug information, generate log every 0.5 second */
     if( tick_count >= 500 )
     {
         tick_count = 0;
-        _info( "Debug at: %ul\n", now );
         _info( " - Quaternion: %f + %fi + %fj + %fk\n", fQuaternion[0], fQuaternion[1], fQuaternion[2], fQuaternion[3] );
-    //    _info( " - Euler r=%f, p=%f, y=%f\n", EulerAngle.roll, EulerAngle.pitch, EulerAngle.yaw );
         _info( " - Linear accel x=%f, y=%f, z=%f\n", LinearAcel.x, LinearAcel.y, LinearAcel.z );
     }
-
-    return OK;
 }
 
 /************************************************************************************
@@ -1265,23 +1282,12 @@ int imu_initialize(void)
         return -ENOTSUP;
     }
 
-    /* 2. Init timer */
-    if( ( timer = stm32_tim_init( 7 ) ) == NULL )
-    {
-        _err("Failed to init timer 7\n");
-        stm32_i2cbus_uninitialize( i2c_bus );
-        i2c_bus = NULL;
-        return -ENOTSUP;
-    }
-
-    /* 3. Init the sensors */
+    /* 2. Init the sensors */
     MPUSelfTest( deviation );
     for( int i = 0; i < 3; i++ )
     {
-        if( deviation[i] > 0.14 || deviation[i] < -0.14 )
-            _warn("Accelerometer axis %d is worn-out\n", i );
-        if( deviation[i+3] > 0.14 || deviation[i+3] < -0.14 )
-            _warn("Gyroscope axis %d is worn-out\n", i );
+        _info( "Accelerometer axis %d has deviation %f\n", i, deviation[i] );
+        _info( "Gyroscope axis %d has deviation %f\n", i, deviation[i+3] );
     }
     CalibrateAccelGyro();
     if( InitMPU9250() != OK )
@@ -1289,43 +1295,24 @@ int imu_initialize(void)
         _err("Failed to initialize IMU\n");
         stm32_i2cbus_uninitialize( i2c_bus );
         i2c_bus = NULL;
-        stm32_tim_deinit( timer );
-        timer = 0;        
         return -ENOTSUP;
     }
 
-    /* 4. Register timer event */
-    if( STM32_TIM_SETCLOCK( timer, TIMER_FREQ ) <= 0)
+    /* 3. Register timer event */
+    if( work_queue(MPU_WORK_QUEUE, &worker, UpdateData, NULL, SAMPLE_PERIOD) != OK )
     {
-        _err("Unable to set Timer7 to freqency %dHz\n", TIMER_FREQ);
+        _err("Unable to register IMU to work queue\n");
         stm32_i2cbus_uninitialize( i2c_bus );
         i2c_bus = NULL;
-        stm32_tim_deinit( timer );
-        timer = 0;        
         return -ENOTSUP;
     }
-    STM32_TIM_SETPERIOD( timer, COUNTER_PERIOD );
-    (void)STM32_TIM_SETMODE( timer, STM32_TIM_MODE_UP );
-    if( STM32_TIM_SETISR( timer, UpdateData, NULL, 0) != OK)
-    {
-        _err("Unable to bind Timer7 interrupt\n");
-        (void)STM32_TIM_SETMODE( timer, STM32_TIM_MODE_DISABLED );
-        stm32_i2cbus_uninitialize( i2c_bus );
-        i2c_bus = NULL;
-        stm32_tim_deinit( timer );
-        timer = 0;        
-        return -ENOTSUP;
-    }
-    STM32_TIM_ENABLEINT( timer, 0 );
 
-    /* 5. Register the driver  */
+    /* 4. Register the driver  */
     if( register_driver( "/dev/imu", &g_imuops, 0666, NULL ) != OK )
     {
         _err("Unable to register /dev/imu\n");
         stm32_i2cbus_uninitialize( i2c_bus );
         i2c_bus = NULL;
-        stm32_tim_deinit( timer );
-        timer = 0;        
         return -ENOTSUP;
     }
   _info("DONE\n");

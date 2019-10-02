@@ -252,7 +252,7 @@ static inline void motor_alarm_res(FAR struct motor_cfg_s* cfg)
 {
   /* Sending a pulse to reset alarm status */
   motor_setpin(cfg->alrm_res_pin);
-  for(int i = 10;i > 0;i--);    /* Delay for a moment */
+  for(int i = 100;i > 0;i--);    /* Delay for a moment */
   motor_respin(cfg->alrm_res_pin);
 }
 
@@ -260,7 +260,7 @@ static inline void motor_clr_devcount(FAR struct motor_cfg_s* cfg)
 {
   /* Sending a pulse to clear deviation counter */
   motor_setpin(cfg->dev_clr_pin);
-  for(int i = 10;i > 0;i--);    /* Delay for a moment */
+  for(int i = 100;i > 0;i--);    /* Delay for a moment */
   motor_respin(cfg->dev_clr_pin);
 }
 

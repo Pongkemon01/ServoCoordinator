@@ -42,6 +42,7 @@
 #include <nuttx/irq.h>
 #include <nuttx/kmalloc.h>
 #include <nuttx/fs/fs.h>
+#include <nuttx/wqueue.h>
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -57,13 +58,15 @@
 #include "up_internal.h"
 #include "up_arch.h"
 #include "stm32_gpio.h"
-#include "stm32_tim.h"
 
-/* This module utilizes Timer6 (a basic timer) */
-#ifdef CONFIG_STM32F7_TIM6
+#define DEBOUNCE_FREQ   (100)
+#define DEBOUNCE_DELAY  (1000000/(CONFIG_USEC_PER_TICK * DEBOUNCE_FREQ))
 
-#define TIMER_FREQ      100000
-#define COUNTER_PERIOD  100
+#ifndef CONFIG_SCHED_LPWORK
+#  error "HOME sensor requires a low-priority work queue"
+#endif
+
+#define TASK_QUEUE  LPWORK
 
 /************************************************************************************
  * Private Types
@@ -92,7 +95,7 @@ static const uint32_t u32_home_gpio[6] =
     GPIO_HOME_0, GPIO_HOME_1, GPIO_HOME_2, GPIO_HOME_3, GPIO_HOME_4, GPIO_HOME_5
 };
 
-static struct stm32_tim_dev_s *s_timer;
+static struct work_s worker;
 
 /************************************************************************************
  * Name: tim_event
@@ -102,11 +105,9 @@ static struct stm32_tim_dev_s *s_timer;
  *     arg : pointer to the particular motor structure.
  *
  ************************************************************************************/
-static int tim_event(int irq, FAR void *context, FAR void *arg)
+static void tim_event(FAR void *arg)
 {
     int i;
-
-    STM32_TIM_ACKINT(s_timer, 0);
 
     /* Read GPIO and feed to debouncing filter */
     for(i = 0;i < 6;i++)
@@ -130,7 +131,11 @@ static int tim_event(int irq, FAR void *context, FAR void *arg)
         }
     }
 
-    return OK;
+    /* Re-enable timer event */
+    if(work_queue(TASK_QUEUE, &worker, tim_event, NULL, DEBOUNCE_DELAY) != OK)
+    {
+        _err("Unable to register HOME sensor to work queue\n");
+    }
 }
 
 /************************************************************************************
@@ -209,12 +214,9 @@ static ssize_t home_read(FAR struct file *filep, FAR char *buffer, size_t buflen
 {
   char v;
 
-  if(!(s_home_data[0].b_home_status))
-    v = 1;
-  else
-    v = 0;
+  v = 0;
 
-  for(int i=1;i <= 5;i++)
+  for(int i=0;i <= 5;i++)
   {
     v <<= 1;
     if(!(s_home_data[i].b_home_status))
@@ -277,26 +279,13 @@ int home_initialize(void)
         }
     }
 
-    /* 2. Config timer */
-    s_timer = stm32_tim_init(6);
-    retval = STM32_TIM_SETCLOCK(s_timer, TIMER_FREQ);
-    if(retval <= 0)
-    {
-        _err("Unable to set Timer6 to freqency %dHz\n", TIMER_FREQ);
-        return -EINVAL;
-    }
-    STM32_TIM_SETPERIOD(s_timer, COUNTER_PERIOD);
-    (void)STM32_TIM_SETMODE(s_timer, STM32_TIM_MODE_UP);
-
-    /* 3. Attach timer interrupt */
-    retval = STM32_TIM_SETISR(s_timer, tim_event, NULL, 0);
+    /* 2. Register work queue for periodic task */
+    retval = work_queue(TASK_QUEUE, &worker, tim_event, NULL, DEBOUNCE_DELAY);
     if(retval != OK)
     {
-        _err("Unable to bind Timer6 interrupt\n");
-        (void)STM32_TIM_SETMODE(s_timer, STM32_TIM_MODE_DISABLED);
-        return(retval);
+        _err("Unable to register HOME sensor to work queue\n");
+        return retval;
     }
-    STM32_TIM_ENABLEINT(s_timer, 0);
 
     /* 4. Register /dev/home */
     retval = register_driver("/dev/home", &g_homeops, 0666, NULL);
@@ -305,5 +294,3 @@ int home_initialize(void)
 
     return(retval);
 }
-
-#endif /* CONFIG_STM32F7_TIM6 */

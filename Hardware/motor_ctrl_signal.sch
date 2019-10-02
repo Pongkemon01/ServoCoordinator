@@ -1,13 +1,12 @@
 EESchema Schematic File Version 4
-LIBS:coordinator-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 3 6
 Title "6DOF Parallel Robot"
-Date "19 August 2019"
-Rev "1.0.0"
+Date "2019-September-26"
+Rev "2.0.0"
 Comp "Kasetsart University"
 Comment1 "Faculty of Engineering"
 Comment2 "Department of Computer Engineering"
@@ -15,11 +14,11 @@ Comment3 "Asst.Prof.Akrapong Patchararungruang, Ph.D."
 Comment4 ""
 $EndDescr
 $Comp
-L Isolator:TLP291-4 U7
+L Isolator:TLP290-4 U7
 U 1 1 5D575929
 P 2500 1100
 F 0 "U7" H 2500 1425 50  0000 C CNN
-F 1 "TLP293-4" H 2500 1334 50  0000 C CNN
+F 1 "TLP292-4" H 2500 1334 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 900 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 1100 50  0001 L CNN
 	1    2500 1100
@@ -37,10 +36,10 @@ F 3 "" H 2200 1200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R13
+L Device:R_US R61
 U 1 1 5D5782BF
 P 2050 1000
-F 0 "R13" V 2150 950 50  0000 C CNN
+F 0 "R61" V 2150 950 50  0000 C CNN
 F 1 "330" V 1950 1000 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 2090 990 50  0001 C CNN
 F 3 "~" H 2050 1000 50  0001 C CNN
@@ -56,21 +55,21 @@ M1_SRV_ON
 Text GLabel 2900 1000 2    50   Input ~ 0
 M1_SRV_ON_EXT
 $Comp
-L Isolator:TLP291-4 U7
+L Isolator:TLP290-4 U7
 U 2 1 5D57E29B
 P 2500 2050
 F 0 "U7" H 2500 2375 50  0000 C CNN
-F 1 "TLP293-4" H 2500 2284 50  0000 C CNN
+F 1 "TLP292-4" H 2500 2284 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 1850 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 2050 50  0001 L CNN
 	2    2500 2050
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R14
+L Device:R_US R62
 U 1 1 5D57E2AE
 P 2050 1950
-F 0 "R14" V 2150 1900 50  0000 C CNN
+F 0 "R62" V 2150 1900 50  0000 C CNN
 F 1 "330" V 1950 1950 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 2090 1940 50  0001 C CNN
 F 3 "~" H 2050 1950 50  0001 C CNN
@@ -86,21 +85,21 @@ M1_ALRM_RES
 Text GLabel 2900 1950 2    50   Input ~ 0
 M1_ALRM_RES_EXT
 $Comp
-L Isolator:TLP291-4 U7
+L Isolator:TLP290-4 U7
 U 3 1 5D580302
 P 2500 3000
 F 0 "U7" H 2500 3325 50  0000 C CNN
-F 1 "TLP293-4" H 2500 3234 50  0000 C CNN
+F 1 "TLP292-4" H 2500 3234 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 2800 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 3000 50  0001 L CNN
 	3    2500 3000
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R15
+L Device:R_US R63
 U 1 1 5D580315
 P 2050 2900
-F 0 "R15" V 2150 2850 50  0000 C CNN
+F 0 "R63" V 2150 2850 50  0000 C CNN
 F 1 "330" V 1950 2900 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 2090 2890 50  0001 C CNN
 F 3 "~" H 2050 2900 50  0001 C CNN
@@ -116,21 +115,21 @@ M1_DEV_CLR
 Text GLabel 2900 2900 2    50   Input ~ 0
 M1_DEV_CLR_EXT
 $Comp
-L Isolator:TLP291-4 U8
+L Isolator:TLP290-4 U8
 U 3 1 5D591B6D
 P 5800 1100
 F 0 "U8" H 5800 1425 50  0000 C CNN
-F 1 "TLP293-4" H 5800 1334 50  0000 C CNN
+F 1 "TLP292-4" H 5800 1334 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5600 900 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5800 1100 50  0001 L CNN
 	3    5800 1100
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R19
+L Device:R_US R67
 U 1 1 5D591B80
 P 5350 1000
-F 0 "R19" V 5450 950 50  0000 C CNN
+F 0 "R67" V 5450 950 50  0000 C CNN
 F 1 "330" V 5250 1000 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5390 990 50  0001 C CNN
 F 3 "~" H 5350 1000 50  0001 C CNN
@@ -146,21 +145,21 @@ M2_SRV_ON
 Text GLabel 6200 1000 2    50   Input ~ 0
 M2_SRV_ON_EXT
 $Comp
-L Isolator:TLP291-4 U8
+L Isolator:TLP290-4 U8
 U 4 1 5D591B8A
 P 5800 2050
 F 0 "U8" H 5800 2375 50  0000 C CNN
-F 1 "TLP293-4" H 5800 2284 50  0000 C CNN
+F 1 "TLP292-4" H 5800 2284 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5600 1850 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5800 2050 50  0001 L CNN
 	4    5800 2050
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R20
+L Device:R_US R68
 U 1 1 5D591B9D
 P 5350 1950
-F 0 "R20" V 5450 1900 50  0000 C CNN
+F 0 "R68" V 5450 1900 50  0000 C CNN
 F 1 "330" V 5250 1950 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5390 1940 50  0001 C CNN
 F 3 "~" H 5350 1950 50  0001 C CNN
@@ -176,21 +175,21 @@ M2_ALRM_RES
 Text GLabel 6200 1950 2    50   Input ~ 0
 M2_ALRM_RES_EXT
 $Comp
-L Isolator:TLP291-4 U9
+L Isolator:TLP290-4 U9
 U 1 1 5D591BA7
 P 5800 3000
 F 0 "U9" H 5800 3325 50  0000 C CNN
-F 1 "TLP293-4" H 5800 3234 50  0000 C CNN
+F 1 "TLP292-4" H 5800 3234 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5600 2800 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5800 3000 50  0001 L CNN
 	1    5800 3000
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R21
+L Device:R_US R69
 U 1 1 5D591BBA
 P 5350 2900
-F 0 "R21" V 5450 2850 50  0000 C CNN
+F 0 "R69" V 5450 2850 50  0000 C CNN
 F 1 "330" V 5250 2900 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5390 2890 50  0001 C CNN
 F 3 "~" H 5350 2900 50  0001 C CNN
@@ -206,21 +205,21 @@ M2_DEV_CLR
 Text GLabel 6200 2900 2    50   Input ~ 0
 M2_DEV_CLR_EXT
 $Comp
-L Isolator:TLP291-4 U10
+L Isolator:TLP290-4 U10
 U 1 1 5D59E815
 P 9050 1100
 F 0 "U10" H 9050 1425 50  0000 C CNN
-F 1 "TLP293-4" H 9050 1334 50  0000 C CNN
+F 1 "TLP292-4" H 9050 1334 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 8850 900 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9050 1100 50  0001 L CNN
 	1    9050 1100
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R25
+L Device:R_US R73
 U 1 1 5D59E828
 P 8600 1000
-F 0 "R25" V 8700 950 50  0000 C CNN
+F 0 "R73" V 8700 950 50  0000 C CNN
 F 1 "330" V 8500 1000 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8640 990 50  0001 C CNN
 F 3 "~" H 8600 1000 50  0001 C CNN
@@ -236,21 +235,21 @@ M3_SRV_ON
 Text GLabel 9450 1000 2    50   Input ~ 0
 M3_SRV_ON_EXT
 $Comp
-L Isolator:TLP291-4 U10
+L Isolator:TLP290-4 U10
 U 2 1 5D59E832
 P 9050 2050
 F 0 "U10" H 9050 2375 50  0000 C CNN
-F 1 "TLP293-4" H 9050 2284 50  0000 C CNN
+F 1 "TLP292-4" H 9050 2284 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 8850 1850 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9050 2050 50  0001 L CNN
 	2    9050 2050
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R26
+L Device:R_US R74
 U 1 1 5D59E845
 P 8600 1950
-F 0 "R26" V 8700 1900 50  0000 C CNN
+F 0 "R74" V 8700 1900 50  0000 C CNN
 F 1 "330" V 8500 1950 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8640 1940 50  0001 C CNN
 F 3 "~" H 8600 1950 50  0001 C CNN
@@ -266,21 +265,21 @@ M3_ALRM_RES
 Text GLabel 9450 1950 2    50   Input ~ 0
 M3_ALRM_RES_EXT
 $Comp
-L Isolator:TLP291-4 U10
+L Isolator:TLP290-4 U10
 U 3 1 5D59E84F
 P 9050 3000
 F 0 "U10" H 9050 3325 50  0000 C CNN
-F 1 "TLP293-4" H 9050 3234 50  0000 C CNN
+F 1 "TLP292-4" H 9050 3234 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 8850 2800 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9050 3000 50  0001 L CNN
 	3    9050 3000
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R27
+L Device:R_US R75
 U 1 1 5D59E862
 P 8600 2900
-F 0 "R27" V 8700 2850 50  0000 C CNN
+F 0 "R75" V 8700 2850 50  0000 C CNN
 F 1 "330" V 8500 2900 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8640 2890 50  0001 C CNN
 F 3 "~" H 8600 2900 50  0001 C CNN
@@ -296,21 +295,21 @@ M3_DEV_CLR
 Text GLabel 9450 2900 2    50   Input ~ 0
 M3_DEV_CLR_EXT
 $Comp
-L Isolator:TLP291-4 U11
+L Isolator:TLP290-4 U11
 U 3 1 5D5ABA07
 P 2500 4100
 F 0 "U11" H 2500 4425 50  0000 C CNN
-F 1 "TLP293-4" H 2500 4334 50  0000 C CNN
+F 1 "TLP292-4" H 2500 4334 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 3900 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 4100 50  0001 L CNN
 	3    2500 4100
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R31
+L Device:R_US R79
 U 1 1 5D5ABA1A
 P 2050 4000
-F 0 "R31" V 2150 3950 50  0000 C CNN
+F 0 "R79" V 2150 3950 50  0000 C CNN
 F 1 "330" V 1950 4000 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 2090 3990 50  0001 C CNN
 F 3 "~" H 2050 4000 50  0001 C CNN
@@ -326,21 +325,21 @@ M4_SRV_ON
 Text GLabel 2900 4000 2    50   Input ~ 0
 M4_SRV_ON_EXT
 $Comp
-L Isolator:TLP291-4 U11
+L Isolator:TLP290-4 U11
 U 4 1 5D5ABA24
 P 2500 5050
 F 0 "U11" H 2500 5375 50  0000 C CNN
-F 1 "TLP293-4" H 2500 5284 50  0000 C CNN
+F 1 "TLP292-4" H 2500 5284 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 4850 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 5050 50  0001 L CNN
 	4    2500 5050
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R32
+L Device:R_US R80
 U 1 1 5D5ABA37
 P 2050 4950
-F 0 "R32" V 2150 4900 50  0000 C CNN
+F 0 "R80" V 2150 4900 50  0000 C CNN
 F 1 "330" V 1950 4950 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 2090 4940 50  0001 C CNN
 F 3 "~" H 2050 4950 50  0001 C CNN
@@ -356,21 +355,21 @@ M4_ALRM_RES
 Text GLabel 2900 4950 2    50   Input ~ 0
 M4_ALRM_RES_EXT
 $Comp
-L Isolator:TLP291-4 U12
+L Isolator:TLP290-4 U12
 U 1 1 5D5ABA41
 P 2500 6000
 F 0 "U12" H 2500 6325 50  0000 C CNN
-F 1 "TLP293-4" H 2500 6234 50  0000 C CNN
+F 1 "TLP292-4" H 2500 6234 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 5800 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 6000 50  0001 L CNN
 	1    2500 6000
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R33
+L Device:R_US R81
 U 1 1 5D5ABA54
 P 2050 5900
-F 0 "R33" V 2150 5850 50  0000 C CNN
+F 0 "R81" V 2150 5850 50  0000 C CNN
 F 1 "330" V 1950 5900 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 2090 5890 50  0001 C CNN
 F 3 "~" H 2050 5900 50  0001 C CNN
@@ -386,21 +385,21 @@ M4_DEV_CLR
 Text GLabel 2900 5900 2    50   Input ~ 0
 M4_DEV_CLR_EXT
 $Comp
-L Isolator:TLP291-4 U13
+L Isolator:TLP290-4 U13
 U 1 1 5D5B0010
 P 5800 4050
 F 0 "U13" H 5800 4375 50  0000 C CNN
-F 1 "TLP293-4" H 5800 4284 50  0000 C CNN
+F 1 "TLP292-4" H 5800 4284 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5600 3850 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5800 4050 50  0001 L CNN
 	1    5800 4050
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R37
+L Device:R_US R85
 U 1 1 5D5B0023
 P 5350 3950
-F 0 "R37" V 5450 3900 50  0000 C CNN
+F 0 "R85" V 5450 3900 50  0000 C CNN
 F 1 "330" V 5250 3950 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5390 3940 50  0001 C CNN
 F 3 "~" H 5350 3950 50  0001 C CNN
@@ -416,21 +415,21 @@ M5_SRV_ON
 Text GLabel 6200 3950 2    50   Input ~ 0
 M5_SRV_ON_EXT
 $Comp
-L Isolator:TLP291-4 U13
+L Isolator:TLP290-4 U13
 U 2 1 5D5B002D
 P 5800 5000
 F 0 "U13" H 5800 5325 50  0000 C CNN
-F 1 "TLP293-4" H 5800 5234 50  0000 C CNN
+F 1 "TLP292-4" H 5800 5234 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5600 4800 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5800 5000 50  0001 L CNN
 	2    5800 5000
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R38
+L Device:R_US R86
 U 1 1 5D5B0040
 P 5350 4900
-F 0 "R38" V 5450 4850 50  0000 C CNN
+F 0 "R86" V 5450 4850 50  0000 C CNN
 F 1 "330" V 5250 4900 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5390 4890 50  0001 C CNN
 F 3 "~" H 5350 4900 50  0001 C CNN
@@ -446,21 +445,21 @@ M5_ALRM_RES
 Text GLabel 6200 4900 2    50   Input ~ 0
 M5_ALRM_RES_EXT
 $Comp
-L Isolator:TLP291-4 U13
+L Isolator:TLP290-4 U13
 U 3 1 5D5B004A
 P 5800 5950
 F 0 "U13" H 5800 6275 50  0000 C CNN
-F 1 "TLP293-4" H 5800 6184 50  0000 C CNN
+F 1 "TLP292-4" H 5800 6184 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5600 5750 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5800 5950 50  0001 L CNN
 	3    5800 5950
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R39
+L Device:R_US R87
 U 1 1 5D5B005D
 P 5350 5850
-F 0 "R39" V 5450 5800 50  0000 C CNN
+F 0 "R87" V 5450 5800 50  0000 C CNN
 F 1 "330" V 5250 5850 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 5390 5840 50  0001 C CNN
 F 3 "~" H 5350 5850 50  0001 C CNN
@@ -476,21 +475,21 @@ M5_DEV_CLR
 Text GLabel 6200 5850 2    50   Input ~ 0
 M5_DEV_CLR_EXT
 $Comp
-L Isolator:TLP291-4 U14
+L Isolator:TLP290-4 U14
 U 3 1 5D5C2C00
 P 9100 4050
 F 0 "U14" H 9100 4375 50  0000 C CNN
-F 1 "TLP293-4" H 9100 4284 50  0000 C CNN
+F 1 "TLP292-4" H 9100 4284 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 8900 3850 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9100 4050 50  0001 L CNN
 	3    9100 4050
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R43
+L Device:R_US R91
 U 1 1 5D5C2C13
 P 8650 3950
-F 0 "R43" V 8750 3900 50  0000 C CNN
+F 0 "R91" V 8750 3900 50  0000 C CNN
 F 1 "330" V 8550 3950 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8690 3940 50  0001 C CNN
 F 3 "~" H 8650 3950 50  0001 C CNN
@@ -506,21 +505,21 @@ M6_SRV_ON
 Text GLabel 9500 3950 2    50   Input ~ 0
 M6_SRV_ON_EXT
 $Comp
-L Isolator:TLP291-4 U14
+L Isolator:TLP290-4 U14
 U 4 1 5D5C2C1D
 P 9100 5000
 F 0 "U14" H 9100 5325 50  0000 C CNN
-F 1 "TLP293-4" H 9100 5234 50  0000 C CNN
+F 1 "TLP292-4" H 9100 5234 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 8900 4800 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9100 5000 50  0001 L CNN
 	4    9100 5000
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R44
+L Device:R_US R92
 U 1 1 5D5C2C30
 P 8650 4900
-F 0 "R44" V 8750 4850 50  0000 C CNN
+F 0 "R92" V 8750 4850 50  0000 C CNN
 F 1 "330" V 8550 4900 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8690 4890 50  0001 C CNN
 F 3 "~" H 8650 4900 50  0001 C CNN
@@ -536,21 +535,21 @@ M6_ALRM_RES
 Text GLabel 9500 4900 2    50   Input ~ 0
 M6_ALRM_RES_EXT
 $Comp
-L Isolator:TLP291-4 U15
+L Isolator:TLP290-4 U15
 U 1 1 5D5C2C3A
 P 9100 5950
 F 0 "U15" H 9100 6275 50  0000 C CNN
-F 1 "TLP293-4" H 9100 6184 50  0000 C CNN
+F 1 "TLP292-4" H 9100 6184 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 8900 5750 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9100 5950 50  0001 L CNN
 	1    9100 5950
 	1    0    0    -1  
 $EndComp
 $Comp
-L Device:R_US R45
+L Device:R_US R93
 U 1 1 5D5C2C4D
 P 8650 5850
-F 0 "R45" V 8750 5800 50  0000 C CNN
+F 0 "R93" V 8750 5800 50  0000 C CNN
 F 1 "330" V 8550 5850 50  0000 C CNN
 F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder" V 8690 5840 50  0001 C CNN
 F 3 "~" H 8650 5850 50  0001 C CNN
