@@ -2,6 +2,19 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#include "geometry.h"
+
+/****************************************************************************
+ * There are 3 reference frames in this system.
+ *  1. The fixed world frame with x-axis points to the Earth magnetic
+ *     north, y-axis points to the east, and z-axis points down.
+ *  2. The platform frame having the origin at the center of
+ *     platform-base with x-axis points forward and z-axis points down.
+ *  3. The end-effector frame having the origin at the center of
+ *     the end-effector with x-axis points toward the IMU sensor
+ *     and z-axis points down.
+ ****************************************************************************/
+
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
@@ -17,24 +30,25 @@
 #define BISEP_LENGTH        (95.0f)  /* Length of an actuated arm */
 #define FORE_LENGTH         (110.0f) /* Length of a free arm */
 
-/****************************************************************************
- * Data Types
- ****************************************************************************/
-typedef struct 
-{
-    float x;
-    float y;
-    float z;
-}position_t;
-
-typedef struct
-{
-    float w, x, y, z;
-}quaternion_t;
-
 /************************************************************************************
  * Private Data
  ************************************************************************************/
+/* Coordinate of IMU sensor respected to the origin of the end-effector. */
+const position_t sensor_disp = 
+{
+    .x = 160.0f,
+    .y = 0,
+    .z = 0,
+};
+
+/* Coordinate displacement between base frame and end-effector frame */
+const position_t end_effector_disp =
+{
+    .x = 0,
+    .y = 0,
+    .z = -100.0f,
+};
+
 static position_t base_pos[6], end_pos[6];
 static quaternion_t init_orientation;
 
@@ -105,6 +119,20 @@ static void q_multiply( quaternion_t* res, quaternion_t* q1, quaternion_t* q2 )
     res->z = (q1->w*q2->z) + (q1->x*q2->y) - (q1->y*q2->x) + (q1->z*q2->w);
 }
 
+/* Calculate anti quaternion to make "qc" orientation becomes "qr" orientation */
+static void q_anti_relative( quaternion_t* res, quaternion_t* qc, quaternion_t* qr )
+{
+    quaternion_t qc_c;
+
+    /* qc_c = conjugate of qc */
+    qc_c.w = qc->w;
+    qc_c.x = -(qc->x);
+    qc_c.y = -(qc->y);
+    qc_c.z = -(qc->z);
+
+    q_multiply( res, qr, &qc_c );
+}
+
 /*-----------------------------------------------------------------------------------
  * Create a quaternion with just angle around Z-axis from the given quaternion
  *----------------------------------------------------------------------------------*/
@@ -147,13 +175,13 @@ static void q_rotate_vector( position_t* v, quaternion_t* q )
     qv.z = v->z;
 
     /* Rotate and store result in q_c */
-    q_multiply( &tmp, &v, &q_c );
-    q_multiply( &q_c, q, &tmp );
+    q_multiply( &tmp, &qv, &q_c );
+    q_multiply( &qv, q, &tmp );
 
     /* Copy the result */
-    v->x = q_c.x;
-    v->y = q_c.y;
-    v->z = q_c.z;
+    v->x = qv.x;
+    v->y = qv.y;
+    v->z = qv.z;
 }
 
 /*-----------------------------------------------------------------------------------
@@ -176,15 +204,11 @@ static void vector_rotate_z( position_t* v, float angle )
     v->y = y;
 }
 
-/****************************************************************************
- * Public Functions
- ****************************************************************************/
-
 /*-----------------------------------------------------------------------------------
  * Initialize all joint positions with respected to the machine structure.
  * This initialization already include yaw difference at the starting point.
  *----------------------------------------------------------------------------------*/
-void init_positions(void)
+static void init_positions(void)
 {
     /* Initialize some known positions */
     base_pos[4].x = -( BASE_RADIUS * cosf( asinf( ( BASE_JOINT_SPACE / 2.0f ) / BASE_RADIUS) ) );
@@ -200,12 +224,6 @@ void init_positions(void)
     end_pos[5].x = end_pos[4].x;
     end_pos[5].y = -(end_pos[4].y);
     end_pos[5].z = 0;
-
-    /* Rotate each known points according to the initial yaw angle */
-    q_rotate_vector( &(base_pos[4]), &init_orientation );
-    q_rotate_vector( &(base_pos[5]), &init_orientation );
-    q_rotate_vector( &(end_pos[4]), &init_orientation );
-    q_rotate_vector( &(end_pos[5]), &init_orientation );
 
     /* Copy coordinates of the known points to relavant points */
     base_pos[0].x = base_pos[4].x;
@@ -245,22 +263,60 @@ void init_positions(void)
     vector_rotate_z( &(end_pos[1]), JOINT_P_ANGLE );
     vector_rotate_z( &(end_pos[2]), -JOINT_P_ANGLE );
     vector_rotate_z( &(end_pos[3]), -JOINT_P_ANGLE );
+
+    /* We don't have to shift the end-effector origin to IMU position
+     * because the end-effector is a rigid body. All points on this 
+     * body would have same orientation as well as linear movements.
+     */
+
+    /* Finally, adjust each points according to the initial orientation */
+    for(int i = 0; i < 6; i++)
+    {
+        q_rotate_vector( &(base_pos[i]), &init_orientation );
+        q_rotate_vector( &(end_pos[i]), &init_orientation );
+    }
+}
+
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
+/*-----------------------------------------------------------------------------------
+ * Initialize system geometry.
+ *----------------------------------------------------------------------------------*/
+void init_geometry( quaternion_t *start_orientation )
+{
+    float   yaw;
+    quaternion_t *q = start_orientation; /* Just for shorter name */
+
+    /* Initialize the orientation of the origin with the current yaw */
+
+    /* Extracting Yaw by the formula from 
+    https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles */
+    yaw = atan2f( 2.0f * (q->w * q->z + q->x * q->y), 
+                1.0f - (2.0f * (q->y * q->y + q->z * q->z)) );
+    
+    /* Convert yaw to quaternion */
+    yaw *= 0.5f;
+    init_orientation.w = cosf(yaw);
+    init_orientation.x = 0.0f;
+    init_orientation.y = 0.0f;
+    init_orientation.z = sinf(yaw);
+
+    /* Then assign all joint positions according to the design and the orientation */
+    init_positions();
 }
 
 /*-----------------------------------------------------------------------------------
  * Calculate the new position of each end-effector joints to counter 
- * the current orientation "q" (only in x and y rotation)
+ * the current orientation "q" and position "p"
  *----------------------------------------------------------------------------------*/
-void gen_compensate_pos( position_t* new, quaternion_t* q )
+void gen_compensate_pos( position_t new[], quaternion_t* q, position_t* p )
 {
     quaternion_t q_diff;
 
     /* Calculate coutner-quaternion between q and the original one */
-    q_diff.w = init_orientation.w - q->w;
-    q_diff.x = -(q->x);     /* "init_orientation" has zero x and y components */
-    q_diff.y = -(q->y);
-    q_diff.z = 0;           /* Discard z angle */
-    q_normalize( &q_diff );
+    q_anti_relative( &q_diff, q, &init_orientation );
 
     /* Initialize result coordinates with initial coordinates then rotate
         those coordinates with respected to the difference quaternion. */
@@ -271,4 +327,29 @@ void gen_compensate_pos( position_t* new, quaternion_t* q )
         new[i].y = end_pos[i].y;
         q_rotate_vector( &(new[i]), &q_diff );
     }
+}
+
+/*-----------------------------------------------------------------------------------
+ * Calculate inverse kinematic of a given end-effector joint position
+ * to motor angle.
+ *----------------------------------------------------------------------------------*/
+float inverse_kinematic( position_t *pos )
+{
+    float theta1;
+    float cos_theta3;
+    float sin_theta2, cos_theta2;
+    float fa_cos, baba_fa_cos;      /* Temporary variables */
+
+    cos_theta3 = cosf( asinf( pos->y / FORE_LENGTH ) );
+
+    fa_cos = FORE_LENGTH * cos_theta3;
+    baba_fa_cos = ( BISEP_LENGTH * BISEP_LENGTH ) + ( fa_cos * fa_cos );
+    cos_theta2 = ( pos->x * pos->x ) + ( pos->z * pos->z ) - baba_fa_cos;
+    cos_theta2 /= ( 2.0f * BISEP_LENGTH * fa_cos );
+
+    sin_theta2 = FastSqrt( 1 - (cos_theta2 * cos_theta2) ); /* Sine value can both + and - */
+
+    theta1 = atan2f( pos->z, pos->x ) - atan2f( (FORE_LENGTH * cos_theta3 * sin_theta2), (BISEP_LENGTH + (cos_theta2 * fa_cos)) );
+
+    return( theta1 );
 }

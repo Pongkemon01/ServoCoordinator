@@ -427,7 +427,7 @@ static void stm32_tim_gpioconfig(uint32_t cfg, stm32_tim_channel_t mode)
 static int stm32_tim_setclock(FAR struct stm32_tim_dev_s *dev, uint32_t freq)
 {
   uint32_t freqin;
-  int prescaler;
+  uint32_t prescaler;
 
   DEBUGASSERT(dev != NULL);
 
@@ -543,7 +543,7 @@ static int stm32_tim_setclock(FAR struct stm32_tim_dev_s *dev, uint32_t freq)
       prescaler = 0xffff;
     }
 
-  stm32_putreg16(dev, STM32_BTIM_PSC_OFFSET, prescaler);
+  stm32_putreg16(dev, STM32_BTIM_PSC_OFFSET, (uint16_t)prescaler);
   stm32_tim_enable(dev);
 
   return prescaler;
@@ -561,6 +561,7 @@ static int stm32_tim_setisr(FAR struct stm32_tim_dev_s *dev,
 {
   int vectorno;
 
+  UNUSED(source); /* Source is currently unsupported */
   DEBUGASSERT(dev != NULL);
 
   switch (((struct stm32_tim_priv_s *)dev)->base)
@@ -677,7 +678,7 @@ static int stm32_tim_checkint(FAR struct stm32_tim_dev_s *dev, uint16_t source)
 
 static void stm32_tim_ackint(FAR struct stm32_tim_dev_s *dev, uint16_t source)
 {
-  stm32_putreg16(dev, STM32_BTIM_SR_OFFSET, ~(source));
+  stm32_putreg16(dev, STM32_BTIM_SR_OFFSET, ~source);
 }
 
 /************************************************************************************
@@ -819,15 +820,15 @@ static int stm32_tim_setchannel(FAR struct stm32_tim_dev_s *dev, uint8_t channel
 
   if (mode & STM32_TIM_CH_POLARITY_NEG)
     {
-      ccer_val |= ATIM_CCER_CC1P << (channel << 2);
+      ccer_val |= ATIM_CCER_CC1P << (channel << 2U);
     }
 
   /* Define its position (shift) and get register offset */
 
   if (channel & 1)
     {
-      ccmr_val  <<= 8;
-      ccmr_mask <<= 8;
+      ccmr_val  <<= 8U;
+      ccmr_mask <<= 8U;
     }
 
   if (channel > 1)
@@ -1214,7 +1215,7 @@ static int stm32_tim_setcompare(FAR struct stm32_tim_dev_s *dev, uint8_t channel
   return OK;
 }
 
-static int stm32_tim_getcapture(FAR struct stm32_tim_dev_s *dev, uint8_t channel)
+static uint32_t stm32_tim_getcapture(FAR struct stm32_tim_dev_s *dev, uint8_t channel)
 {
   DEBUGASSERT(dev != NULL);
 

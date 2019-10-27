@@ -57,17 +57,19 @@ typedef enum
 #define _MIOC(id)   _IOC(_MIOCBASE, id)
 
 #define MOTOR_CMD_INIT        _MIOC(1) /* Arg: None */
-#define MOTOR_CMD_RUN         _MIOC(2) /* Arg: struct motor_run_param_t* pointer */
-#define MOTOR_CMD_STOP        _MIOC(3) /* Arg: None */
-#define MOTOR_CMD_CLR_ALARM   _MIOC(4) /* Arg: None */
-#define MOTOR_CMD_GET_STATE   _MIOC(5) /* Arg: uint32_t* pointer */
-#define MOTOR_CMD_GET_STATUS  _MIOC(6) /* Arg: uint32_t* pointer */
+#define MOTOR_CMD_SVOFF       _MIOC(2) /* Turn-off Servo-on signal */
+#define MOTOR_CMD_SVON        _MIOC(3) /* Turn-on Servo-on signal */
+#define MOTOR_CMD_RUN         _MIOC(4) /* Arg: struct motor_run_param_t* pointer */
+#define MOTOR_CMD_STOP        _MIOC(5) /* Arg: None */
+#define MOTOR_CMD_CLR_ALARM   _MIOC(6) /* Arg: None */
+#define MOTOR_CMD_GET_STATE   _MIOC(7) /* Arg: uint32_t* pointer */
+#define MOTOR_CMD_GET_STATUS  _MIOC(8) /* Arg: uint32_t* pointer */
 
 /* RUN command parameter
  * 
  * Motor characteristics are:
  *   - 10000 steps per revolution
- *   - Minimum speed is 5 steps per second
+ *   - Minimum speed is 5 steps per second (Absolute number is 3.02 for 200kHz PFM clock)
  *   - Maximum speed is 10000 steps per second
  */
 #define MOTOR_MIN_SPEED     5

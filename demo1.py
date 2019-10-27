@@ -77,17 +77,20 @@ s = "!SON?m=" + str(motor_id) + "\n";
 fb.write( bytes(s, 'utf-8') )
 r = readlineCR( fb )
 print("Response = ", r)
+fb.write( b"!SON?m=1\n" )
+r = readlineCR( fb )
+print("Response = ", r)
 
 t = input("Pause")
 
-s = "!RUN?m=" + str(motor_id) + ":dir=cw:spd=1000:stp=65000\n";
+s = "!RUN?m=" + str(motor_id) + ":dir=cw:spd=50:stp=1000\n";
 fb.write( bytes(s, 'utf-8') )
 r = readlineCR( fb )
 print("Response = ", r)
 
 t = input("Pause")
 
-s = "!RUN?m=" + str(motor_id) + ":dir=ccw:spd=500:stp=3000\n";
+s = "!RUN?m=" + str(motor_id) + ":dir=ccw:spd=1000:stp=60000\n";
 fb.write( bytes(s, 'utf-8') )
 r = readlineCR( fb )
 print("Response = ", r)
@@ -96,6 +99,10 @@ t = input("Pause")
 
 s = "!SOF?m=" + str(motor_id) + "\n";
 fb.write( bytes(s, 'utf-8') )
+r = readlineCR( fb )
+print("Response = ", r)
+
+fb.write( b"!SOF?m=1\n" )
 r = readlineCR( fb )
 print("Response = ", r)
 

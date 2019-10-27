@@ -423,7 +423,7 @@ static int motor_enter_ready(FAR struct motor_priv_s* priv)
     motor_stop_pfm(priv);
   }
 
-  motor_servo_on(priv->cfg);
+  //motor_servo_on(priv->cfg);
   motor_led_green_on(priv->cfg);
   motor_led_red_off(priv->cfg);
 
@@ -447,6 +447,10 @@ static int motor_enter_ready(FAR struct motor_priv_s* priv)
 static int motor_emergency(int irq, FAR void *context, FAR void *arg)
 {
   int i;
+
+  UNUSED(irq);
+  UNUSED(context);
+  UNUSED(arg);
 
   if(motor_emergency_stat())
   {
@@ -484,6 +488,9 @@ static int motor_alarm(int irq, FAR void *context, FAR void *arg)
 {
   FAR struct motor_priv_s* priv = (FAR struct motor_priv_s*)arg;
 
+  UNUSED(irq);
+  UNUSED(context);
+
   if(motor_alarm_stat(priv->cfg))
     return(motor_enter_alarm(priv));
   else
@@ -517,6 +524,9 @@ static const struct file_operations g_motorops =
   NULL,        /* seek */
   motor_ioctl, /* ioctl */
   NULL         /* poll */
+#ifndef CONFIG_DISABLE_PSEUDOFS_OPERATIONS
+  , NULL      /* unlink */
+#endif
 };
 
 /****************************************************************************
@@ -535,7 +545,7 @@ static int motor_open(FAR struct file *filep)
 {
   FAR struct inode           *inode = filep->f_inode;
   FAR struct motor_priv_s    *motor = inode->i_private;
-  uint8_t                     tmp;
+  uint32_t                    tmp;
   int                         ret;
 
   _info("crefs: %d\n", motor->crefs);
@@ -661,7 +671,9 @@ errout:
 
 static ssize_t motor_read(FAR struct file *filep, FAR char *buffer, size_t buflen)
 {
-  char v;
+  uint8_t v;
+  UNUSED(filep);
+  UNUSED(buflen);
 
   if(motor_priv[0].state != MOTOR_READY)
     v = 1;
@@ -680,7 +692,7 @@ static ssize_t motor_read(FAR struct file *filep, FAR char *buffer, size_t bufle
   if(motor_emergency_stat())
     v |= 0x80;
 
-  *buffer = v;
+  *buffer = (char)v;
 
   return 1;
 }
@@ -696,6 +708,9 @@ static ssize_t motor_read(FAR struct file *filep, FAR char *buffer, size_t bufle
 static ssize_t motor_write(FAR struct file *filep, FAR const char *buffer, size_t buflen)
 {
   /* Return a failure */
+  UNUSED(filep);
+  UNUSED(buffer);
+  UNUSED(buflen);
 
   return -EPERM;
 }
@@ -734,6 +749,16 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
         ret = motor_enter_ready(motor);
         break;
 
+      case MOTOR_CMD_SVOFF:
+        motor_servo_off(motor->cfg);
+        ret = OK;
+        break;
+
+      case MOTOR_CMD_SVON:
+        motor_servo_on(motor->cfg);
+        ret = OK;
+        break;
+
       case MOTOR_CMD_RUN:
         {
           FAR struct motor_run_param_t *motor_run_param = (FAR struct motor_run_param_t *)arg;
@@ -741,7 +766,7 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
              motor_run_param->speed <= MOTOR_MAX_SPEED)
           {
             uint16_t off_period;
-            off_period = (uint16_t)(CONFIG_STM32_PFM_FREQ / motor_run_param->speed) - CONFIG_STM32_PFM_SHOT_PEROID;
+            off_period = (uint16_t)(CONFIG_STM32_PFM_FREQ / (uint32_t)(motor_run_param->speed)) - CONFIG_STM32_PFM_SHOT_PEROID;
             _info("Run motor with speed %u (i.e. period %u)\n", off_period, motor_run_param->speed);
 
             motor_stop_pfm(motor);

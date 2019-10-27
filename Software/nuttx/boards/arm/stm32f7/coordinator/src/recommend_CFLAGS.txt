@@ -1,0 +1,1 @@
+-O -W -Wall -Wstrict-prototypes -Wmissing-prototypes -Wshadow -Wconversion -Wbad-function-cast -Wcast-align -Wcast-qual -Wmissing-declarations -Wnested-externs -Wpointer-arith -Wwrite-strings -pedantic -isystem -ansi

@@ -24,6 +24,9 @@ def gen_rotation_matrix ( a ):   # a is np.array of yaw,pitch,roll respectively
     c3 = np.cos(a[2])
     return( np.array (( (c1*s2, (c1*s2*s3 - c3*s1), (s1*s3 + c1*c3*s2)), (c2*s1, (c1*c3 + s1*s2*s3), (c3*s1*s2 - c1*s3)), (-s2, c2*s3, c2*c3) )))
 
+def q_rotate( vector, quaternion ):
+    return( q_multiply( q_multiply(quaternion, vector), q_conj(quaternion) ) )
+
 # Length of each arm
 l1 = 95                         # Length of the actuated arms
 l2 = 335                        # Length of the free arms
@@ -113,6 +116,7 @@ print(" - Spherical joint 3 = ", ei3)
 print(" - Spherical joint 4 = ", ei4)
 print(" - Spherical joint 5 = ", ei5)
 print(" - Spherical joint 6 = ", ei6)
+print("-----------------------------------------------------------------------------------")
 print()
 
 #==========================
@@ -128,56 +132,57 @@ R = np.array(((c, 0, s), (0, 1, 0), (-s, 0, c)))
 # Generate quaternion
 q = np.array(((np.cos(pitch/2)), 0, (np.sin(pitch/2)), 0))
 q = q_normalize( q )
-q_star = q_conj( q )
 
 # Calculate the result
 re1 = np.dot(R, e1)
-
-eq1 = np.array((0, e1[0], e1[1], e1[2]))
-tre = q_multiply( eq1, q_star )
-qe1 = q_multiply( q, tre )
+qe1 = q_rotate( np.array((0, e1[0], e1[1], e1[2])), q )
 
 # print result
+print("The original vector is ", e1)
 print("The results from rotation are:")
 print(" - By rotational matrix = ", re1)
 print(" - By quaternion = ", qe1)
 print("The rotational matrix = ", R )
 print("The quaternion = ", q )
+print("-----------------------------------------------------------------------------------")
 print()
 
 #==========================
-# Test simulation of movement
+# Test anti-quaternion
 #==========================
-yaw = 45 * (np.pi / 180.0)  # Initial yaw 45 degree
+# Initial vector
+iv = np.array((0, e1[0], e1[1], e1[2]))
 # Generate reference quaternion
-qi = np.array(((np.cos(yaw/2)), 0, 0, (np.sin(yaw/2))))
-qi = q_normalize( qi )
-qi_star = q_conj( qi )
-
-# Generate arbitary random quaternion
-#qr = np.array(( np.random.random(),
-#                np.random.random(),
-#                np.random.random(),
-#                np.random.random() ))
 qr = np.array(((np.cos(pitch/2)), 0, (np.sin(pitch/2)), 0))
 qr = q_normalize( qr )
-qr_star = q_conj( qr )
 
-# Computer relative quaternion
-q_diff = np.array(((qi[0] - qr[0]), -qr[1], -qr[2], 0))
-q_diff = q_normalize( q_diff )
-q_diff_star = q_conj( q_diff )
+# Generate first reference point
+rv = q_rotate( iv, qr )
 
-# Transform
-tq1 = np.array((0, e1[0], e1[1], e1[2]))
-tte = q_multiply( qe1, q_diff_star )
-tq1 = q_multiply ( q_diff, tte )
+yaw = 45 * (np.pi / 180.0)  # Initial yaw 45 degree
+# Generate control rotation quaternion
+qi = np.array(((np.cos(yaw/2)), 0, 0, (np.sin(yaw/2))))
+qi = q_normalize( qi )
+
+# Generate current vector
+cv = q_rotate( iv, qi )
+
+# Generate anti-quaternion to make cv becoming rv
+# aq = qr / qi  ==>   aq = ar * qi'
+aq = q_multiply( qr, q_conj(qi) )
+aq = q_normalize(aq)
+
+# Rotate cv with aq to get the final vector
+aqv = q_rotate( cv, aq )
 
 print("Initial quaternion is ", qi)
 print("Current quaternion is ", qr)
-print("Difference quaternion is ", q_diff)
-print("The results from rotation is ", tq1)
-
+print("Anti-quaternion is ", aq)
+print("The reference vector is ", rv)
+print("Current vector is ", cv)
+print("The results from anti-quaternion is ", aqv)
+print("-----------------------------------------------------------------------------------")
+print()
 
 #plt.Circle((0,0), radius=rb, fill=False, color="k")
 #plt.plot([a1[0], a2[0], a3[0], a4[0], a5[0], a6[0], a1[0]], [a1[1], a2[1], a3[1], a4[1], a5[1], a6[1], a1[1]])

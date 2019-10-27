@@ -137,7 +137,17 @@
     defined(CONFIG_STM32F7_PFM3)  || defined(CONFIG_STM32F7_PFM4)  || \
     defined(CONFIG_STM32F7_PFM5)  || defined(CONFIG_STM32F7_PFM6)
 
+#define ACTIVE_LOW      1
 
+#ifdef ACTIVE_LOW
+# define PFM_OUT_ACT     (STM32_TIM_CH_OUTACT | STM32_TIM_CH_POLARITY_NEG)
+# define PFM_OUT_INACT   (STM32_TIM_CH_OUTINACT | STM32_TIM_CH_POLARITY_NEG)
+# define PFM_OUT_OFF     (STM32_TIM_CH_OUTLO | STM32_TIM_CH_POLARITY_NEG)
+#else
+# define PFM_OUT_ACT     STM32_TIM_CH_OUTACT
+# define PFM_OUT_INACT   STM32_TIM_CH_OUTINACT
+# define PFM_OUT_OFF     STM32_TIM_CH_OUTLO
+#endif
 /************************************************************************************
  * Private Types
  ************************************************************************************/
@@ -283,16 +293,16 @@ struct stm32_pfm_priv_s stm32_pfm6_priv =
 static int stm32_pfm_interrupt(int irq, FAR void *context, FAR void *arg)
 {
   FAR struct stm32_pfm_priv_s *priv = (FAR struct stm32_pfm_priv_s *)arg;
-  uint32_t regval;
   irqstate_t flags;
 
   DEBUGASSERT(priv != NULL);
+  UNUSED(irq);
+  UNUSED(context);
 
   /* Verify that this is an capture/compare interrupt.  Do noting if something
   else. */
 
-  regval = priv->tim->ops->checkint(priv->tim, (1 << priv->compare_channel));
-  if( regval == 0 )
+  if( priv->tim->ops->checkint(priv->tim, (((uint16_t)1U) << priv->compare_channel)) == 0 )
     return OK;
 
   /*
@@ -303,7 +313,7 @@ static int stm32_pfm_interrupt(int irq, FAR void *context, FAR void *arg)
   /* Disable the update/global interrupt at the NVIC */
   flags = enter_critical_section();
 
-  priv->tim->ops->ackint(priv->tim, (1 << priv->compare_channel));
+  priv->tim->ops->ackint(priv->tim, (((uint16_t)1U) << priv->compare_channel));
   switch( priv->state )
   {
     case STM32_PFM_STATE_LEADING:
@@ -312,7 +322,7 @@ static int stm32_pfm_interrupt(int irq, FAR void *context, FAR void *arg)
        */
       priv->shadow_ccr += CONFIG_STM32_PFM_SHOT_PEROID;
       priv->tim->ops->setcompare(priv->tim, priv->compare_channel, priv->shadow_ccr);
-      priv->tim->ops->setchannel(priv->tim, priv->compare_channel, STM32_TIM_CH_OUTINACT);
+      priv->tim->ops->setchannel(priv->tim, priv->compare_channel, PFM_OUT_INACT);
 
       priv->state = STM32_PFM_STATE_SHOT;
       break;
@@ -327,31 +337,25 @@ static int stm32_pfm_interrupt(int irq, FAR void *context, FAR void *arg)
       {
         _info("PFM FINISH\n");
         /* All pulses are done! Finished */
-        priv->tim->ops->setchannel(priv->tim, priv->compare_channel, STM32_TIM_CH_OUTLO);
-        priv->tim->ops->disableint(priv->tim, (1 << priv->compare_channel));
+        priv->tim->ops->setchannel(priv->tim, priv->compare_channel, PFM_OUT_OFF);
+        priv->tim->ops->disableint(priv->tim, (((uint16_t)1U) << priv->compare_channel));
         priv->state = STM32_PFM_STATE_IDLE;
       }
       else
       {
         priv->shadow_ccr += priv->current_leading_period;
         priv->tim->ops->setcompare(priv->tim, priv->compare_channel, priv->shadow_ccr);
-        priv->tim->ops->setchannel(priv->tim, priv->compare_channel, STM32_TIM_CH_OUTACT);
+        priv->tim->ops->setchannel(priv->tim, priv->compare_channel, PFM_OUT_ACT);
         priv->state = STM32_PFM_STATE_LEADING;
       }
       break;
 
-    case STM32_PFM_STATE_IDLE:
-      /* We should not be here but its ok */
-      priv->tim->ops->setchannel(priv->tim, priv->compare_channel, STM32_TIM_CH_OUTLO);
-      priv->tim->ops->disableint(priv->tim, (1 << priv->compare_channel));
-      priv->state = STM32_PFM_STATE_IDLE;
-      break;
-
     default:
-      /* Fail proof state. All unknown states should be transit to IDLE state */
-      _warn("PFM TIMER %d UNKNOWN STATE = %d\n", priv->timer_id, priv->state );
-      priv->tim->ops->setchannel(priv->tim, priv->compare_channel, STM32_TIM_CH_OUTLO);
-      priv->tim->ops->disableint(priv->tim, (1 << priv->compare_channel));
+      /* We should not be here but its ok */
+      /* Invalid state. All unknown states should be transit to IDLE state */
+      _warn("PFM TIMER %d INVALID STATE = %d\n", priv->timer_id, priv->state );
+      priv->tim->ops->setchannel(priv->tim, priv->compare_channel, PFM_OUT_OFF);
+      priv->tim->ops->disableint(priv->tim, (((uint16_t)1U) << priv->compare_channel));
       priv->state = STM32_PFM_STATE_IDLE;
       break;
   }
@@ -393,8 +397,8 @@ static void stm32_pfm_stop(FAR struct stm32_pfm_dev_s *dev)
 
   if(pfm->state != STM32_PFM_STATE_IDLE)
   {
-    pfm->tim->ops->setchannel(pfm->tim, pfm->compare_channel, STM32_TIM_CH_OUTLO);
-    pfm->tim->ops->disableint(pfm->tim, (1 << pfm->compare_channel));
+    pfm->tim->ops->setchannel(pfm->tim, pfm->compare_channel, PFM_OUT_OFF);
+    pfm->tim->ops->disableint(pfm->tim, (((uint16_t)1U) << pfm->compare_channel));
     pfm->state = STM32_PFM_STATE_IDLE;
   }
 
@@ -417,21 +421,21 @@ static void stm32_pfm_start(FAR struct stm32_pfm_dev_s *dev,
   FAR struct stm32_pfm_priv_s *pfm = (FAR struct stm32_pfm_priv_s *)(dev);
 
   DEBUGASSERT(pfm != NULL);
+  _info("Starting PFM\n");
 
   /* Disable the update/global interrupt at the NVIC */
   flags = enter_critical_section();
 
-  _info("Starting PFM\n");
   pfm->current_leading_period = leading_period;
   pfm->cycle_count = total_cycle;
 
-  if( pfm->state == STM32_PFM_STATE_IDLE)
+  if( pfm->state == STM32_PFM_STATE_IDLE )
   {
     /* The PFM is in IDLE state. Thus, start it. */
     pfm->shadow_ccr = pfm->tim->ops->getcapture(pfm->tim, pfm->compare_channel) + leading_period;
     pfm->tim->ops->setcompare(pfm->tim, pfm->compare_channel, pfm->shadow_ccr);
-    pfm->tim->ops->setchannel(pfm->tim, pfm->compare_channel, STM32_TIM_CH_OUTACT);
-    pfm->tim->ops->enableint(pfm->tim, (1 << pfm->compare_channel));
+    pfm->tim->ops->setchannel(pfm->tim, pfm->compare_channel, PFM_OUT_ACT);
+    pfm->tim->ops->enableint(pfm->tim, (((uint16_t)1U) << pfm->compare_channel));
     pfm->state = STM32_PFM_STATE_LEADING;
   }
 
@@ -465,9 +469,9 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
         stm32_pfm1_priv.tim->ops->setclock(stm32_pfm1_priv.tim, CONFIG_STM32_PFM_FREQ);
         stm32_pfm1_priv.tim->ops->setperiod(stm32_pfm1_priv.tim, 0xFFFFFFFFUL);
         stm32_pfm1_priv.tim->ops->setisr(stm32_pfm1_priv.tim, stm32_pfm_interrupt, 
-                    &stm32_pfm1_priv, (1 << stm32_pfm1_priv.compare_channel));
-        stm32_pfm1_priv.tim->ops->setchannel(stm32_pfm1_priv.tim, stm32_pfm1_priv.compare_channel, STM32_TIM_CH_OUTLO);
-        stm32_pfm1_priv.tim->ops->disableint(stm32_pfm1_priv.tim, (1 << stm32_pfm1_priv.compare_channel));
+                    &stm32_pfm1_priv, (((uint16_t)1U) << stm32_pfm1_priv.compare_channel));
+        stm32_pfm1_priv.tim->ops->setchannel(stm32_pfm1_priv.tim, stm32_pfm1_priv.compare_channel, PFM_OUT_OFF);
+        stm32_pfm1_priv.tim->ops->disableint(stm32_pfm1_priv.tim, (((uint16_t)1U) << stm32_pfm1_priv.compare_channel));
 
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm1_priv));
       }
@@ -487,9 +491,9 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
         stm32_pfm2_priv.tim->ops->setclock(stm32_pfm2_priv.tim, CONFIG_STM32_PFM_FREQ);
         stm32_pfm2_priv.tim->ops->setperiod(stm32_pfm2_priv.tim, 0xFFFFFFFFUL);
         stm32_pfm2_priv.tim->ops->setisr(stm32_pfm2_priv.tim, stm32_pfm_interrupt, 
-                    &stm32_pfm2_priv, (1 << stm32_pfm2_priv.compare_channel));
-        stm32_pfm2_priv.tim->ops->setchannel(stm32_pfm2_priv.tim, stm32_pfm2_priv.compare_channel, STM32_TIM_CH_OUTLO);
-        stm32_pfm2_priv.tim->ops->disableint(stm32_pfm2_priv.tim, (1 << stm32_pfm2_priv.compare_channel));
+                    &stm32_pfm2_priv, (((uint16_t)1U) << stm32_pfm2_priv.compare_channel));
+        stm32_pfm2_priv.tim->ops->setchannel(stm32_pfm2_priv.tim, stm32_pfm2_priv.compare_channel, PFM_OUT_OFF);
+        stm32_pfm2_priv.tim->ops->disableint(stm32_pfm2_priv.tim, (((uint16_t)1U) << stm32_pfm2_priv.compare_channel));
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm2_priv));
       }
       else
@@ -508,9 +512,9 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
         stm32_pfm3_priv.tim->ops->setclock(stm32_pfm3_priv.tim, CONFIG_STM32_PFM_FREQ);
         stm32_pfm3_priv.tim->ops->setperiod(stm32_pfm3_priv.tim, 0xFFFFFFFFUL);
         stm32_pfm3_priv.tim->ops->setisr(stm32_pfm3_priv.tim, stm32_pfm_interrupt, 
-                    &stm32_pfm3_priv, (1 << stm32_pfm3_priv.compare_channel));
-        stm32_pfm3_priv.tim->ops->setchannel(stm32_pfm3_priv.tim, stm32_pfm3_priv.compare_channel, STM32_TIM_CH_OUTLO);
-        stm32_pfm3_priv.tim->ops->disableint(stm32_pfm3_priv.tim, (1 << stm32_pfm3_priv.compare_channel));
+                    &stm32_pfm3_priv, (((uint16_t)1U) << stm32_pfm3_priv.compare_channel));
+        stm32_pfm3_priv.tim->ops->setchannel(stm32_pfm3_priv.tim, stm32_pfm3_priv.compare_channel, PFM_OUT_OFF);
+        stm32_pfm3_priv.tim->ops->disableint(stm32_pfm3_priv.tim, (((uint16_t)1U) << stm32_pfm3_priv.compare_channel));
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm3_priv));
       }
       else
@@ -529,9 +533,9 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
         stm32_pfm4_priv.tim->ops->setclock(stm32_pfm4_priv.tim, CONFIG_STM32_PFM_FREQ);
         stm32_pfm4_priv.tim->ops->setperiod(stm32_pfm4_priv.tim, 0xFFFFFFFFUL);
         stm32_pfm4_priv.tim->ops->setisr(stm32_pfm4_priv.tim, stm32_pfm_interrupt, 
-                    &stm32_pfm4_priv, (1 << stm32_pfm4_priv.compare_channel));
-        stm32_pfm4_priv.tim->ops->setchannel(stm32_pfm4_priv.tim, stm32_pfm4_priv.compare_channel, STM32_TIM_CH_OUTLO);
-        stm32_pfm4_priv.tim->ops->disableint(stm32_pfm4_priv.tim, (1 << stm32_pfm4_priv.compare_channel));
+                    &stm32_pfm4_priv, (((uint16_t)1U) << stm32_pfm4_priv.compare_channel));
+        stm32_pfm4_priv.tim->ops->setchannel(stm32_pfm4_priv.tim, stm32_pfm4_priv.compare_channel, PFM_OUT_OFF);
+        stm32_pfm4_priv.tim->ops->disableint(stm32_pfm4_priv.tim, (((uint16_t)1U) << stm32_pfm4_priv.compare_channel));
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm4_priv));
       }
       else
@@ -550,9 +554,9 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
         stm32_pfm5_priv.tim->ops->setclock(stm32_pfm5_priv.tim, CONFIG_STM32_PFM_FREQ);
         stm32_pfm5_priv.tim->ops->setperiod(stm32_pfm5_priv.tim, 0xFFFFFFFFUL);
         stm32_pfm5_priv.tim->ops->setisr(stm32_pfm5_priv.tim, stm32_pfm_interrupt, 
-                    &stm32_pfm5_priv, (1 << stm32_pfm5_priv.compare_channel));
-        stm32_pfm5_priv.tim->ops->setchannel(stm32_pfm5_priv.tim, stm32_pfm5_priv.compare_channel, STM32_TIM_CH_OUTLO);
-        stm32_pfm5_priv.tim->ops->disableint(stm32_pfm5_priv.tim, (1 << stm32_pfm5_priv.compare_channel));
+                    &stm32_pfm5_priv, (((uint16_t)1U) << stm32_pfm5_priv.compare_channel));
+        stm32_pfm5_priv.tim->ops->setchannel(stm32_pfm5_priv.tim, stm32_pfm5_priv.compare_channel, PFM_OUT_OFF);
+        stm32_pfm5_priv.tim->ops->disableint(stm32_pfm5_priv.tim, (((uint16_t)1U) << stm32_pfm5_priv.compare_channel));
        return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm5_priv));
       }
       else
@@ -571,9 +575,9 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
         stm32_pfm6_priv.tim->ops->setclock(stm32_pfm6_priv.tim, CONFIG_STM32_PFM_FREQ);
         stm32_pfm6_priv.tim->ops->setperiod(stm32_pfm6_priv.tim, 0xFFFFFFFFUL);
         stm32_pfm6_priv.tim->ops->setisr(stm32_pfm6_priv.tim, stm32_pfm_interrupt, 
-                    &stm32_pfm6_priv, (1 << stm32_pfm6_priv.compare_channel));
-        stm32_pfm6_priv.tim->ops->setchannel(stm32_pfm6_priv.tim, stm32_pfm6_priv.compare_channel, STM32_TIM_CH_OUTLO);
-        stm32_pfm6_priv.tim->ops->disableint(stm32_pfm6_priv.tim, (1 << stm32_pfm6_priv.compare_channel));
+                    &stm32_pfm6_priv, (((uint16_t)1U) << stm32_pfm6_priv.compare_channel));
+        stm32_pfm6_priv.tim->ops->setchannel(stm32_pfm6_priv.tim, stm32_pfm6_priv.compare_channel, PFM_OUT_OFF);
+        stm32_pfm6_priv.tim->ops->disableint(stm32_pfm6_priv.tim, (((uint16_t)1U) << stm32_pfm6_priv.compare_channel));
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm6_priv));
       }
       else

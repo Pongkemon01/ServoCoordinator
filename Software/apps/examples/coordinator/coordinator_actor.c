@@ -60,6 +60,8 @@
  ****************************************************************************/
 #define MOTOR_CMD(id,cmd,arg)   (ioctl(iMotor[id], cmd, (unsigned long)arg))
 #define MOTOR_INIT(id)          MOTOR_CMD(id,MOTOR_CMD_INIT,0)
+#define MOTOR_SV_OFF(id)        MOTOR_CMD(id,MOTOR_CMD_SVOFF,0)
+#define MOTOR_SV_ON(id)         MOTOR_CMD(id,MOTOR_CMD_SVON,0)
 #define MOTOR_RUN(id,param_ptr) MOTOR_CMD(id,MOTOR_CMD_RUN,param_ptr)
 #define MOTOR_STOP(id)          MOTOR_CMD(id,MOTOR_CMD_STOP,0)
 #define MOTOR_CLR_ALARM(id)     MOTOR_CMD(id,MOTOR_CMD_CLR_ALARM,0)
@@ -441,6 +443,56 @@ int DoStopMotor( char* strToken )
     return( SendACK( strToken, NULL ) );
 }
 
+int DoServoOn( char* strToken )
+{
+    uint32_t    motor;
+
+    _info( "Stop motor\n" );
+    if( !GetUIntParam( "m", &motor ) ) 
+    {
+        return( SendNAK( strToken, "v=Motor Unspecified" ) );
+    }
+
+     if( motor >= 6 )
+    {
+        return( SendNAK( strToken, "v=Unknown Motor" ) );
+    }
+
+   if( iMotor[motor] <= 0 )
+    {
+        return( SendNAK( strToken, "v=Unreachable Motor" ) );
+    }
+
+    MOTOR_SV_ON( motor );
+
+    return( SendACK( strToken, NULL ) );
+}
+
+int DoServoOff( char* strToken )
+{
+    uint32_t    motor;
+
+    _info( "Stop motor\n" );
+    if( !GetUIntParam( "m", &motor ) ) 
+    {
+        return( SendNAK( strToken, "v=Motor Unspecified" ) );
+    }
+
+     if( motor >= 6 )
+    {
+        return( SendNAK( strToken, "v=Unknown Motor" ) );
+    }
+
+   if( iMotor[motor] <= 0 )
+    {
+        return( SendNAK( strToken, "v=Unreachable Motor" ) );
+    }
+
+    MOTOR_SV_OFF( motor );
+
+    return( SendACK( strToken, NULL ) );
+}
+
 int DoRunMotor( char* strToken )
 {
     uint32_t                    motor;
@@ -471,9 +523,13 @@ int DoRunMotor( char* strToken )
         return( SendNAK( strToken, "v=Cannot Find a Valid Speed" ) );
     }
 
-    if( speed >= 65535 )
+    if( speed > MOTOR_MAX_SPEED )
     {
         return( SendNAK( strToken, "v=Requested Speed Exceeds Max" ) );
+    }
+    if( speed < MOTOR_MIN_SPEED )
+    {
+        return( SendNAK( strToken, "v=Requested Speed is Too Slow" ) );
     }
 
     if( !GetUIntParam( "stp", &step ) )

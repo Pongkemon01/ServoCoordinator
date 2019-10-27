@@ -109,6 +109,8 @@ static void tim_event(FAR void *arg)
 {
     int i;
 
+    UNUSED(arg);
+
     /* Read GPIO and feed to debouncing filter */
     for(i = 0;i < 6;i++)
     {
@@ -165,6 +167,9 @@ static const struct file_operations g_homeops =
     NULL,       /* seek */
     home_ioctl, /* ioctl */
     NULL        /* poll */
+#ifndef CONFIG_DISABLE_PSEUDOFS_OPERATIONS
+  , NULL      /* unlink */
+#endif
 };
 
 /****************************************************************************
@@ -182,6 +187,7 @@ static const struct file_operations g_homeops =
 static int home_open(FAR struct file *filep)
 {
     /* Do nothing */
+    UNUSED(filep);
 
     return OK;
 }
@@ -197,6 +203,7 @@ static int home_open(FAR struct file *filep)
 static int home_close(FAR struct file *filep)
 {
     /* Do nothing */
+    UNUSED(filep);
 
     return OK;
 }
@@ -213,6 +220,9 @@ static int home_close(FAR struct file *filep)
 static ssize_t home_read(FAR struct file *filep, FAR char *buffer, size_t buflen)
 {
   char v;
+
+  UNUSED(filep);
+  UNUSED(buflen);
 
   v = 0;
 
@@ -241,6 +251,9 @@ static ssize_t home_read(FAR struct file *filep, FAR char *buffer, size_t buflen
 static ssize_t home_write(FAR struct file *filep, FAR const char *buffer, size_t buflen)
 {
     /* Return a failure */
+    UNUSED(filep);
+    UNUSED(buffer);
+    UNUSED(buflen);
 
      return -EPERM;
 }
@@ -256,6 +269,9 @@ static ssize_t home_write(FAR struct file *filep, FAR const char *buffer, size_t
 static int home_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
 {
     /* No IOCTL supported */
+    UNUSED(filep);
+    UNUSED(cmd);
+    UNUSED(arg);
 
     return -ENOTSUP;
 }

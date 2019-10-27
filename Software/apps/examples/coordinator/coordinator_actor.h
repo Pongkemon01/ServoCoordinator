@@ -66,6 +66,8 @@ int DoGetMotorStatus( char* strToken );
 int DoClearMotorAlarm( char* strToken );
 int DoStopMotor( char* strToken );
 int DoRunMotor( char* strToken );
+int DoServoOn( char* strToken );
+int DoServoOff( char* strToken );
 int DoGetQEValue( char* strToken );
 int DoResQEValue( char* strToken );
 int DoGetIMUSampleRate( char* strToken );

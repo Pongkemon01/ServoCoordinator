@@ -181,7 +181,7 @@ struct stm32_tim_ops_s
                      stm32_tim_channel_t mode);
   int  (*setcompare)(FAR struct stm32_tim_dev_s *dev, uint8_t channel,
                      uint32_t compare);
-  int  (*getcapture)(FAR struct stm32_tim_dev_s *dev, uint8_t channel);
+  uint32_t  (*getcapture)(FAR struct stm32_tim_dev_s *dev, uint8_t channel);
 
   /* Timer interrupts */
 
