@@ -765,9 +765,7 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
           if(motor_run_param->speed >= MOTOR_MIN_SPEED &&
              motor_run_param->speed <= MOTOR_MAX_SPEED)
           {
-            uint16_t off_period;
-            off_period = (uint16_t)(CONFIG_STM32_PFM_FREQ / (uint32_t)(motor_run_param->speed)) - CONFIG_STM32_PFM_SHOT_PEROID;
-            _info("Run motor with speed %u (i.e. period %u)\n", off_period, motor_run_param->speed);
+            _info("Run motor with speed %u\n", motor_run_param->speed);
 
             motor_stop_pfm(motor);
             if(motor_run_param->is_cw)
@@ -778,12 +776,12 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
             {
               motor_set_ccw(motor->cfg);
             }
-            motor_start_pfm(motor, off_period, motor_run_param->step);
+            motor_start_pfm(motor, motor_run_param->speed, motor_run_param->step);
             ret = OK;
           }
           else
           {
-            _err("Unsupport RUN param with speed=%d\n", motor_run_param->speed);
+            _err("Unsupport RUN param with speed=%u\n", motor_run_param->speed);
             ret = -ENOTSUP;
           }
         }

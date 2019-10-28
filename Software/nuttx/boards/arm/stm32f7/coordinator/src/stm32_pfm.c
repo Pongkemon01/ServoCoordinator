@@ -50,11 +50,11 @@
 #include <debug.h>
 
 #include <arch/board/board.h>
-
+#include <nuttx/drivers/pwm.h>
 #include "chip.h"
 #include "up_internal.h"
 #include "up_arch.h"
-#include "stm32_tim.h"
+#include "stm32_pwm.h"
 
 #include "stm32_gpio.h"
 #include "stm32_pfm.h"
@@ -98,32 +98,32 @@
 #define CONFIG_STM32F7_PFM6
 #endif
 
-#if defined(CONFIG_STM32F7_TIM9_PWM) || defined (CONFIG_STM32F7_TIM9_ADC) || \
+#if (!defined(CONFIG_STM32F7_TIM9_PWM)) || defined (CONFIG_STM32F7_TIM9_ADC) || \
     defined(CONFIG_STM32F7_TIM9_DAC) || defined(CONFIG_STM32F7_TIM9_QE) || \
     !defined(CONFIG_STM32F7_TIM9)
 #  undef CONFIG_STM32F7_PFM1
 #endif
-#if defined(CONFIG_STM32F7_TIM10_PWM) || defined (CONFIG_STM32F7_TIM10_ADC) || \
+#if (!defined(CONFIG_STM32F7_TIM10_PWM)) || defined (CONFIG_STM32F7_TIM10_ADC) || \
     defined(CONFIG_STM32F7_TIM10_DAC) || defined(CONFIG_STM32F7_TIM10_QE) || \
     !defined(CONFIG_STM32F7_TIM10)
 #  undef CONFIG_STM32F7_PFM2
 #endif
-#if defined(CONFIG_STM32F7_TIM11_PWM) || defined (CONFIG_STM32F7_TIM11_ADC) || \
+#if (!defined(CONFIG_STM32F7_TIM11_PWM)) || defined (CONFIG_STM32F7_TIM11_ADC) || \
     defined(CONFIG_STM32F7_TIM11_DAC) || defined(CONFIG_STM32F7_TIM11_QE) || \
     !defined(CONFIG_STM32F7_TIM11)
 #  undef CONFIG_STM32F7_PFM3
 #endif
-#if defined(CONFIG_STM32F7_TIM12_PWM) || defined (CONFIG_STM32F7_TIM12_ADC) || \
+#if (!defined(CONFIG_STM32F7_TIM12_PWM)) || defined (CONFIG_STM32F7_TIM12_ADC) || \
     defined(CONFIG_STM32F7_TIM12_DAC) || defined(CONFIG_STM32F7_TIM12_QE) || \
     !defined(CONFIG_STM32F7_TIM12)
 #  undef CONFIG_STM32F7_PFM4
 #endif
-#if defined(CONFIG_STM32F7_TIM13_PWM) || defined (CONFIG_STM32F7_TIM13_ADC) || \
+#if (!defined(CONFIG_STM32F7_TIM13_PWM)) || defined (CONFIG_STM32F7_TIM13_ADC) || \
     defined(CONFIG_STM32F7_TIM13_DAC) || defined(CONFIG_STM32F7_TIM13_QE) || \
     !defined(CONFIG_STM32F7_TIM13)
 #  undef CONFIG_STM32F7_PFM5
 #endif
-#if defined(CONFIG_STM32F7_TIM14_PWM) || defined (CONFIG_STM32F7_TIM14_ADC) || \
+#if (!defined(CONFIG_STM32F7_TIM14_PWM)) || defined (CONFIG_STM32F7_TIM14_ADC) || \
     defined(CONFIG_STM32F7_TIM14_DAC) || defined(CONFIG_STM32F7_TIM14_QE) || \
     !defined(CONFIG_STM32F7_TIM14)
 #  undef CONFIG_STM32F7_PFM6
@@ -137,17 +137,6 @@
     defined(CONFIG_STM32F7_PFM3)  || defined(CONFIG_STM32F7_PFM4)  || \
     defined(CONFIG_STM32F7_PFM5)  || defined(CONFIG_STM32F7_PFM6)
 
-#define ACTIVE_LOW      1
-
-#ifdef ACTIVE_LOW
-# define PFM_OUT_ACT     (STM32_TIM_CH_OUTACT | STM32_TIM_CH_POLARITY_NEG)
-# define PFM_OUT_INACT   (STM32_TIM_CH_OUTINACT | STM32_TIM_CH_POLARITY_NEG)
-# define PFM_OUT_OFF     (STM32_TIM_CH_OUTLO | STM32_TIM_CH_POLARITY_NEG)
-#else
-# define PFM_OUT_ACT     STM32_TIM_CH_OUTACT
-# define PFM_OUT_INACT   STM32_TIM_CH_OUTINACT
-# define PFM_OUT_OFF     STM32_TIM_CH_OUTLO
-#endif
 /************************************************************************************
  * Private Types
  ************************************************************************************/
@@ -155,8 +144,7 @@
 typedef enum
 {
   STM32_PFM_STATE_IDLE,
-  STM32_PFM_STATE_LEADING,
-  STM32_PFM_STATE_SHOT,
+  STM32_PFM_STATE_RUNNING
 }stm32_pfm_state_t;
 
 /* PFM Device Structure */
@@ -164,26 +152,180 @@ typedef enum
 struct stm32_pfm_priv_s
 {
   struct stm32_pfm_ops_s  *ops;
-  struct stm32_tim_dev_s  *tim;
-  int                     timer_id;
-  uint8_t                 compare_channel;
+  uint32_t                base;   /* Base address of the specified timer device */
+  stm32_pfm_state_t       xState;
+  FAR struct pwm_lowerhalf_s  *pxLowLevelPWM;
 
   /* Operation variables */
-  volatile stm32_pfm_state_t  state;
-  volatile uint16_t           shadow_ccr;
-  volatile uint16_t           current_leading_period;
-  volatile uint32_t           cycle_count;
+  volatile uint32_t       u32CycleCount;
 };
 
 /* Prototypes */
 static void stm32_pfm_start(FAR struct stm32_pfm_dev_s *dev, 
-            uint16_t leading_period, uint16_t total_cycle);
+            uint32_t frequency, uint32_t total_cycle);
 static void stm32_pfm_stop(FAR struct stm32_pfm_dev_s *dev);
 static bool stm32_pfm_is_idle(FAR struct stm32_pfm_dev_s *dev);
 
 /************************************************************************************
  * Private Functions
  ************************************************************************************/
+/* Get a 16-bit register value by offset */
+
+static inline uint16_t stm32_getreg16(FAR struct stm32_pfm_priv_s *dev,
+                                      uint8_t offset)
+{
+  return getreg16(((struct stm32_pfm_priv_s *)dev)->base + offset);
+}
+
+/* Put a 16-bit register value by offset */
+
+static inline void stm32_putreg16(FAR struct stm32_pfm_priv_s *dev, uint8_t offset,
+                                  uint16_t value)
+{
+  putreg16(value, ((struct stm32_pfm_priv_s *)dev)->base + offset);
+}
+
+/* Modify a 16-bit register value by offset */
+
+static inline void stm32_modifyreg16(FAR struct stm32_pfm_priv_s *dev,
+                                     uint8_t offset, uint16_t clearbits,
+                                     uint16_t setbits)
+{
+  modifyreg16(((struct stm32_pfm_priv_s *)dev)->base + offset, clearbits, setbits);
+}
+
+/************************************************************************************
+ * Interrupt utilities.
+ ************************************************************************************/
+static int stm32_pfm_setisr(FAR struct stm32_pfm_priv_s *dev, xcpt_t handler)
+{
+  int vectorno;
+
+  DEBUGASSERT(dev != NULL);
+
+  switch (((struct stm32_pfm_priv_s *)dev)->base)
+    {
+#ifdef CONFIG_STM32F7_PFM1
+      case STM32_TIM9_BASE:
+        vectorno = STM32_IRQ_TIM9;
+        break;
+#endif
+#ifdef CONFIG_STM32F7_PFM2
+      case STM32_TIM10_BASE:
+        vectorno = STM32_IRQ_TIM10;
+        break;
+#endif
+#ifdef CONFIG_STM32F7_PFM3
+      case STM32_TIM11_BASE:
+        vectorno = STM32_IRQ_TIM11;
+        break;
+#endif
+#ifdef CONFIG_STM32F7_PFM4
+      case STM32_TIM12_BASE:
+        vectorno = STM32_IRQ_TIM12;
+        break;
+#endif
+#ifdef CONFIG_STM32F7_PFM5
+      case STM32_TIM13_BASE:
+        vectorno = STM32_IRQ_TIM13;
+        break;
+#endif
+#ifdef CONFIG_STM32F7_PFM6
+      case STM32_TIM14_BASE:
+        vectorno = STM32_IRQ_TIM14;
+        break;
+#endif
+
+      default:
+        return -EINVAL;
+    }
+
+  /* Disable interrupt when callback is removed */
+
+  if (!handler)
+    {
+      up_disable_irq(vectorno);
+      irq_detach(vectorno);
+      return OK;
+    }
+
+  /* Otherwise set callback and enable interrupt */
+
+  irq_attach(vectorno, handler, (void*)dev);
+  up_enable_irq(vectorno);
+
+  return OK;
+}
+
+static void stm32_pfm_enableint(FAR struct stm32_pfm_priv_s *dev)
+{
+  DEBUGASSERT(dev != NULL);
+  stm32_modifyreg16(dev, STM32_GTIM_DIER_OFFSET, 0, 1); /* UIE bit */
+}
+
+static void stm32_pfm_disableint(FAR struct stm32_pfm_priv_s *dev)
+{
+  DEBUGASSERT(dev != NULL);
+  stm32_modifyreg16(dev, STM32_GTIM_DIER_OFFSET, 1, 0); /* UIE bit */
+}
+
+static int stm32_pfm_checkint(FAR struct stm32_pfm_priv_s *dev)
+{
+  uint16_t regval = stm32_getreg16(dev, STM32_GTIM_SR_OFFSET);
+  return (regval & 1) ? 1 : 0;  /* UIF bit */
+}
+
+static void stm32_pfm_ackint(FAR struct stm32_pfm_priv_s *dev)
+{
+  stm32_putreg16(dev, STM32_GTIM_SR_OFFSET, (uint16_t)(~1U)); /* UIF bit */
+}
+
+/************************************************************************************
+ * Name: stm32_interrupt
+ *
+ * Description: The central ISR for PFM devices.
+ *   Common timer interrupt handling. The routing control PFM cycle counting.
+ *
+ ************************************************************************************/
+
+static int stm32_pfm_interrupt(int irq, FAR void *context, FAR void *arg)
+{
+  FAR struct stm32_pfm_priv_s *dev = (FAR struct stm32_pfm_priv_s *)arg;
+  irqstate_t flags;
+
+  DEBUGASSERT(dev != NULL);
+  UNUSED(irq);
+  UNUSED(context);
+
+  /* Verify that this is an capture/compare interrupt.  Do noting if something
+  else. */
+
+  if( stm32_pfm_checkint( dev ) == 0 )
+    return OK;
+
+  stm32_pfm_ackint(dev);
+
+  /* If current cycle count is zero, then the PFM completes its job */
+  if( dev->u32CycleCount == 0 )
+  {
+    stm32_pfm_disableint( dev );
+    dev->pxLowLevelPWM->ops->stop( dev->pxLowLevelPWM );
+    dev->xState = STM32_PFM_STATE_IDLE;
+    _info("FInish PFM\n");
+  }
+  else
+  {
+    /* Otherwise, we continue with counter decrement */
+    /* Disable the update/global interrupt at the NVIC */
+    flags = enter_critical_section();
+    (dev->u32CycleCount)--;
+    /* Finish all critical process */
+    leave_critical_section(flags);
+
+  }
+
+  return OK;
+}
 
 
 /************************************************************************************
@@ -199,172 +341,69 @@ struct stm32_pfm_ops_s stm32_pfm_ops =
 #ifdef CONFIG_STM32F7_PFM1
 struct stm32_pfm_priv_s stm32_pfm1_priv =
 {
-  .ops                    = &stm32_pfm_ops,
-  .tim                    = 0,
-  .timer_id               = 9,
-  .compare_channel        = 1,
-  .state                  = STM32_PFM_STATE_IDLE,
-  .shadow_ccr             = 0,
-  .current_leading_period = 0,
-  .cycle_count            = 0
+  .ops            = &stm32_pfm_ops,
+  .base           = STM32_TIM9_BASE,
+  .xState         = STM32_PFM_STATE_IDLE,
+  .pxLowLevelPWM  = 0,
+  .u32CycleCount  = 0
 };
 #endif
 
 #ifdef CONFIG_STM32F7_PFM2
 struct stm32_pfm_priv_s stm32_pfm2_priv =
 {
-  .ops                    = &stm32_pfm_ops,
-  .tim                    = 0,
-  .timer_id               = 10,
-  .compare_channel        = 1,
-  .state                  = STM32_PFM_STATE_IDLE,
-  .shadow_ccr             = 0,
-  .current_leading_period = 0,
-  .cycle_count            = 0
+  .ops            = &stm32_pfm_ops,
+  .base           = STM32_TIM10_BASE,
+  .xState         = STM32_PFM_STATE_IDLE,
+  .pxLowLevelPWM  = 0,
+  .u32CycleCount  = 0
 };
 #endif
 
 #ifdef CONFIG_STM32F7_PFM3
 struct stm32_pfm_priv_s stm32_pfm3_priv =
 {
-  .ops                    = &stm32_pfm_ops,
-  .tim                    = 0,
-  .timer_id               = 11,
-  .compare_channel        = 1,
-  .state                  = STM32_PFM_STATE_IDLE,
-  .shadow_ccr             = 0,
-  .current_leading_period = 0,
-  .cycle_count            = 0
+  .ops            = &stm32_pfm_ops,
+  .base           = STM32_TIM11_BASE,
+  .xState         = STM32_PFM_STATE_IDLE,
+  .pxLowLevelPWM  = 0,
+  .u32CycleCount  = 0
 };
 #endif
 
 #ifdef CONFIG_STM32F7_PFM4
 struct stm32_pfm_priv_s stm32_pfm4_priv =
 {
-  .ops                    = &stm32_pfm_ops,
-  .tim                    = 0,
-  /* Channel 1 is unavailable */
-  .timer_id               = 12,
-  .compare_channel        = 2,
-  .state                  = STM32_PFM_STATE_IDLE,
-  .shadow_ccr             = 0,
-  .current_leading_period = 0,
-  .cycle_count            = 0
+  .ops            = &stm32_pfm_ops,
+  .base           = STM32_TIM12_BASE,
+  .xState         = STM32_PFM_STATE_IDLE,
+  .pxLowLevelPWM  = 0,
+  .u32CycleCount  = 0
 };
 #endif
 
 #ifdef CONFIG_STM32F7_PFM5
 struct stm32_pfm_priv_s stm32_pfm5_priv =
 {
-  .ops                    = &stm32_pfm_ops,
-  .tim                    = 0,
-  .timer_id               = 13,
-  .compare_channel        = 1,
-  .state                  = STM32_PFM_STATE_IDLE,
-  .shadow_ccr             = 0,
-  .current_leading_period = 0,
-  .cycle_count            = 0
+  .ops            = &stm32_pfm_ops,
+  .base           = STM32_TIM13_BASE,
+  .xState         = STM32_PFM_STATE_IDLE,
+  .pxLowLevelPWM  = 0,
+  .u32CycleCount  = 0
 };
 #endif
 
 #ifdef CONFIG_STM32F7_PFM6
 struct stm32_pfm_priv_s stm32_pfm6_priv =
 {
-  .ops                    = &stm32_pfm_ops,
-  .tim                    = 0,
-  .timer_id               = 14,
-  .compare_channel        = 1,
-  .state                  = STM32_PFM_STATE_IDLE,
-  .shadow_ccr             = 0,
-  .current_leading_period = 0,
-  .cycle_count            = 0
+  .ops            = &stm32_pfm_ops,
+  .base           = STM32_TIM14_BASE,
+  .xState         = STM32_PFM_STATE_IDLE,
+  .pxLowLevelPWM  = 0,
+  .u32CycleCount  = 0
 };
 #endif
 
-/************************************************************************************
- * Name: stm32_interrupt
- *
- * Description:
- *   Common timer interrupt handling.  NOTE: Only 16-bit timers require timer
- *   interrupts.
- *
- ************************************************************************************/
-
-static int stm32_pfm_interrupt(int irq, FAR void *context, FAR void *arg)
-{
-  FAR struct stm32_pfm_priv_s *priv = (FAR struct stm32_pfm_priv_s *)arg;
-  irqstate_t flags;
-
-  DEBUGASSERT(priv != NULL);
-  UNUSED(irq);
-  UNUSED(context);
-
-  /* Verify that this is an capture/compare interrupt.  Do noting if something
-  else. */
-
-  if( priv->tim->ops->checkint(priv->tim, (((uint16_t)1U) << priv->compare_channel)) == 0 )
-    return OK;
-
-  /*
-   * The code is ugly and long but each interrupt requires only around
-   * 8 - 10 C-instructions.
-   */
-
-  /* Disable the update/global interrupt at the NVIC */
-  flags = enter_critical_section();
-
-  priv->tim->ops->ackint(priv->tim, (((uint16_t)1U) << priv->compare_channel));
-  switch( priv->state )
-  {
-    case STM32_PFM_STATE_LEADING:
-      /* Go to SHOT state. The output is already high.
-       *  Prepare for the end of SHOT state.
-       */
-      priv->shadow_ccr += CONFIG_STM32_PFM_SHOT_PEROID;
-      priv->tim->ops->setcompare(priv->tim, priv->compare_channel, priv->shadow_ccr);
-      priv->tim->ops->setchannel(priv->tim, priv->compare_channel, PFM_OUT_INACT);
-
-      priv->state = STM32_PFM_STATE_SHOT;
-      break;
-
-    case STM32_PFM_STATE_SHOT:
-      /* Reduce counter. If not finished yet, then re-enger the LEADING again
-       * Alsom prepare for the end of LEADING state.
-       */
-      
-      priv->cycle_count -= 1;
-      if( priv->cycle_count == 0 )
-      {
-        _info("PFM FINISH\n");
-        /* All pulses are done! Finished */
-        priv->tim->ops->setchannel(priv->tim, priv->compare_channel, PFM_OUT_OFF);
-        priv->tim->ops->disableint(priv->tim, (((uint16_t)1U) << priv->compare_channel));
-        priv->state = STM32_PFM_STATE_IDLE;
-      }
-      else
-      {
-        priv->shadow_ccr += priv->current_leading_period;
-        priv->tim->ops->setcompare(priv->tim, priv->compare_channel, priv->shadow_ccr);
-        priv->tim->ops->setchannel(priv->tim, priv->compare_channel, PFM_OUT_ACT);
-        priv->state = STM32_PFM_STATE_LEADING;
-      }
-      break;
-
-    default:
-      /* We should not be here but its ok */
-      /* Invalid state. All unknown states should be transit to IDLE state */
-      _warn("PFM TIMER %d INVALID STATE = %d\n", priv->timer_id, priv->state );
-      priv->tim->ops->setchannel(priv->tim, priv->compare_channel, PFM_OUT_OFF);
-      priv->tim->ops->disableint(priv->tim, (((uint16_t)1U) << priv->compare_channel));
-      priv->state = STM32_PFM_STATE_IDLE;
-      break;
-  }
-
-  /* Finish all critical process */
-  leave_critical_section(flags);
-
-  return OK;
-}
 
 static bool stm32_pfm_is_idle(FAR struct stm32_pfm_dev_s *dev)
 {
@@ -372,10 +411,10 @@ static bool stm32_pfm_is_idle(FAR struct stm32_pfm_dev_s *dev)
 
   DEBUGASSERT(pfm != NULL);
 
-  if(pfm->state == STM32_PFM_STATE_IDLE)
-    return true;
-  else
+  if(pfm->xState == STM32_PFM_STATE_RUNNING)
     return false;
+  else
+    return true;
 }
 
 /*****************************************************************
@@ -392,18 +431,20 @@ static void stm32_pfm_stop(FAR struct stm32_pfm_dev_s *dev)
 
   DEBUGASSERT(pfm != NULL);
 
+  stm32_pfm_disableint( pfm );
+  pfm->pxLowLevelPWM->ops->stop( pfm->pxLowLevelPWM );
+
   /* Disable the update/global interrupt at the NVIC */
   flags = enter_critical_section();
 
-  if(pfm->state != STM32_PFM_STATE_IDLE)
-  {
-    pfm->tim->ops->setchannel(pfm->tim, pfm->compare_channel, PFM_OUT_OFF);
-    pfm->tim->ops->disableint(pfm->tim, (((uint16_t)1U) << pfm->compare_channel));
-    pfm->state = STM32_PFM_STATE_IDLE;
-  }
+  pfm->u32CycleCount = 0;
 
   /* Finish all critical process */
   leave_critical_section(flags);
+  pfm->xState = STM32_PFM_STATE_IDLE;
+
+  _info("Stop PFM\n");
+
 }
 
 /*****************************************************************
@@ -413,34 +454,38 @@ static void stm32_pfm_stop(FAR struct stm32_pfm_dev_s *dev)
  * operate with new period after finishing current cycle.
  *
  *****************************************************************/
+#define CONFIG_STM32_PFM_SHOT_PEROID  10UL   /* pluse length in microsecond, should be 10 - 15 us */
+
 static void stm32_pfm_start(FAR struct stm32_pfm_dev_s *dev, 
-            uint16_t leading_period, uint16_t total_cycle)
+            uint32_t frequency, uint32_t total_cycle)
 {
   irqstate_t flags;
+  struct pwm_info_s pwm_info;
 
   FAR struct stm32_pfm_priv_s *pfm = (FAR struct stm32_pfm_priv_s *)(dev);
 
   DEBUGASSERT(pfm != NULL);
   _info("Starting PFM\n");
 
+  pwm_info.frequency = frequency;
+
+  /* The PWM module operates in mode 2 which is active-low */
+  /* Duty cycle = off_period / T = off_period * frequency */
+  pwm_info.duty = (uint16_t)((((uint64_t)(frequency * CONFIG_STM32_PFM_SHOT_PEROID )) * 65536UL ) / 1000000UL); /* Off-period is in micro second */
+  _info("PWM freq %u, duty %u\n", pwm_info.frequency, pwm_info.duty);
+
+  pfm->xState = STM32_PFM_STATE_RUNNING;
+  pfm->pxLowLevelPWM->ops->start(pfm->pxLowLevelPWM, &pwm_info);
+
   /* Disable the update/global interrupt at the NVIC */
   flags = enter_critical_section();
 
-  pfm->current_leading_period = leading_period;
-  pfm->cycle_count = total_cycle;
-
-  if( pfm->state == STM32_PFM_STATE_IDLE )
-  {
-    /* The PFM is in IDLE state. Thus, start it. */
-    pfm->shadow_ccr = pfm->tim->ops->getcapture(pfm->tim, pfm->compare_channel) + leading_period;
-    pfm->tim->ops->setcompare(pfm->tim, pfm->compare_channel, pfm->shadow_ccr);
-    pfm->tim->ops->setchannel(pfm->tim, pfm->compare_channel, PFM_OUT_ACT);
-    pfm->tim->ops->enableint(pfm->tim, (((uint16_t)1U) << pfm->compare_channel));
-    pfm->state = STM32_PFM_STATE_LEADING;
-  }
+  pfm->u32CycleCount = total_cycle;
 
   /* Finish all critical process */
   leave_critical_section(flags);
+
+  stm32_pfm_enableint( pfm );
 }
 
 /************************************************************************************
@@ -462,16 +507,13 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
   {
 #ifdef CONFIG_STM32F7_PFM1
     case 0:
-      stm32_pfm1_priv.tim = stm32_tim_init(stm32_pfm1_priv.timer_id);
-      if(stm32_pfm1_priv.tim != NULL)
+      stm32_pfm1_priv.pxLowLevelPWM = stm32_pwminitialize(9);
+      if(stm32_pfm1_priv.pxLowLevelPWM != NULL)
       {
-        stm32_pfm1_priv.tim->ops->setmode(stm32_pfm1_priv.tim, STM32_TIM_MODE_UP);
-        stm32_pfm1_priv.tim->ops->setclock(stm32_pfm1_priv.tim, CONFIG_STM32_PFM_FREQ);
-        stm32_pfm1_priv.tim->ops->setperiod(stm32_pfm1_priv.tim, 0xFFFFFFFFUL);
-        stm32_pfm1_priv.tim->ops->setisr(stm32_pfm1_priv.tim, stm32_pfm_interrupt, 
-                    &stm32_pfm1_priv, (((uint16_t)1U) << stm32_pfm1_priv.compare_channel));
-        stm32_pfm1_priv.tim->ops->setchannel(stm32_pfm1_priv.tim, stm32_pfm1_priv.compare_channel, PFM_OUT_OFF);
-        stm32_pfm1_priv.tim->ops->disableint(stm32_pfm1_priv.tim, (((uint16_t)1U) << stm32_pfm1_priv.compare_channel));
+        stm32_pfm1_priv.pxLowLevelPWM->ops->setup(stm32_pfm1_priv.pxLowLevelPWM);
+
+        stm32_pfm_setisr(&stm32_pfm1_priv, stm32_pfm_interrupt);
+        stm32_pfm_disableint(&stm32_pfm1_priv);
 
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm1_priv));
       }
@@ -484,16 +526,14 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
 
 #ifdef CONFIG_STM32F7_PFM2
     case 1:
-      stm32_pfm2_priv.tim = stm32_tim_init(stm32_pfm2_priv.timer_id);
-      if(stm32_pfm2_priv.tim != NULL)
+      stm32_pfm2_priv.pxLowLevelPWM = stm32_pwminitialize(10);
+      if(stm32_pfm2_priv.pxLowLevelPWM != NULL)
       {
-        stm32_pfm2_priv.tim->ops->setmode(stm32_pfm2_priv.tim, STM32_TIM_MODE_UP);
-        stm32_pfm2_priv.tim->ops->setclock(stm32_pfm2_priv.tim, CONFIG_STM32_PFM_FREQ);
-        stm32_pfm2_priv.tim->ops->setperiod(stm32_pfm2_priv.tim, 0xFFFFFFFFUL);
-        stm32_pfm2_priv.tim->ops->setisr(stm32_pfm2_priv.tim, stm32_pfm_interrupt, 
-                    &stm32_pfm2_priv, (((uint16_t)1U) << stm32_pfm2_priv.compare_channel));
-        stm32_pfm2_priv.tim->ops->setchannel(stm32_pfm2_priv.tim, stm32_pfm2_priv.compare_channel, PFM_OUT_OFF);
-        stm32_pfm2_priv.tim->ops->disableint(stm32_pfm2_priv.tim, (((uint16_t)1U) << stm32_pfm2_priv.compare_channel));
+        stm32_pfm2_priv.pxLowLevelPWM->ops->setup(stm32_pfm2_priv.pxLowLevelPWM);
+
+        stm32_pfm_setisr(&stm32_pfm2_priv, stm32_pfm_interrupt);
+        stm32_pfm_disableint(&stm32_pfm2_priv);
+
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm2_priv));
       }
       else
@@ -505,16 +545,14 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
 
 #ifdef CONFIG_STM32F7_PFM3
     case 2:
-      stm32_pfm3_priv.tim = stm32_tim_init(stm32_pfm3_priv.timer_id);
-      if(stm32_pfm3_priv.tim != NULL)
+      stm32_pfm3_priv.pxLowLevelPWM = stm32_pwminitialize(11);
+      if(stm32_pfm3_priv.pxLowLevelPWM != NULL)
       {
-        stm32_pfm3_priv.tim->ops->setmode(stm32_pfm3_priv.tim, STM32_TIM_MODE_UP);
-        stm32_pfm3_priv.tim->ops->setclock(stm32_pfm3_priv.tim, CONFIG_STM32_PFM_FREQ);
-        stm32_pfm3_priv.tim->ops->setperiod(stm32_pfm3_priv.tim, 0xFFFFFFFFUL);
-        stm32_pfm3_priv.tim->ops->setisr(stm32_pfm3_priv.tim, stm32_pfm_interrupt, 
-                    &stm32_pfm3_priv, (((uint16_t)1U) << stm32_pfm3_priv.compare_channel));
-        stm32_pfm3_priv.tim->ops->setchannel(stm32_pfm3_priv.tim, stm32_pfm3_priv.compare_channel, PFM_OUT_OFF);
-        stm32_pfm3_priv.tim->ops->disableint(stm32_pfm3_priv.tim, (((uint16_t)1U) << stm32_pfm3_priv.compare_channel));
+        stm32_pfm3_priv.pxLowLevelPWM->ops->setup(stm32_pfm3_priv.pxLowLevelPWM);
+
+        stm32_pfm_setisr(&stm32_pfm3_priv, stm32_pfm_interrupt);
+        stm32_pfm_disableint(&stm32_pfm3_priv);
+
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm3_priv));
       }
       else
@@ -526,16 +564,14 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
 
 #ifdef CONFIG_STM32F7_PFM4
     case 3:
-      stm32_pfm4_priv.tim = stm32_tim_init(stm32_pfm4_priv.timer_id);
-      if(stm32_pfm4_priv.tim != NULL)
+      stm32_pfm4_priv.pxLowLevelPWM = stm32_pwminitialize(12);
+      if(stm32_pfm4_priv.pxLowLevelPWM != NULL)
       {
-        stm32_pfm4_priv.tim->ops->setmode(stm32_pfm4_priv.tim, STM32_TIM_MODE_UP);
-        stm32_pfm4_priv.tim->ops->setclock(stm32_pfm4_priv.tim, CONFIG_STM32_PFM_FREQ);
-        stm32_pfm4_priv.tim->ops->setperiod(stm32_pfm4_priv.tim, 0xFFFFFFFFUL);
-        stm32_pfm4_priv.tim->ops->setisr(stm32_pfm4_priv.tim, stm32_pfm_interrupt, 
-                    &stm32_pfm4_priv, (((uint16_t)1U) << stm32_pfm4_priv.compare_channel));
-        stm32_pfm4_priv.tim->ops->setchannel(stm32_pfm4_priv.tim, stm32_pfm4_priv.compare_channel, PFM_OUT_OFF);
-        stm32_pfm4_priv.tim->ops->disableint(stm32_pfm4_priv.tim, (((uint16_t)1U) << stm32_pfm4_priv.compare_channel));
+        stm32_pfm4_priv.pxLowLevelPWM->ops->setup(stm32_pfm4_priv.pxLowLevelPWM);
+
+        stm32_pfm_setisr(&stm32_pfm4_priv, stm32_pfm_interrupt);
+        stm32_pfm_disableint(&stm32_pfm4_priv);
+
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm4_priv));
       }
       else
@@ -547,17 +583,15 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
 
 #ifdef CONFIG_STM32F7_PFM5
     case 4:
-      stm32_pfm5_priv.tim = stm32_tim_init(stm32_pfm5_priv.timer_id);
-      if(stm32_pfm5_priv.tim != NULL)
+      stm32_pfm5_priv.pxLowLevelPWM = stm32_pwminitialize(13);
+      if(stm32_pfm5_priv.pxLowLevelPWM != NULL)
       {
-        stm32_pfm5_priv.tim->ops->setmode(stm32_pfm5_priv.tim, STM32_TIM_MODE_UP);
-        stm32_pfm5_priv.tim->ops->setclock(stm32_pfm5_priv.tim, CONFIG_STM32_PFM_FREQ);
-        stm32_pfm5_priv.tim->ops->setperiod(stm32_pfm5_priv.tim, 0xFFFFFFFFUL);
-        stm32_pfm5_priv.tim->ops->setisr(stm32_pfm5_priv.tim, stm32_pfm_interrupt, 
-                    &stm32_pfm5_priv, (((uint16_t)1U) << stm32_pfm5_priv.compare_channel));
-        stm32_pfm5_priv.tim->ops->setchannel(stm32_pfm5_priv.tim, stm32_pfm5_priv.compare_channel, PFM_OUT_OFF);
-        stm32_pfm5_priv.tim->ops->disableint(stm32_pfm5_priv.tim, (((uint16_t)1U) << stm32_pfm5_priv.compare_channel));
-       return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm5_priv));
+        stm32_pfm5_priv.pxLowLevelPWM->ops->setup(stm32_pfm5_priv.pxLowLevelPWM);
+
+        stm32_pfm_setisr(&stm32_pfm5_priv, stm32_pfm_interrupt);
+        stm32_pfm_disableint(&stm32_pfm5_priv);
+
+        return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm5_priv));
       }
       else
       {
@@ -568,16 +602,14 @@ FAR struct stm32_pfm_dev_s *stm32_pfm_init(unsigned motor_id)
 
 #ifdef CONFIG_STM32F7_PFM6
     case 5:
-      stm32_pfm6_priv.tim = stm32_tim_init(stm32_pfm6_priv.timer_id);
-      if(stm32_pfm6_priv.tim != NULL)
+      stm32_pfm6_priv.pxLowLevelPWM = stm32_pwminitialize(14);
+      if(stm32_pfm6_priv.pxLowLevelPWM != NULL)
       {
-        stm32_pfm6_priv.tim->ops->setmode(stm32_pfm6_priv.tim, STM32_TIM_MODE_UP);
-        stm32_pfm6_priv.tim->ops->setclock(stm32_pfm6_priv.tim, CONFIG_STM32_PFM_FREQ);
-        stm32_pfm6_priv.tim->ops->setperiod(stm32_pfm6_priv.tim, 0xFFFFFFFFUL);
-        stm32_pfm6_priv.tim->ops->setisr(stm32_pfm6_priv.tim, stm32_pfm_interrupt, 
-                    &stm32_pfm6_priv, (((uint16_t)1U) << stm32_pfm6_priv.compare_channel));
-        stm32_pfm6_priv.tim->ops->setchannel(stm32_pfm6_priv.tim, stm32_pfm6_priv.compare_channel, PFM_OUT_OFF);
-        stm32_pfm6_priv.tim->ops->disableint(stm32_pfm6_priv.tim, (((uint16_t)1U) << stm32_pfm6_priv.compare_channel));
+        stm32_pfm6_priv.pxLowLevelPWM->ops->setup(stm32_pfm6_priv.pxLowLevelPWM);
+
+        stm32_pfm_setisr(&stm32_pfm6_priv, stm32_pfm_interrupt);
+        stm32_pfm_disableint(&stm32_pfm6_priv);
+
         return((FAR struct stm32_pfm_dev_s*)(&stm32_pfm6_priv));
       }
       else

@@ -47,14 +47,9 @@
  ************************************************************************************/
 /* Helpers **************************************************************************/
 
-#define STM32_PFM_START(d,leading,cycle) ((d)->ops->start(d,leading,cycle))
+#define STM32_PFM_START(d,freq,cycle) ((d)->ops->start(d,freq,cycle))
 #define STM32_PFM_STOP(d)                ((d)->ops->stop(d))
 
-/* Some constants
- *
- */
-#define CONFIG_STM32_PFM_FREQ       250000UL  /* Input frequency of the timer, 200kHz is the maximum */
-#define CONFIG_STM32_PFM_SHOT_PEROID  2U
 /************************************************************************************
  * Public Types
  ************************************************************************************/
@@ -77,7 +72,7 @@ struct stm32_pfm_dev_s
 
 struct stm32_pfm_ops_s
 {
-  void (*start)(FAR struct stm32_pfm_dev_s *dev, uint16_t leading_period, uint16_t total_cycle);
+  void (*start)(FAR struct stm32_pfm_dev_s *dev, uint32_t frequency, uint32_t total_cycle);
   void (*stop)(FAR struct stm32_pfm_dev_s *dev);
   bool (*is_idle)(FAR struct stm32_pfm_dev_s *dev);
 };

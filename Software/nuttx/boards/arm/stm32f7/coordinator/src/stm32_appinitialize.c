@@ -262,9 +262,9 @@ int board_app_initialize(uintptr_t arg)
 #endif
 
 #if defined(CONFIG_TIMER) && defined(CONFIG_STM32F7_TIM7)
-  if(stm32_timer_initialize("/dev/timer7", 7) == NULL)
+  if(stm32_timer_initialize("/dev/timer", 7) == NULL)
   {
-    _err("Unable to register /dev/timer7\n");
+    _err("Unable to register /dev/timer\n");
   }
 #endif
 

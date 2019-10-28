@@ -77,8 +77,8 @@ typedef enum
 struct motor_run_param_t
 {
     bool        is_cw;  /* True if truning clockwise, fasle if counter-clockwise. */
-    uint16_t    speed;  /* Speed of rotation (step/second) */
-    uint16_t    step;   /* Number of steps */
+    uint32_t    speed;  /* Speed of rotation (step/second) */
+    uint32_t    step;   /* Number of steps */
 };
 
 /* Public function */

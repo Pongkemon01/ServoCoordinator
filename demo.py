@@ -80,14 +80,14 @@ print("Response = ", r)
 
 t = input("Pause")
 
-s = "!RUN?m=" + str(motor_id) + ":dir=cw:spd=1000:stp=65000\n";
+s = "!RUN?m=" + str(motor_id) + ":dir=cw:spd=10000:stp=30000\n";
 fb.write( bytes(s, 'utf-8') )
 r = readlineCR( fb )
 print("Response = ", r)
 
 t = input("Pause")
 
-s = "!RUN?m=" + str(motor_id) + ":dir=ccw:spd=500:stp=3000\n";
+s = "!RUN?m=" + str(motor_id) + ":dir=ccw:spd=5000:stp=30000\n";
 fb.write( bytes(s, 'utf-8') )
 r = readlineCR( fb )
 print("Response = ", r)

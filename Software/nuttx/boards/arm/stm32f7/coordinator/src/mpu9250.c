@@ -70,7 +70,7 @@
  ************************************************************************************/
 #define MPU_WORK_QUEUE          HPWORK
 
-#define I2C_SPEED               200000  /* I2C Clock spped */
+#define I2C_SPEED               100000  /* I2C Clock speed */
 
 #define MPU9250_ADDRESS         (0x68)  /* AD0 = 0 */
 #define AK8963_ADDRESS          (0x0C)  /* Address for direct access */
@@ -813,10 +813,23 @@ static void UpdateData(FAR void *arg)
         _err("Unable to register IMU to work queue\n");
     }
 
+    if( i2c_bus == NULL )
+    {
+        /* I2C bus has lose, Re-initialize it */
+        _info( "Reinitialize i2c\n" );
+        if( ( i2c_bus = stm32_i2cbus_initialize(I2C_CHANNEL) ) == NULL )
+        {
+            _err("Failed to init i2c\n");
+            return;
+        }
+    }
+
     retval = ReadMPU9250Data( rawAcelTempGy );
     if( retval != OK )
     {
-        _err("Failed to read MPU9250\n");
+        _err("Failed to read MPU9250. Release i2c\n");
+        (void)stm32_i2cbus_uninitialize( i2c_bus );
+        i2c_bus = NULL;
         return;
     }
 
@@ -839,7 +852,9 @@ static void UpdateData(FAR void *arg)
     retval = ReadMagData( rawMag );
     if( retval != OK )
     {
-        _err("Failed to read Magneto meter\n");
+        _err("Failed to read Magneto meter. Release i2c\n");
+        (void)stm32_i2cbus_uninitialize( i2c_bus );
+        i2c_bus = NULL;
         return;
     }
      /*mx = (float)magCount[0]*M_FACTOR*fMagneticAdjFactor[0] - magBias[0];
