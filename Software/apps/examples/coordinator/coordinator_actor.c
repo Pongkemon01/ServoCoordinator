@@ -47,6 +47,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <debug.h>
+#include <semaphore.h>
 
 #include <nuttx/sensors/qencoder.h>
 #include "driver/motor.h"
@@ -94,6 +95,35 @@ static int iMotor[6] = { 0, 0, 0, 0, 0, 0 };
 static int iQEncoder[6] = { 0, 0, 0, 0, 0, 0 };
 static int iHomeSensor = 0;
 static int iIMU = 0;
+
+/****************************************************************************
+ * motor_thread: the thread that manage a specified motor position.
+ * Parameters:
+ *    iMotorFile = file descripter to the specified motor
+ *    iQEFile = file descripter to the encoder attach to the motor iMotorFile
+ *    iHomeFile = file descripter for common Home sensor
+ *    theta = the set-point of the motor (aka. expected absolute rotational position)
+ *    theta_sem = semaphore that controls "theta" access
+ ****************************************************************************/
+typedef struct 
+{
+    uint32_t id;
+
+    /* File descripters */
+    int iMotorFile;
+    int iQEFile;
+    int iHomeFile;
+
+    /* Motor set-point and its semaphore */
+    sem_t theta_sem;
+    int32_t theta;
+}motor_thread_param_t;
+
+
+pthread_t xMotorThread[6] = {0, 0, 0, 0, 0, 0};
+motor_thread_param_t xMotorParam[6];
+void* motor_thread( void* arg );
+
 
 /****************************************************************************
  * Private Functions
@@ -194,6 +224,48 @@ static bool GetIntParam( char* strKey, int32_t* i32Out )
     return true;
 }
 
+static bool GetFloatParam( char* strKey, float* f32Out )
+{
+    char value[13];
+    int  i, dot_count;
+
+    DEBUGASSERT( strKey != NULL );
+    DEBUGASSERT( f32Out != NULL );
+
+    /* Extract param as a string from key */
+    i = GetParamFromKey( strKey, value, 12 );
+    if( ( i <= 0 ) || ( i >= 12) )
+    {
+        /* Value error */
+        return false;
+    }
+
+    /* Verify value */
+    if( ( !isdigit( value[0] ) ) && ( value[0] != '-' ) && ( value[0] != '.' ) )
+        return false;
+    
+    dot_count = 0;
+    if( value[0] == ',' )
+        dot_count++;
+
+    for( i = 1; ( i < 13 ) && ( value[i] != '\0' ); i++ )
+    {
+        if( value[i] == '.' )
+            dot_count++;
+        else
+        {
+            if( !isdigit( value[i] ) )
+                return false;
+        }
+    }
+    if( dot_count > 1 )
+        return false;
+    
+    /* Convert the string with the standard conversion in stdlib.h */
+    *f32Out = atof( value );
+    return true;
+}
+
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -201,6 +273,8 @@ static bool GetIntParam( char* strKey, int32_t* i32Out )
 /* Initialization function */
 int InitActor(void)
 {
+    int retval;
+
     /* Open all devices */
     for( int i = 0; i < 6; i++ )
     {
@@ -212,6 +286,28 @@ int InitActor(void)
 
     iHomeSensor = open( "/dev/home", O_RDWR );
     iIMU = open( "/dev/imu", O_RDWR );
+
+    for( int motor = 0; motor < 6; motor++ )
+    {
+        xMotorParam[ motor ].id = motor;
+        xMotorParam[ motor ].iMotorFile = iMotor[ motor ];
+        xMotorParam[ motor ].iQEFile = iQEncoder[ motor ];
+        xMotorParam[ motor ].iHomeFile = iHomeSensor;
+        xMotorParam[ motor ].theta = 0;
+        if( sem_init( &(xMotorParam[motor].theta_sem), 1, 1 ) != OK )
+        {
+            _err( "Failed to Init Semaphore for motor %d\n", motor );
+            return -ENOTSUP;
+        }
+
+        if( (retval = pthread_create( &(xMotorThread[motor]), NULL, motor_thread, (void*)(&(xMotorParam[motor]))) ) != OK )
+        {
+            sem_destroy( &(xMotorParam[motor].theta_sem) );
+            xMotorThread[motor] = 0;
+            _err( "Failed to Create Thread for motor %d with code %d\n", motor, retval );
+            return -ENOTSUP;
+        }
+    }
 
     return OK;
 }
@@ -497,9 +593,9 @@ int DoRunMotor( char* strToken )
 {
     uint32_t                    motor;
     int                         state;
-    uint32_t                    speed, step;
-    char                        dir[4];
-    struct motor_run_param_t    m_param;
+    //uint32_t                    speed;
+    int32_t                     step;
+    //struct motor_run_param_t    m_param;
 
     _info( "Run motor\n" );
     if( !GetUIntParam( "m", &motor ) ) 
@@ -518,53 +614,23 @@ int DoRunMotor( char* strToken )
     }
 
     /* Verify the parameters */
-    if( !GetUIntParam( "spd", &speed ) )
-    {
-        return( SendNAK( strToken, "v=Cannot Find a Valid Speed" ) );
-    }
+    //if( !GetUIntParam( "spd", &speed ) )
+    //{
+     //   return( SendNAK( strToken, "v=Cannot Find a Valid Speed" ) );
+    //}
 
-    if( speed > MOTOR_MAX_SPEED )
-    {
-        return( SendNAK( strToken, "v=Requested Speed Exceeds Max" ) );
-    }
-    if( speed < MOTOR_MIN_SPEED )
-    {
-        return( SendNAK( strToken, "v=Requested Speed is Too Slow" ) );
-    }
-
-    if( !GetUIntParam( "stp", &step ) )
+    if( !GetIntParam( "stp", &step ) )
     {
         return( SendNAK( strToken, "v=Cannot Find a Valid Step" ) );
     }
 
-    if( step >= 65535 )
-    {
-        return( SendNAK( strToken, "v=Requested Step Exceeds Max" ) );
-    }
+    //if( speed > MOTOR_MAX_SPEED )
+    //{
+     //   return( SendNAK( strToken, "v=Requested Speed Exceeds Max" ) );
+    //}
 
-    if( GetParamFromKey( "dir", dir, 3 ) <= 0 )
-    {
-        return( SendNAK( strToken, "v=Invalid Direction" ) );
-    }
-
-    if( strcmp( dir, "cw" ) == 0 )
-    {
-        m_param.is_cw = true;
-    }
-    else
-    {
-        if( strcmp( dir, "ccw" ) == 0 )
-        {
-            m_param.is_cw = false;
-        }
-        else
-        {
-            return( SendNAK( strToken, "v=Invalid Direction" ) );
-        }
-    }
-
-    m_param.speed = (uint16_t)speed;
-    m_param.step = (uint16_t)step;
+    //m_param.speed = (uint32_t)speed;
+    //m_param.step = (int32_t)step;
 
     /* Check wheter motor is ready */
     MOTOR_GET_STATE( motor, &state );
@@ -575,14 +641,16 @@ int DoRunMotor( char* strToken )
     }
 
     /* Run the motor */
-    if( MOTOR_RUN( motor, &m_param ) != OK )
+    if( sem_wait( &(xMotorParam[motor].theta_sem) ) != OK )
     {
-        return( SendNAK( strToken, "v=RUN Command Failed" ) );
+        return( SendNAK( strToken, "v=Failed to Lock Semaphore" ) );
     }
-    else
-    {
+    
+    xMotorParam[motor].theta = step;
+    if( sem_post( &(xMotorParam[motor].theta_sem) ) == OK )
         return( SendACK( strToken, NULL ) );
-    }
+    else
+        return( SendNAK( strToken, "v=Failed to Release Semaphore" ) );
 }
 
 int DoGetQEValue( char* strToken )

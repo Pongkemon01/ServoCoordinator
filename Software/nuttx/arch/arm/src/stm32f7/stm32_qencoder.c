@@ -191,6 +191,7 @@ struct stm32_qeconfig_s
 {
   uint8_t   timid;   /* Timer ID {1,2,3,4,5,8} */
   uint8_t   irq;     /* Timer update IRQ */
+  uint8_t   polarity; /* Input polarity 0 = positive, 1 = negative */
 #ifdef HAVE_MIXEDWIDTH_TIMERS
   uint8_t   width;   /* Timer width (16- or 32-bits) */
 #endif
@@ -287,6 +288,11 @@ static const struct stm32_qeconfig_s g_tim1config =
 {
   .timid    = 1,
   .irq      = STM32_IRQ_TIM1UP,
+#ifdef TIM1_QE_POLAR_NEG
+  .polarity = 1,
+#else
+  .polarity = 0,
+#endif  
 #ifdef HAVE_MIXEDWIDTH_TIMERS
   .width    = TIM1_BITWIDTH,
 #endif
@@ -312,6 +318,11 @@ static const struct stm32_qeconfig_s g_tim2config =
 {
   .timid    = 2,
   .irq      = STM32_IRQ_TIM2,
+#ifdef TIM2_QE_POLAR_NEG
+  .polarity = 1,
+#else
+  .polarity = 0,
+#endif  
 #ifdef HAVE_MIXEDWIDTH_TIMERS
   .width    = TIM2_BITWIDTH,
 #endif
@@ -337,6 +348,11 @@ static const struct stm32_qeconfig_s g_tim3config =
 {
   .timid    = 3,
   .irq      = STM32_IRQ_TIM3,
+#ifdef TIM3_QE_POLAR_NEG
+  .polarity = 1,
+#else
+  .polarity = 0,
+#endif  
 #ifdef HAVE_MIXEDWIDTH_TIMERS
   .width    = TIM3_BITWIDTH,
 #endif
@@ -362,6 +378,11 @@ static const struct stm32_qeconfig_s g_tim4config =
 {
   .timid    = 4,
   .irq      = STM32_IRQ_TIM4,
+#ifdef TIM4_QE_POLAR_NEG
+  .polarity = 1,
+#else
+  .polarity = 0,
+#endif  
 #ifdef HAVE_MIXEDWIDTH_TIMERS
   .width    = TIM4_BITWIDTH,
 #endif
@@ -387,6 +408,11 @@ static const struct stm32_qeconfig_s g_tim5config =
 {
   .timid    = 5,
   .irq      = STM32_IRQ_TIM5,
+#ifdef TIM5_QE_POLAR_NEG
+  .polarity = 1,
+#else
+  .polarity = 0,
+#endif  
 #ifdef HAVE_MIXEDWIDTH_TIMERS
   .width    = TIM5_BITWIDTH,
 #endif
@@ -412,6 +438,11 @@ static const struct stm32_qeconfig_s g_tim8config =
 {
   .timid    = 8,
   .irq      = STM32_IRQ_TIM8UP,
+#ifdef TIM8_QE_POLAR_NEG
+  .polarity = 1,
+#else
+  .polarity = 0,
+#endif  
 #ifdef HAVE_MIXEDWIDTH_TIMERS
   .width    = TIM8_BITWIDTH,
 #endif
@@ -782,6 +813,8 @@ static int stm32_setup(FAR struct qe_lowerhalf_s *lower)
   /* Select the Polarity=rising and set the CC1E Bit */
 
   ccer &= ~(GTIM_CCER_CC1P | GTIM_CCER_CC1NP);
+  if(priv->config->polarity == 1)
+    ccer |= GTIM_CCER_CC1P; /* Negative polarity */
   ccer |= GTIM_CCER_CC1E;
 
   /* Write to TIM CCMR1 and CCER registers */
@@ -817,6 +850,8 @@ static int stm32_setup(FAR struct qe_lowerhalf_s *lower)
   /* Select the Polarity=rising and set the CC2E Bit */
 
   ccer &= ~(GTIM_CCER_CC2P | GTIM_CCER_CC2NP);
+  if(priv->config->polarity == 1)
+    ccer |= GTIM_CCER_CC2P; /* Negative polarity */
   ccer |= GTIM_CCER_CC2E;
 
   /* Write to TIM CCMR1 and CCER registers */

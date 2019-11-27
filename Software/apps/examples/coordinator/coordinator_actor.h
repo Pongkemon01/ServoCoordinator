@@ -75,6 +75,11 @@ int DoGetIMUQuaternion( char* strToken );
 int DoGetIMUTaitBryan( char* strToken );
 int DoGetIMULinAccel( char* strToken );
 
+/* Closed-loop actions */
+int DoEnableClosedLoop( char* strToken );
+int DoDisableClosedLoop( char* strToken );
+int DoSetClosedLoopPoint( char* strToken );
+
 /* Home sensor */
 int DoHomeValue( char* strToken );
 

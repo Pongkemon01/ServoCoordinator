@@ -48,8 +48,10 @@ STACKSIZE = $(CONFIG_EXAMPLES_COORDINATOR_STACKSIZE)
 # Coordinator for PTTEP 6DOF parallel robot
 
 ASRCS =
-CSRCS = coordinator_usb.c coordinator_actor.c coordinator_token_parser.c
-MAINSRC = coordinator_main.c
+#CSRCS = coordinator_usb.c coordinator_actor.c coordinator_token_parser.c coordinator_motor.c
+#MAINSRC = coordinator_main.c
+CSRCS = geometry.c coordinator_motor.c
+MAINSRC = coordinator_closeloop_main.c
 
 CONFIG_EXAMPLES_COORDINATOR_PROGNAME ?= coordinator$(EXEEXT)
 PROGNAME = $(CONFIG_EXAMPLES_COORDINATOR_PROGNAME)

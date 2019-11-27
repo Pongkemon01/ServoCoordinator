@@ -193,4 +193,5 @@
   (lib (name Valve)(type Legacy)(uri /Users/Pongkemon/kicad-symbols/Valve.lib)(options "")(descr ""))
   (lib (name Video)(type Legacy)(uri /Users/Pongkemon/kicad-symbols/Video.lib)(options "")(descr ""))
   (lib (name zeabus)(type Legacy)(uri /Users/Pongkemon/Copy/AUV/zeabus.lib)(options "")(descr ""))
+  (lib (name zeabus_elec)(type Legacy)(uri /Users/Pongkemon/Copy/AUV/Zeabus-Elec-Kicad-Library/zeabus.lib)(options "")(descr ""))
 )

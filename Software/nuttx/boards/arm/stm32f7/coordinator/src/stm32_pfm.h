@@ -73,7 +73,8 @@ struct stm32_pfm_dev_s
 struct stm32_pfm_ops_s
 {
   void (*start)(FAR struct stm32_pfm_dev_s *dev, uint32_t frequency, uint32_t total_cycle);
-  void (*stop)(FAR struct stm32_pfm_dev_s *dev);
+  uint32_t (*stop)(FAR struct stm32_pfm_dev_s *dev);
+  uint32_t (*get_count)(FAR struct stm32_pfm_dev_s *dev);
   bool (*is_idle)(FAR struct stm32_pfm_dev_s *dev);
 };
 

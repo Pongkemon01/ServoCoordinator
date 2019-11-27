@@ -1,3 +1,6 @@
+#include <debug.h>
+#include <assert.h>
+
 #include <math.h>
 #include <stdint.h>
 #include <sys/types.h>
@@ -18,46 +21,58 @@
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
+#define COS_30      0.866f
 #define F_PI        3.1415926535897932384626433832795029f
+#define F_PI_2      (F_PI / 2.0f)
 #define DEG_TO_RAD  ( F_PI / 180.0f )
 #define RAD_TO_DEG  ( 180.0f / F_PI )
 
 #define JOINT_P_ANGLE       (120.0f* DEG_TO_RAD)
-#define BASE_RADIUS         (220.0f) /* Radius from center of base to each joint */
+#define BASE_RADIUS         (195.0f) /* Radius from center of base to each joint */
 #define END_RADIUS          (160.0f) /* Radius from center of end-effector to each joint */
 #define BASE_JOINT_SPACE    (256.0f) /* Space between base joints on the same side */
 #define END_JOINT_SPACE     (45.0f)  /* Space between end-effector joints on the same side */
 #define BISEP_LENGTH        (95.0f)  /* Length of an actuated arm */
-#define FORE_LENGTH         (110.0f) /* Length of a free arm */
+#define FORE_LENGTH         (400.0f) /* Length of a free arm */
+/* Initial displacement between base frame and end-effector frame where angle = 0 */
+#define END_DISP            (-345.9365f)
 
 /************************************************************************************
  * Private Data
  ************************************************************************************/
-/* Coordinate of IMU sensor respected to the origin of the end-effector. */
-const position_t sensor_disp = 
+static vector_t base_pos[6], end_pos[6];
+
+/*
+ * Rotation matrix for joint transformation to motor frame.
+ * These matrices were verified bt python code. They are:
+ * r_matrix_j1 = np.array(((-cos_30, -0.5, 0),(-0.5, cos_30, 0),(0, 0, -1)))
+ * r_matrix_j3 = np.array(((cos_30, -0.5, 0), (-0.5, -cos_30, 0), (0, 0, -1)))
+ * r_matrix_j5 = np.array(((0, 1, 0), (1, 0, 0), (0, 0, -1)))
+ */
+static rot_matrix_t rot_m_j1j2 = 
 {
-    .x = 160.0f,
-    .y = 0,
-    .z = 0,
+    { -COS_30, -0.5f,   0    },
+    { -0.5f,    COS_30, 0    },
+    { 0,        0,     -1.0f } 
 };
 
-/* Coordinate displacement between base frame and end-effector frame */
-const position_t end_effector_disp =
+static rot_matrix_t rot_m_j3j4 = 
 {
-    .x = 0,
-    .y = 0,
-    .z = -100.0f,
+    { COS_30,  -0.5f,   0    },
+    { -0.5f,   -COS_30, 0    },
+    { 0,       0,      -1.0f } 
 };
 
-static position_t base_pos[6], end_pos[6];
-static quaternion_t init_orientation;
+static rot_matrix_t rot_m_j5j6 = 
+{
+    { 0,     1.0f,  0     },
+    { 1.0f,  0,     0     },
+    { 0,     0,     -1.0f }
+};
 
 /************************************************************************************
  * Private Functions
  ************************************************************************************/
-/*-----------------------------------------------------------------------------------
- * Quaternion math
- *----------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------
  * Helper function : Fast inverse square-root ( i.e., 1/sqrt(x) )
  * See: http://en.wikipedia.org/wiki/Fast_inverse_square_root
@@ -99,97 +114,11 @@ static float FastSqrt( float x )
     return y;
 }
 
-static void q_normalize( quaternion_t* q )
-{
-    float invnorm;
-
-    invnorm = InvSqrt( (q->w * q->w ) + ( q->x * q->x ) + 
-                     ( q->y * q->y ) + ( q->z * q->z ) );
-    q->w *= invnorm;
-    q->x *= invnorm;
-    q->y *= invnorm;
-    q->z *= invnorm;
-}
-
-static void q_multiply( quaternion_t* res, quaternion_t* q1, quaternion_t* q2 )
-{
-    res->w = (q1->w*q2->w) - (q1->x*q2->x) - (q1->y*q2->y) - (q1->z*q2->z);
-    res->x = (q1->w*q2->x) + (q1->x*q2->w) + (q1->y*q2->z) - (q1->z*q2->y);
-    res->y = (q1->w*q2->y) - (q1->x*q2->z) + (q1->y*q2->w) + (q1->z*q2->x);
-    res->z = (q1->w*q2->z) + (q1->x*q2->y) - (q1->y*q2->x) + (q1->z*q2->w);
-}
-
-/* Calculate anti quaternion to make "qc" orientation becomes "qr" orientation */
-static void q_anti_relative( quaternion_t* res, quaternion_t* qc, quaternion_t* qr )
-{
-    quaternion_t qc_c;
-
-    /* qc_c = conjugate of qc */
-    qc_c.w = qc->w;
-    qc_c.x = -(qc->x);
-    qc_c.y = -(qc->y);
-    qc_c.z = -(qc->z);
-
-    q_multiply( res, qr, &qc_c );
-}
-
 /*-----------------------------------------------------------------------------------
- * Create a quaternion with just angle around Z-axis from the given quaternion
+ * Vector math
  *----------------------------------------------------------------------------------*/
-static void q_get_z( quaternion_t* res, quaternion_t* q )
-{
-    float inv_norm;
-
-    /* copy only y angle */
-    res->w = q->w;
-    res->z = q->z;
-    /* Zero all other angles */
-    res->x = 0;
-    res->y = 0;
-
-    /* Normalize the result ( Use custom calculation instead of calling
-       the normalizaion function because some terms are known to be zero,
-       which can be optimized here. */
-    inv_norm = InvSqrt( ( res->w * res->w ) + ( res->z * res->z ) );
-    res->w *= inv_norm;
-    res->z *= inv_norm;
-}
-
-/*-----------------------------------------------------------------------------------
- * Rotate vector "v" with quaternion "q" and give the result back into "v"
- *----------------------------------------------------------------------------------*/
-static void q_rotate_vector( position_t* v, quaternion_t* q )
-{
-    quaternion_t q_c, qv, tmp;
-
-    /* Conjugate q */
-    q_c.w = q->w;
-    q_c.x = -( q->x );
-    q_c.y = -( q->y );
-    q_c.z = -( q->z );
-
-    /* Transfor input into quaternion */
-    qv.w = 0.0f;
-    qv.x = v->x;
-    qv.y = v->y;
-    qv.z = v->z;
-
-    /* Rotate and store result in q_c */
-    q_multiply( &tmp, &qv, &q_c );
-    q_multiply( &qv, q, &tmp );
-
-    /* Copy the result */
-    v->x = qv.x;
-    v->y = qv.y;
-    v->z = qv.z;
-}
-
-/*-----------------------------------------------------------------------------------
- * End of Quaternion math
- *----------------------------------------------------------------------------------*/
-
 /* Rotate vector v around axis z with the specified angle */
-static void vector_rotate_z( position_t* v, float angle )
+static void vector_rotate_z( vector_t* v, float angle )
 {
     float s, c;
     float x, y;
@@ -204,11 +133,72 @@ static void vector_rotate_z( position_t* v, float angle )
     v->y = y;
 }
 
+/* Generate gravitational-alignment rotation matrix.
+ * The algorith came from matlab function
+ * function R=RotationFromTwoVectors(A, B)
+ *  v = cross(A,B);
+ *  ssc = [0 -v(3) v(2); v(3) 0 -v(1); -v(2) v(1) 0];
+ *  R = eye(3) + ssc + ssc^2*(1-dot(A,B))/(norm(v))^2;
+ * 
+ * The function is optimized on the fact that B is always [0, 0, 1]
+ * 
+ */
+// void gen_anti_rotation( rot_matrix_t out, vector_t* g )
+// {
+//     float f, nv;
+
+//     /* v = cross(g, [0, 0, 1])
+//      * v = [g->y, g->x, 0]
+//      */
+//     /* nv = (norm(v))^2; Eucledian norm = sqrt(x^2 + y^2) so norm^2 = x^2 + y^2 */
+//     nv = (g->x * g->x) + (g->y * g->y);
+    
+//     /* f = (1-dot(A,B))/(norm(v))^2 */
+//     if( nv == 0)
+//         f = 0.0f;
+//     else
+//         f = (1.0f - g->z) / nv;
+
+//     /* out = eye(3) + ssc + f*ssc^2 */
+//     out[0][0] = 1.0f - (f * g->x * g->x);
+//     out[0][1] = (f * g->x * g->y);
+//     out[0][2] = g->x;
+//     out[1][0] = out[0][1] ;  /* (f * g->x * g->y) */
+//     out[1][1] = 1.0f - (f * g->y * g->y);
+//     out[1][2] = -(g->y);
+//     out[2][0] = -(g->x);
+//     out[2][1] = g->y;
+//     out[2][2] = 1.0f - (f * ((g->x * g->x) + (g->y * g->y)));
+// }
+
+/* Rotate vector v by the given rotation matrix */
+void vector_rotate_m( vector_t* v, rot_matrix_t m )
+{
+    float nx, ny, nz;
+
+    nx = (m[0][0] * v->x) + (m[0][1] * v->y) + (m[0][2] * v->z);
+    ny = (m[1][0] * v->x) + (m[1][1] * v->y) + (m[1][2] * v->z);
+    nz = (m[2][0] * v->x) + (m[2][1] * v->y) + (m[2][2] * v->z);
+
+    v->x = nx;
+    v->y = ny;
+    v->z = nz;
+}
+
+/*-----------------------------------------------------------------------------------
+ * End of Vector math
+ *----------------------------------------------------------------------------------*/
+
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
 /*-----------------------------------------------------------------------------------
  * Initialize all joint positions with respected to the machine structure.
  * This initialization already include yaw difference at the starting point.
+ * Therefore, all coordinates have the same origin at the center of the base.
  *----------------------------------------------------------------------------------*/
-static void init_positions(void)
+void init_geometry( void )
 {
     /* Initialize some known positions */
     base_pos[4].x = -( BASE_RADIUS * cosf( asinf( ( BASE_JOINT_SPACE / 2.0f ) / BASE_RADIUS) ) );
@@ -218,12 +208,12 @@ static void init_positions(void)
     base_pos[5].y = -(base_pos[4].y);
     base_pos[5].z = 0;
 
-    end_pos[4].x = -( END_RADIUS * cosf( asinf( ( END_JOINT_SPACE / 2.0 ) / END_RADIUS ) ) );
-    end_pos[4].y = END_JOINT_SPACE / 2.0;
-    end_pos[4].z = 0;
+    end_pos[4].x = -( END_RADIUS * cosf( asinf( ( END_JOINT_SPACE / 2.0f ) / END_RADIUS ) ) );
+    end_pos[4].y = END_JOINT_SPACE / 2.0f;
+    end_pos[4].z = END_DISP;
     end_pos[5].x = end_pos[4].x;
     end_pos[5].y = -(end_pos[4].y);
-    end_pos[5].z = 0;
+    end_pos[5].z = END_DISP;
 
     /* Copy coordinates of the known points to relavant points */
     base_pos[0].x = base_pos[4].x;
@@ -268,88 +258,97 @@ static void init_positions(void)
      * because the end-effector is a rigid body. All points on this 
      * body would have same orientation as well as linear movements.
      */
-
-    /* Finally, adjust each points according to the initial orientation */
-    for(int i = 0; i < 6; i++)
-    {
-        q_rotate_vector( &(base_pos[i]), &init_orientation );
-        q_rotate_vector( &(end_pos[i]), &init_orientation );
-    }
-}
-
-/****************************************************************************
- * Public Functions
- ****************************************************************************/
-
-/*-----------------------------------------------------------------------------------
- * Initialize system geometry.
- *----------------------------------------------------------------------------------*/
-void init_geometry( quaternion_t *start_orientation )
-{
-    float   yaw;
-    quaternion_t *q = start_orientation; /* Just for shorter name */
-
-    /* Initialize the orientation of the origin with the current yaw */
-
-    /* Extracting Yaw by the formula from 
-    https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles */
-    yaw = atan2f( 2.0f * (q->w * q->z + q->x * q->y), 
-                1.0f - (2.0f * (q->y * q->y + q->z * q->z)) );
-    
-    /* Convert yaw to quaternion */
-    yaw *= 0.5f;
-    init_orientation.w = cosf(yaw);
-    init_orientation.x = 0.0f;
-    init_orientation.y = 0.0f;
-    init_orientation.z = sinf(yaw);
-
-    /* Then assign all joint positions according to the design and the orientation */
-    init_positions();
 }
 
 /*-----------------------------------------------------------------------------------
- * Calculate the new position of each end-effector joints to counter 
- * the current orientation "q" and position "p"
+ * Update all end-effector joint positions.
  *----------------------------------------------------------------------------------*/
-void gen_compensate_pos( position_t new[], quaternion_t* q, position_t* p )
+void get_init_ee_pos( vector_t out[] )
 {
-    quaternion_t q_diff;
-
-    /* Calculate coutner-quaternion between q and the original one */
-    q_anti_relative( &q_diff, q, &init_orientation );
-
-    /* Initialize result coordinates with initial coordinates then rotate
-        those coordinates with respected to the difference quaternion. */
-    for( int i = 0; i <= 6; i++ )
+    for(int i = 0; i < 6; i++ )
     {
-        new[i].x = end_pos[i].x;
-        new[i].y = end_pos[i].y;
-        new[i].y = end_pos[i].y;
-        q_rotate_vector( &(new[i]), &q_diff );
+        out[i].x = end_pos[i].x;
+        out[i].y = end_pos[i].y;
+        out[i].z = end_pos[i].z;
     }
+}
+
+/*-----------------------------------------------------------------------------------
+ * Shift a given global position from base-frame origin to motor origin
+ * and rotate the frame to make the corresponding bisep-arm moves along 
+ * XZ plane, where the XYZ plane follows NWU norm (instead of NED as usual).
+ *----------------------------------------------------------------------------------*/
+void shift_to_motor_frame( vector_t* newpos, vector_t* pos, uint32_t pos_index )
+{
+    DEBUGASSERT( pos_index < 6 );
+
+    /* Shifting the frame */
+    newpos->x = pos->x - base_pos[pos_index].x;
+    newpos->y = pos->y - base_pos[pos_index].y;
+    newpos->z = pos->z - base_pos[pos_index].z;
+
+    /* Rotate the frame */
+    switch( pos_index )
+    {
+        case 0:
+        case 1:
+            vector_rotate_m( newpos, rot_m_j1j2 );
+            break;
+        case 2:
+        case 3:
+            vector_rotate_m( newpos, rot_m_j3j4 );
+            break;
+        case 4:
+        case 5:
+            vector_rotate_m( newpos, rot_m_j5j6 );
+            break;
+    }
+    // _info("Pre joint %d  POS=[%f|%f|%f] base=[%f|%f|%f] New=[%f|%f|%f]\n", 
+    // pos_index, pos->x, pos->y, pos->z, base_pos[pos_index].x, base_pos[pos_index].y, base_pos[pos_index].z,
+    // newpos->x, newpos->y, newpos->z);
 }
 
 /*-----------------------------------------------------------------------------------
  * Calculate inverse kinematic of a given end-effector joint position
  * to motor angle.
  *----------------------------------------------------------------------------------*/
-float inverse_kinematic( position_t *pos )
+float inverse_kinematic( vector_t *pos, bool is_first_angle )
 {
-    float theta1;
-    float cos_theta3;
-    float sin_theta2, cos_theta2;
-    float fa_cos, baba_fa_cos;      /* Temporary variables */
+    float theta;
+    float f_dat, gamma, cos_phi;
+
+    f_dat = FORE_LENGTH * cosf( asinf( pos->y / FORE_LENGTH ) );
+    gamma = atan2f( pos->z, pos->x );
+    cos_phi = ( pos->x * pos->x ) + ( pos->z * pos->z ) + ( BISEP_LENGTH * BISEP_LENGTH ) - ( f_dat * f_dat );
+    cos_phi /= ( 2.0f * BISEP_LENGTH * FastSqrt( ( pos->x * pos->x ) + ( pos->z * pos->z ) ) );
+    if( is_first_angle )
+        theta = gamma - acosf( cos_phi );
+    else
+        theta = F_PI - (gamma + acosf( cos_phi ));
+
+    return( theta );
+}
+
+float inverse_kinematic_2( vector_t* pos, bool is_first_angle )
+{
+    float cos_theta3, cos_theta2, sin_theta2, theta1;
+    float fa_cos;
 
     cos_theta3 = cosf( asinf( pos->y / FORE_LENGTH ) );
+    fa_cos = FORE_LENGTH * cos_theta3;      /* Projection of the forearm on x-z plane */
 
-    fa_cos = FORE_LENGTH * cos_theta3;
-    baba_fa_cos = ( BISEP_LENGTH * BISEP_LENGTH ) + ( fa_cos * fa_cos );
-    cos_theta2 = ( pos->x * pos->x ) + ( pos->z * pos->z ) - baba_fa_cos;
+    cos_theta2 = ( pos->x * pos->x ) + ( pos->z * pos->z ) - (( BISEP_LENGTH * BISEP_LENGTH ) + ( fa_cos * fa_cos ));
     cos_theta2 /= ( 2.0f * BISEP_LENGTH * fa_cos );
 
-    sin_theta2 = FastSqrt( 1 - (cos_theta2 * cos_theta2) ); /* Sine value can both + and - */
+    /*  Sine value can both + and - */
+    sin_theta2 = FastSqrt( 1.0f - (cos_theta2 * cos_theta2) );
+    if( !is_first_angle )
+        sin_theta2 = -sin_theta2;
+    // sin_theta2_2 = -sin_theta2
 
     theta1 = atan2f( pos->z, pos->x ) - atan2f( (FORE_LENGTH * cos_theta3 * sin_theta2), (BISEP_LENGTH + (cos_theta2 * fa_cos)) );
+    if( !is_first_angle )
+        theta1 = F_PI - theta1;
 
     return( theta1 );
 }

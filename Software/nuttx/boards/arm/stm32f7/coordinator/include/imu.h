@@ -52,9 +52,14 @@
 
 #define IMU_CMD_GET_SAMPLE_RATE _IIOC(1) /* Arg: Pointer to uint32_t */
 #define IMU_CMD_GET_QUATERNION  _IIOC(2) /* Arg: Array float[4] */
-#define IMU_CMD_GET_LIN_ACCEL   _IIOC(3) /* Arg: Array float[3] for x/y/z */
-#define IMU_CMD_GET_LIN_VELO    _IIOC(4) /* Arg: Array float[3] for x/y/z */
-#define IMU_CMD_GET_LIN_DISP    _IIOC(5) /* Arg: Array float[3] for x/y/z */
+#define IMU_CMD_GET_GRAVITY     _IIOC(3) /* Arg: Array float[3] for x/y/z */
+#define IMU_CMD_GET_LIN_ACCEL   _IIOC(4) /* Arg: Array float[3] for x/y/z */
+#define IMU_CMD_GET_LIN_VELO    _IIOC(5) /* Arg: Array float[3] for x/y/z */
+#define IMU_CMD_GET_LIN_DISP    _IIOC(6) /* Arg: Array float[3] for x/y/z */
+#define IMU_CMD_GET_ANG_VELO    _IIOC(7) /* Arg: Array float[3] for x/y/z */
+#define IMU_CMD_GET_ANG_DISP    _IIOC(8) /* Arg: Array float[3] for x/y/z */
+#define IMU_CMD_SET_FILTER_COEF _IIOC(9) /* Arg: Pointer to float */
+#define IMU_CMD_GET_TILT        _IIOC(10) /* Arg: Array float[3] for x/y/z */
 
 /* Public function */
 int imu_initialize(void);

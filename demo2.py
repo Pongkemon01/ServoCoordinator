@@ -73,46 +73,38 @@ r = readlineCR( fb )
 print("Response = ", r)
 
 t = input("Pause")
-s = "!SON?m=" + str(motor_id) + "\n";
+s = "!SON?m=" + str(motor_id) + "\n"
 fb.write( bytes(s, 'utf-8') )
 r = readlineCR( fb )
 print("Response = ", r)
 
 t = input("Pause")
 
-s = "!GQE?qe=" + str(motor_id) + "\n";
+s = "!GQE?qe=" + str(motor_id) + "\n"
 fb.write( bytes(s, 'utf-8') )
 r = readlineCR( fb )
 print("Response = ", r)
 t = input("Pause")
 
-s = "!RUN?m=" + str(motor_id) + ":spd=1000:stp=1000\n";
-fb.write( bytes(s, 'utf-8') )
-r = readlineCR( fb )
-print("Response = ", r)
-
-t = input("Pause")
-
-s = "!GQE?qe=" + str(motor_id) + "\n";
+s = "!ECL?m=" + str(motor_id) + "\n"
 fb.write( bytes(s, 'utf-8') )
 r = readlineCR( fb )
 print("Response = ", r)
 t = input("Pause")
 
-s = "!RUN?m=" + str(motor_id) + ":spd=1000:stp=0\n";
-fb.write( bytes(s, 'utf-8') )
-r = readlineCR( fb )
-print("Response = ", r)
-
-t = input("Pause")
-
-s = "!GQE?qe=" + str(motor_id) + "\n";
+s = "!SPT?m=" + str(motor_id) + ":stp=1000\n"
 fb.write( bytes(s, 'utf-8') )
 r = readlineCR( fb )
 print("Response = ", r)
 t = input("Pause")
 
-s = "!SOF?m=" + str(motor_id) + "\n";
+s = "!DCL?m=" + str(motor_id) + "\n"
+fb.write( bytes(s, 'utf-8') )
+r = readlineCR( fb )
+print("Response = ", r)
+t = input("Pause")
+
+s = "!SOF?m=" + str(motor_id) + "\n"
 fb.write( bytes(s, 'utf-8') )
 r = readlineCR( fb )
 print("Response = ", r)

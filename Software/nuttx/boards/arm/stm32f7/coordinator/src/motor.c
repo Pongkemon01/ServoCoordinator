@@ -82,9 +82,10 @@ struct motor_priv_s
 {
   FAR struct motor_cfg_s      *cfg;
   FAR struct stm32_pfm_dev_s  *pfm;
-  sem_t                       exclsem;  /* Supports mutual exclusion */
-  uint32_t                    crefs;    /* File opening counter */
+  volatile int32_t            step_count;
   volatile motor_state_t      state;
+  volatile bool               is_cw;  /* Is negative direction? */
+  volatile bool               is_start; /* The motor has been started without any stop command */
 };
 
 /************************************************************************************
@@ -174,42 +175,54 @@ struct motor_priv_s motor_priv[6] =
 {
   .cfg    = &(motor_cfg[0]),
   .pfm    = NULL,
-  .crefs  = 0,
+  .step_count = 0L,
+  .is_cw  = false,
+  .is_start = false,
   .state  = MOTOR_UNINIT
 },
 
 {
   .cfg    = &(motor_cfg[1]),
   .pfm    = NULL,
-  .crefs  = 0,
+  .step_count = 0L,
+  .is_cw  = false,
+  .is_start = false,
   .state  = MOTOR_UNINIT
 },
 
 {
   .cfg    = &(motor_cfg[2]),
   .pfm    = NULL,
-  .crefs  = 0,
+  .step_count = 0L,
+  .is_cw  = false,
+  .is_start = false,
   .state  = MOTOR_UNINIT
 },
 
 {
   .cfg    = &(motor_cfg[3]),
   .pfm    = NULL,
-  .crefs  = 0,
+  .step_count = 0L,
+  .is_cw  = false,
+  .is_start = false,
   .state  = MOTOR_UNINIT
 },
 
 {
   .cfg    = &(motor_cfg[4]),
   .pfm    = NULL,
-  .crefs  = 0,
+  .step_count = 0L,
+  .is_cw  = false,
+  .is_start = false,
   .state  = MOTOR_UNINIT
 },
 
 {
   .cfg    = &(motor_cfg[5]),
   .pfm    = NULL,
-  .crefs  = 0,
+  .step_count = 0L,
+  .is_cw  = false,
+  .is_start = false,
   .state  = MOTOR_UNINIT
 }
 
@@ -241,6 +254,7 @@ struct motor_priv_s motor_priv[6] =
 #define motor_led_green_on(cfg)     motor_setpin(cfg->led_green)
 #define motor_led_green_off(cfg)    motor_respin(cfg->led_green)
 
+#define motor_get_pfm_count(motor)  (motor->pfm->ops->get_count(motor->pfm))
 #define motor_stop_pfm(motor)       (motor->pfm->ops->stop(motor->pfm))
 #define motor_start_pfm(motor,p,c)  (motor->pfm->ops->start(motor->pfm,p,c))
 
@@ -252,7 +266,7 @@ static inline void motor_alarm_res(FAR struct motor_cfg_s* cfg)
 {
   /* Sending a pulse to reset alarm status */
   motor_setpin(cfg->alrm_res_pin);
-  for(int i = 100;i > 0;i--);    /* Delay for a moment */
+  usleep(25000);      /* The datasheet specified 25mS(min) */
   motor_respin(cfg->alrm_res_pin);
 }
 
@@ -260,7 +274,7 @@ static inline void motor_clr_devcount(FAR struct motor_cfg_s* cfg)
 {
   /* Sending a pulse to clear deviation counter */
   motor_setpin(cfg->dev_clr_pin);
-  for(int i = 100;i > 0;i--);    /* Delay for a moment */
+  usleep(25000);      /* The datasheet specified 25mS(min) */
   motor_respin(cfg->dev_clr_pin);
 }
 
@@ -317,6 +331,7 @@ static int motor_init_gpio(FAR struct motor_cfg_s* cfg)
 static int motor_enter_uninit(FAR struct motor_priv_s* priv)
 {
   irqstate_t flags;
+  uint32_t l;
 
   DEBUGASSERT(priv != NULL);
 
@@ -325,8 +340,16 @@ static int motor_enter_uninit(FAR struct motor_priv_s* priv)
   if(priv->state == MOTOR_READY)
   {
     /* If motor was in ready state, then turn off PFM */
-    motor_stop_pfm(priv);
-  }
+     if(priv->is_start)
+    {
+      l = motor_stop_pfm(priv);
+      if(priv->is_cw)
+        priv->step_count -= l;
+      else
+        priv->step_count += l;
+      priv->is_start = false;
+    }
+ }
   motor_led_red_off(priv->cfg);
   motor_led_green_off(priv->cfg);
   flags = enter_critical_section();
@@ -341,13 +364,22 @@ static int motor_enter_unavailable(FAR struct motor_priv_s* priv)
 {
   irqstate_t flags;
   DEBUGASSERT(priv != NULL);
+  uint32_t  l;
   
   _info("Enter unavailable\n");
   motor_servo_off(priv->cfg);
   if(priv->state == MOTOR_READY)
   {
     /* If motor was in ready state, then turn off PFM */
-    motor_stop_pfm(priv);
+    if(priv->is_start)
+    {
+      l = motor_stop_pfm(priv);
+      if(priv->is_cw)
+        priv->step_count -= l;
+      else
+        priv->step_count += l;
+      priv->is_start = false;
+    }
   }
   motor_led_red_on(priv->cfg);
   motor_led_green_on(priv->cfg);
@@ -363,13 +395,22 @@ static int motor_enter_alarm(FAR struct motor_priv_s* priv)
 {
    irqstate_t flags;
  DEBUGASSERT(priv != NULL);
+  uint32_t l;
   
   _info("Enter alarm : %d\n", priv->cfg->motor_id);
   motor_servo_off(priv->cfg);
   if(priv->state == MOTOR_READY)
   {
     /* If motor was in ready state, then turn off PFM */
-    motor_stop_pfm(priv);
+    if(priv->is_start)
+    {
+      l = motor_stop_pfm(priv);
+      if(priv->is_cw)
+        priv->step_count -= l;
+      else
+        priv->step_count += l;
+      priv->is_start = false;
+    }
   }
   motor_led_red_on(priv->cfg);
   motor_led_green_off(priv->cfg);
@@ -420,7 +461,7 @@ static int motor_enter_ready(FAR struct motor_priv_s* priv)
   }
   else
   {
-    motor_stop_pfm(priv);
+    (void)motor_stop_pfm(priv);
   }
 
   //motor_servo_on(priv->cfg);
@@ -543,63 +584,8 @@ static const struct file_operations g_motorops =
 
 static int motor_open(FAR struct file *filep)
 {
-  FAR struct inode           *inode = filep->f_inode;
-  FAR struct motor_priv_s    *motor = inode->i_private;
-  uint32_t                    tmp;
-  int                         ret;
-
-  _info("crefs: %d\n", motor->crefs);
-
-  /* Get exclusive access to the device structures */
-
-  ret = nxsem_wait(&(motor->exclsem));
-  if (ret < 0)
-    {
-      goto errout;
-    }
-
-  /* Increment the count of references to the device.  If this the first
-   * time that the driver has been opened for this device, then initialize
-   * the device.
-   */
-
-  tmp = motor->crefs + 1;
-  if (tmp == 0)
-    {
-      /* More than 255 opens; uint8_t overflows to zero */
-
-      ret = -EMFILE;
-      goto errout_with_sem;
-    }
-
-  /* Check if this is the first time that the driver has been opened. */
-
-  /*if (tmp == 1)
-    {
-      FAR struct qe_lowerhalf_s *lower = upper->lower;
-
-      / * Yes.. perform one time hardware initialization. * /
-
-      DEBUGASSERT(lower->ops->setup != NULL);
-      _info("calling setup\n");
-
-      ret = lower->ops->setup(lower);
-      if (ret < 0)
-        {
-          goto errout_with_sem;
-        }
-    }*/
-
-  /* Save the new open count on success */
-
-  motor->crefs = tmp;
-  ret = OK;
-
-errout_with_sem:
-  nxsem_post(&(motor->exclsem));
-
-errout:
-  return ret;
+  UNUSED(filep);
+  return OK;
 }
 
 /************************************************************************************
@@ -612,50 +598,8 @@ errout:
 
 static int motor_close(FAR struct file *filep)
 {
-  FAR struct inode           *inode = filep->f_inode;
-  FAR struct motor_priv_s    *motor = inode->i_private;
-  int                         ret;
-
-  _info("crefs: %d\n", motor->crefs);
-
-  /* Get exclusive access to the device structures */
-
-  ret = nxsem_wait(&(motor->exclsem));
-  if (ret < 0)
-    {
-      goto errout;
-    }
-
-  /* Decrement the references to the driver.  If the reference count will
-   * decrement to 0, then uninitialize the driver.
-   */
-
-  if (motor->crefs > 1)
-    {
-      motor->crefs--;
-    }
-  /*else
-    {
-      FAR struct qe_lowerhalf_s *lower = motor->lower;
-
-      / * There are no more references to the port * /
-
-      upper->crefs = 0;
-
-      / * Disable the PWM device * /
-
-      DEBUGASSERT(lower->ops->shutdown != NULL);
-      _info("calling shutdown: %d\n");
-
-      lower->ops->shutdown(lower);
-    }
-    */
-
-  nxsem_post(&(motor->exclsem));
-  ret = OK;
-
-errout:
-  return ret;
+  UNUSED(filep);
+  return OK;
 }
 
 /************************************************************************************
@@ -728,18 +672,11 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
   FAR struct inode          *inode = filep->f_inode;
   FAR struct motor_priv_s   *motor;
   int                        ret;
+  uint32_t                   l;
 
   motor = inode->i_private;
   DEBUGASSERT(motor != NULL);
-  _info("cmd: %d arg: %ld\n", cmd, arg);
-
-  /* Get exclusive access to the device structures */
-
-  ret = nxsem_wait(&motor->exclsem);
-  if (ret < 0)
-    {
-      return ret;
-    }
+//  _info("cmd: %d arg: %ld\n", cmd, arg);
 
   /* Handle built-in ioctl commands */
 
@@ -750,11 +687,13 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
         break;
 
       case MOTOR_CMD_SVOFF:
+        //_info("MOTOR %u OFF\n", motor->cfg->motor_id);
         motor_servo_off(motor->cfg);
         ret = OK;
         break;
 
       case MOTOR_CMD_SVON:
+        //_info("MOTOR %u ON\n", motor->cfg->motor_id);
         motor_servo_on(motor->cfg);
         ret = OK;
         break;
@@ -765,18 +704,32 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
           if(motor_run_param->speed >= MOTOR_MIN_SPEED &&
              motor_run_param->speed <= MOTOR_MAX_SPEED)
           {
-            _info("Run motor with speed %u\n", motor_run_param->speed);
+            _info("Run motor %u with speed %u and steps %d\n", motor->cfg->motor_id, motor_run_param->speed, motor_run_param->step);
 
-            motor_stop_pfm(motor);
-            if(motor_run_param->is_cw)
+            if( motor->is_start )
             {
+              l = motor_stop_pfm(motor);
+              if(motor->is_cw)
+                motor->step_count -= l;
+              else
+                motor->step_count += l;
+            }
+
+            /* Counter-clockwise is considered as positive direction in this platform */
+            if(motor_run_param->step < 0)
+            {
+              motor->is_cw = true;
               motor_set_cw(motor->cfg);
+              motor_start_pfm(motor, motor_run_param->speed, (uint32_t)(-(motor_run_param->step)));
             }
             else
             {
+              motor->is_cw = false;
               motor_set_ccw(motor->cfg);
+              motor_start_pfm(motor, motor_run_param->speed, (uint32_t)(motor_run_param->step));
             }
-            motor_start_pfm(motor, motor_run_param->speed, motor_run_param->step);
+            motor->is_start = true;
+
             ret = OK;
           }
           else
@@ -788,7 +741,12 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
         break;
 
       case MOTOR_CMD_STOP:
-        motor_stop_pfm(motor);
+        l = motor_stop_pfm(motor);
+        if(motor->is_cw)
+          motor->step_count -= l;
+        else
+          motor->step_count += l;
+        motor->is_start = false;
         ret = OK;
         break;
 
@@ -834,6 +792,32 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
         ret = OK;
         break;
 
+      case MOTOR_CMD_GET_COUNTER:
+        if(!(motor->is_start))
+          *( (int32_t*)arg ) = motor->step_count;
+        else
+        {
+          if(motor->is_cw)
+            *( (int32_t*)arg ) = motor->step_count - motor_get_pfm_count(motor);
+          else
+            *( (int32_t*)arg ) = motor->step_count + motor_get_pfm_count(motor);
+        }
+        ret = OK;
+        break;
+
+      case MOTOR_CMD_IS_RUNNING:
+        if(!(motor->is_start))
+          *( (uint32_t*)arg ) = 0;
+        else
+          *( (uint32_t*)arg ) = 1;
+        ret = OK;
+        break;
+
+      case MOTOR_CMD_RES_COUNTER:
+        motor->step_count = 0;
+        ret = OK;
+        break;
+
       /* Any unrecognized IOCTL commands might be platform-specific ioctl commands */
 
       default:
@@ -844,7 +828,6 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
         break;
     }
 
-  nxsem_post(&(motor->exclsem));
   return ret;
 }
 
@@ -866,7 +849,7 @@ int motor_initialize()
   {
     _info("Initialize motor ID %d:..", i);
     /* 1. Init semaphore */ 
-    nxsem_init(&(motor_priv[i].exclsem), 0, 1);  // Binary sem
+    //nxsem_init(&(motor_priv[i].exclsem), 0, 1);  // Binary sem
 
     /* 2. Init GPIO */
     if( motor_init_gpio(motor_priv[i].cfg) != OK )
