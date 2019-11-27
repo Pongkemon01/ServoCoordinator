@@ -6,7 +6,7 @@ encoding utf-8
 Sheet 5 6
 Title "6DOF Parallel Robot"
 Date "2019-September-26"
-Rev "2.0.0"
+Rev "2.0.1"
 Comp "Kasetsart University"
 Comment1 "Faculty of Engineering"
 Comment2 "Department of Computer Engineering"

@@ -217,10 +217,11 @@ void* motor_thread( void* arg )
     if( read( param->iHomeFile, &home_stat, 1 ) == 1 )
     {
         rel_step = 0;
-        while( (rel_step <= 14400) && ((home_stat & home_mask) != 0) )
+        /* Home status: 0 = released, 1 = pressed */
+        while( (rel_step <= 14400) && ((home_stat & home_mask) == 0) )
         {
             rel_step += 1200;
-            if( run_motor( rel_step, 10000UL ) == false )
+            if( run_motor( rel_step, 3600UL ) == false )
                 break;
             do
             {
@@ -232,14 +233,14 @@ void* motor_thread( void* arg )
                 break;
         }
 
-        if((home_stat & home_mask) == 0)
+        if((home_stat & home_mask) != 0)
         {
             // 2. Rotate negative direction (cw) slowly until home sensor released.
             while( ( rel_step > 0 ) && ((home_stat & home_mask) != 0) )
             {
                 rel_step -= 100;
 
-                if( run_motor( rel_step, 10000UL ) == false )
+                if( run_motor( rel_step, 1000UL ) == false )
                     break;
                 do
                 {
@@ -253,7 +254,7 @@ void* motor_thread( void* arg )
 
             // 3. Rotate negative direction (cw) for 1200 steps (approx.)
             rel_step -= 1200;
-            if( run_motor( rel_step , 10000UL ) )
+            if( run_motor( rel_step , 3600UL ) )
             {
                 do
                 {

@@ -6,7 +6,7 @@ encoding utf-8
 Sheet 6 6
 Title "6DOF Parallel Robot"
 Date "2019-September-26"
-Rev "2.0.0"
+Rev "2.0.1"
 Comp "Kasetsart University"
 Comment1 "Faculty of Engineering"
 Comment2 "Department of Computer Engineering"
@@ -173,29 +173,14 @@ $EndComp
 $Comp
 L Connector_Generic:Conn_01x02 CON8
 U 1 1 5D8F44ED
-P 3450 2400
-F 0 "CON8" H 3530 2392 50  0000 L CNN
-F 1 "Home Sensor" H 3200 2150 50  0000 L CNN
-F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 3450 2400 50  0001 C CNN
-F 3 "~" H 3450 2400 50  0001 C CNN
-	1    3450 2400
-	1    0    0    -1  
+P 3450 2600
+F 0 "CON8" H 3530 2592 50  0000 L CNN
+F 1 "Home Sensor" H 3200 2350 50  0000 L CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 3450 2600 50  0001 C CNN
+F 3 "~" H 3450 2600 50  0001 C CNN
+	1    3450 2600
+	1    0    0    1   
 $EndComp
-$Comp
-L power:+24V #PWR0216
-U 1 1 5D8F505F
-P 3150 2350
-F 0 "#PWR0216" H 3150 2200 50  0001 C CNN
-F 1 "+24V" H 3165 2523 50  0000 C CNN
-F 2 "" H 3150 2350 50  0001 C CNN
-F 3 "" H 3150 2350 50  0001 C CNN
-	1    3150 2350
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	3250 2400 3150 2400
-Wire Wire Line
-	3150 2400 3150 2350
 $Comp
 L Connector:DB25_Female_MountingHoles CON3
 U 1 1 5D914001
@@ -354,29 +339,14 @@ $EndComp
 $Comp
 L Connector_Generic:Conn_01x02 CON9
 U 1 1 5D914058
-P 7000 2400
-F 0 "CON9" H 7080 2392 50  0000 L CNN
-F 1 "Home Sensor" H 6750 2150 50  0000 L CNN
-F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 7000 2400 50  0001 C CNN
-F 3 "~" H 7000 2400 50  0001 C CNN
-	1    7000 2400
-	1    0    0    -1  
+P 7000 2600
+F 0 "CON9" H 7080 2592 50  0000 L CNN
+F 1 "Home Sensor" H 6750 2350 50  0000 L CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 7000 2600 50  0001 C CNN
+F 3 "~" H 7000 2600 50  0001 C CNN
+	1    7000 2600
+	1    0    0    1   
 $EndComp
-$Comp
-L power:+24V #PWR0223
-U 1 1 5D91405E
-P 6700 2350
-F 0 "#PWR0223" H 6700 2200 50  0001 C CNN
-F 1 "+24V" H 6715 2523 50  0000 C CNN
-F 2 "" H 6700 2350 50  0001 C CNN
-F 3 "" H 6700 2350 50  0001 C CNN
-	1    6700 2350
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	6800 2400 6700 2400
-Wire Wire Line
-	6700 2400 6700 2350
 $Comp
 L Connector:DB25_Female_MountingHoles CON4
 U 1 1 5D91D4EF
@@ -537,29 +507,14 @@ $EndComp
 $Comp
 L Connector_Generic:Conn_01x02 CON10
 U 1 1 5D91D546
-P 10550 2400
-F 0 "CON10" H 10630 2392 50  0000 L CNN
-F 1 "Home Sensor" H 10300 2150 50  0000 L CNN
-F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 10550 2400 50  0001 C CNN
-F 3 "~" H 10550 2400 50  0001 C CNN
-	1    10550 2400
-	1    0    0    -1  
+P 10550 2600
+F 0 "CON10" H 10630 2592 50  0000 L CNN
+F 1 "Home Sensor" H 10300 2350 50  0000 L CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 10550 2600 50  0001 C CNN
+F 3 "~" H 10550 2600 50  0001 C CNN
+	1    10550 2600
+	1    0    0    1   
 $EndComp
-$Comp
-L power:+24V #PWR0230
-U 1 1 5D91D54C
-P 10250 2350
-F 0 "#PWR0230" H 10250 2200 50  0001 C CNN
-F 1 "+24V" H 10265 2523 50  0000 C CNN
-F 2 "" H 10250 2350 50  0001 C CNN
-F 3 "" H 10250 2350 50  0001 C CNN
-	1    10250 2350
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	10350 2400 10250 2400
-Wire Wire Line
-	10250 2400 10250 2350
 $Comp
 L Connector:DB25_Female_MountingHoles CON5
 U 1 1 5D9442C7
@@ -720,29 +675,14 @@ $EndComp
 $Comp
 L Connector_Generic:Conn_01x02 CON11
 U 1 1 5D94431E
-P 3450 5400
-F 0 "CON11" H 3530 5392 50  0000 L CNN
-F 1 "Home Sensor" H 3200 5150 50  0000 L CNN
-F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 3450 5400 50  0001 C CNN
-F 3 "~" H 3450 5400 50  0001 C CNN
-	1    3450 5400
-	1    0    0    -1  
+P 3450 5600
+F 0 "CON11" H 3530 5592 50  0000 L CNN
+F 1 "Home Sensor" H 3200 5350 50  0000 L CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 3450 5600 50  0001 C CNN
+F 3 "~" H 3450 5600 50  0001 C CNN
+	1    3450 5600
+	1    0    0    1   
 $EndComp
-$Comp
-L power:+24V #PWR0237
-U 1 1 5D944324
-P 3150 5350
-F 0 "#PWR0237" H 3150 5200 50  0001 C CNN
-F 1 "+24V" H 3165 5523 50  0000 C CNN
-F 2 "" H 3150 5350 50  0001 C CNN
-F 3 "" H 3150 5350 50  0001 C CNN
-	1    3150 5350
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	3250 5400 3150 5400
-Wire Wire Line
-	3150 5400 3150 5350
 $Comp
 L Connector:DB25_Female_MountingHoles CON6
 U 1 1 5D94432D
@@ -903,29 +843,14 @@ $EndComp
 $Comp
 L Connector_Generic:Conn_01x02 CON12
 U 1 1 5D944384
-P 7000 5400
-F 0 "CON12" H 7080 5392 50  0000 L CNN
-F 1 "Home Sensor" H 6750 5150 50  0000 L CNN
-F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 7000 5400 50  0001 C CNN
-F 3 "~" H 7000 5400 50  0001 C CNN
-	1    7000 5400
-	1    0    0    -1  
+P 7000 5600
+F 0 "CON12" H 7080 5592 50  0000 L CNN
+F 1 "Home Sensor" H 6750 5350 50  0000 L CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 7000 5600 50  0001 C CNN
+F 3 "~" H 7000 5600 50  0001 C CNN
+	1    7000 5600
+	1    0    0    1   
 $EndComp
-$Comp
-L power:+24V #PWR0244
-U 1 1 5D94438A
-P 6700 5350
-F 0 "#PWR0244" H 6700 5200 50  0001 C CNN
-F 1 "+24V" H 6715 5523 50  0000 C CNN
-F 2 "" H 6700 5350 50  0001 C CNN
-F 3 "" H 6700 5350 50  0001 C CNN
-	1    6700 5350
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	6800 5400 6700 5400
-Wire Wire Line
-	6700 5400 6700 5350
 Text GLabel 9000 4250 0    50   Input ~ 0
 M6_PULSE_N
 Text GLabel 9000 4650 0    50   Input ~ 0
@@ -1075,29 +1000,14 @@ $EndComp
 $Comp
 L Connector_Generic:Conn_01x02 CON13
 U 1 1 5D9443EA
-P 10550 5400
-F 0 "CON13" H 10630 5392 50  0000 L CNN
-F 1 "Home Sensor" H 10300 5150 50  0000 L CNN
-F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 10550 5400 50  0001 C CNN
-F 3 "~" H 10550 5400 50  0001 C CNN
-	1    10550 5400
-	1    0    0    -1  
+P 10550 5600
+F 0 "CON13" H 10630 5592 50  0000 L CNN
+F 1 "Home Sensor" H 10300 5350 50  0000 L CNN
+F 2 "TerminalBlock_TE-Connectivity:TerminalBlock_TE_282834-2_1x02_P2.54mm_Horizontal" H 10550 5600 50  0001 C CNN
+F 3 "~" H 10550 5600 50  0001 C CNN
+	1    10550 5600
+	1    0    0    1   
 $EndComp
-$Comp
-L power:+24V #PWR0251
-U 1 1 5D9443F0
-P 10250 5350
-F 0 "#PWR0251" H 10250 5200 50  0001 C CNN
-F 1 "+24V" H 10265 5523 50  0000 C CNN
-F 2 "" H 10250 5350 50  0001 C CNN
-F 3 "" H 10250 5350 50  0001 C CNN
-	1    10250 5350
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	10350 5400 10250 5400
-Wire Wire Line
-	10250 5400 10250 5350
 $Comp
 L Connector_Generic:Conn_01x02 CON16
 U 1 1 5DA63DF6
@@ -1399,4 +1309,70 @@ Wire Wire Line
 	3200 6950 3800 6950
 Wire Wire Line
 	3200 6850 3800 6850
+$Comp
+L power:GNDPWR #PWR?
+U 1 1 5DE0A5BF
+P 3250 5600
+F 0 "#PWR?" H 3250 5400 50  0001 C CNN
+F 1 "GNDPWR" V 3254 5491 50  0000 R CNN
+F 2 "" H 3250 5550 50  0001 C CNN
+F 3 "" H 3250 5550 50  0001 C CNN
+	1    3250 5600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDPWR #PWR?
+U 1 1 5DE24681
+P 3250 2600
+F 0 "#PWR?" H 3250 2400 50  0001 C CNN
+F 1 "GNDPWR" V 3254 2491 50  0000 R CNN
+F 2 "" H 3250 2550 50  0001 C CNN
+F 3 "" H 3250 2550 50  0001 C CNN
+	1    3250 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDPWR #PWR?
+U 1 1 5DE3CBF0
+P 6800 2600
+F 0 "#PWR?" H 6800 2400 50  0001 C CNN
+F 1 "GNDPWR" V 6804 2491 50  0000 R CNN
+F 2 "" H 6800 2550 50  0001 C CNN
+F 3 "" H 6800 2550 50  0001 C CNN
+	1    6800 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDPWR #PWR?
+U 1 1 5DE60599
+P 10350 2600
+F 0 "#PWR?" H 10350 2400 50  0001 C CNN
+F 1 "GNDPWR" V 10354 2491 50  0000 R CNN
+F 2 "" H 10350 2550 50  0001 C CNN
+F 3 "" H 10350 2550 50  0001 C CNN
+	1    10350 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDPWR #PWR?
+U 1 1 5DE83A5B
+P 6800 5600
+F 0 "#PWR?" H 6800 5400 50  0001 C CNN
+F 1 "GNDPWR" V 6804 5491 50  0000 R CNN
+F 2 "" H 6800 5550 50  0001 C CNN
+F 3 "" H 6800 5550 50  0001 C CNN
+	1    6800 5600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GNDPWR #PWR?
+U 1 1 5DEA647E
+P 10350 5600
+F 0 "#PWR?" H 10350 5400 50  0001 C CNN
+F 1 "GNDPWR" V 10354 5491 50  0000 R CNN
+F 2 "" H 10350 5550 50  0001 C CNN
+F 3 "" H 10350 5550 50  0001 C CNN
+	1    10350 5600
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
