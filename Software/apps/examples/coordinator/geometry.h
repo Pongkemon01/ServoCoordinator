@@ -7,14 +7,18 @@
 typedef struct 
 {
     float x, y, z;
-}position_t;
+}vector_t;
 
 typedef struct
 {
     float w, x, y, z;
 }quaternion_t;
 
-void init_geometry( quaternion_t *start_orientation );
-void gen_compensate_pos( position_t new[], quaternion_t* q, position_t* p );
-float inverse_kinematic( position_t *pos );
+typedef float rot_matrix_t[3][3];
+
+void init_geometry( void );
+void vector_rotate_m( vector_t* v, rot_matrix_t m );
+void shift_to_motor_frame( vector_t* newpos, vector_t* pos, uint32_t pos_index );
+void get_init_ee_pos( vector_t out[] );
+float inverse_kinematic( vector_t *pos, bool is_first_angle );
 #endif

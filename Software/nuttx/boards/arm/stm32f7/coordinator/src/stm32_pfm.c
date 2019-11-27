@@ -158,12 +158,14 @@ struct stm32_pfm_priv_s
 
   /* Operation variables */
   volatile uint32_t       u32CycleCount;
+  volatile uint32_t       u32ActualCount;
 };
 
 /* Prototypes */
 static void stm32_pfm_start(FAR struct stm32_pfm_dev_s *dev, 
             uint32_t frequency, uint32_t total_cycle);
-static void stm32_pfm_stop(FAR struct stm32_pfm_dev_s *dev);
+static uint32_t stm32_pfm_stop(FAR struct stm32_pfm_dev_s *dev);
+static uint32_t stm32_pfm_get_count(FAR struct stm32_pfm_dev_s *dev);
 static bool stm32_pfm_is_idle(FAR struct stm32_pfm_dev_s *dev);
 
 /************************************************************************************
@@ -319,6 +321,7 @@ static int stm32_pfm_interrupt(int irq, FAR void *context, FAR void *arg)
     /* Disable the update/global interrupt at the NVIC */
     flags = enter_critical_section();
     (dev->u32CycleCount)--;
+    (dev->u32ActualCount)++;
     /* Finish all critical process */
     leave_critical_section(flags);
 
@@ -335,6 +338,7 @@ struct stm32_pfm_ops_s stm32_pfm_ops =
 {
   .start    = stm32_pfm_start,
   .stop     = stm32_pfm_stop,
+  .get_count = stm32_pfm_get_count,
   .is_idle  = stm32_pfm_is_idle
 };
 
@@ -345,6 +349,7 @@ struct stm32_pfm_priv_s stm32_pfm1_priv =
   .base           = STM32_TIM9_BASE,
   .xState         = STM32_PFM_STATE_IDLE,
   .pxLowLevelPWM  = 0,
+  .u32ActualCount = 0,
   .u32CycleCount  = 0
 };
 #endif
@@ -356,6 +361,7 @@ struct stm32_pfm_priv_s stm32_pfm2_priv =
   .base           = STM32_TIM10_BASE,
   .xState         = STM32_PFM_STATE_IDLE,
   .pxLowLevelPWM  = 0,
+  .u32ActualCount = 0,
   .u32CycleCount  = 0
 };
 #endif
@@ -367,6 +373,7 @@ struct stm32_pfm_priv_s stm32_pfm3_priv =
   .base           = STM32_TIM11_BASE,
   .xState         = STM32_PFM_STATE_IDLE,
   .pxLowLevelPWM  = 0,
+  .u32ActualCount = 0,
   .u32CycleCount  = 0
 };
 #endif
@@ -378,6 +385,7 @@ struct stm32_pfm_priv_s stm32_pfm4_priv =
   .base           = STM32_TIM12_BASE,
   .xState         = STM32_PFM_STATE_IDLE,
   .pxLowLevelPWM  = 0,
+  .u32ActualCount = 0,
   .u32CycleCount  = 0
 };
 #endif
@@ -389,6 +397,7 @@ struct stm32_pfm_priv_s stm32_pfm5_priv =
   .base           = STM32_TIM13_BASE,
   .xState         = STM32_PFM_STATE_IDLE,
   .pxLowLevelPWM  = 0,
+  .u32ActualCount = 0,
   .u32CycleCount  = 0
 };
 #endif
@@ -400,6 +409,7 @@ struct stm32_pfm_priv_s stm32_pfm6_priv =
   .base           = STM32_TIM14_BASE,
   .xState         = STM32_PFM_STATE_IDLE,
   .pxLowLevelPWM  = 0,
+  .u32ActualCount = 0,
   .u32CycleCount  = 0
 };
 #endif
@@ -423,7 +433,7 @@ static bool stm32_pfm_is_idle(FAR struct stm32_pfm_dev_s *dev)
  * Abruptly stop PFM function and return to idle state
  *
  *****************************************************************/
-static void stm32_pfm_stop(FAR struct stm32_pfm_dev_s *dev)
+static uint32_t stm32_pfm_stop(FAR struct stm32_pfm_dev_s *dev)
 {
   irqstate_t flags;
 
@@ -445,7 +455,21 @@ static void stm32_pfm_stop(FAR struct stm32_pfm_dev_s *dev)
 
   _info("Stop PFM\n");
 
+  return( pfm->u32ActualCount );
 }
+
+/*****************************************************************
+ * Function: stm32_pfm_get_count
+ *
+ * Return the current value of PFM cycle counter
+ *
+ *****************************************************************/
+static uint32_t stm32_pfm_get_count(FAR struct stm32_pfm_dev_s *dev)
+{
+  FAR struct stm32_pfm_priv_s *pfm = (FAR struct stm32_pfm_priv_s *)(dev);
+  return( pfm->u32ActualCount );
+}
+
 
 /*****************************************************************
  * Function: stm32_pfm_start
@@ -465,14 +489,19 @@ static void stm32_pfm_start(FAR struct stm32_pfm_dev_s *dev,
   FAR struct stm32_pfm_priv_s *pfm = (FAR struct stm32_pfm_priv_s *)(dev);
 
   DEBUGASSERT(pfm != NULL);
-  _info("Starting PFM\n");
 
   pwm_info.frequency = frequency;
 
-  /* The PWM module operates in mode 2 which is active-low */
-  /* Duty cycle = off_period / T = off_period * frequency */
+  /* The PWM module operates in mode 2 which is active-low.
+   * Therefore, off_period is the shot-period.
+   * Duty cycle = off_period / T = off_period * frequency
+   * The duty cycle is then convert into the ratio that 
+   * 100% (1.0) duty-cycle = 65536. Hence, the final
+   * settting value is frequency * off_period * 65530.
+   * Also, please remark that the off_period is in unit second. (not microsecond)
+   */
   pwm_info.duty = (uint16_t)((((uint64_t)(frequency * CONFIG_STM32_PFM_SHOT_PEROID )) * 65536UL ) / 1000000UL); /* Off-period is in micro second */
-  _info("PWM freq %u, duty %u\n", pwm_info.frequency, pwm_info.duty);
+  //_info("PFM freq %u, duty %u, total %u\n", pwm_info.frequency, pwm_info.duty, total_cycle);
 
   pfm->xState = STM32_PFM_STATE_RUNNING;
   pfm->pxLowLevelPWM->ops->start(pfm->pxLowLevelPWM, &pwm_info);
@@ -481,6 +510,7 @@ static void stm32_pfm_start(FAR struct stm32_pfm_dev_s *dev,
   flags = enter_critical_section();
 
   pfm->u32CycleCount = total_cycle;
+  pfm->u32ActualCount = 0UL;
 
   /* Finish all critical process */
   leave_critical_section(flags);

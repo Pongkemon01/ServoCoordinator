@@ -64,6 +64,9 @@ typedef enum
 #define MOTOR_CMD_CLR_ALARM   _MIOC(6) /* Arg: None */
 #define MOTOR_CMD_GET_STATE   _MIOC(7) /* Arg: uint32_t* pointer */
 #define MOTOR_CMD_GET_STATUS  _MIOC(8) /* Arg: uint32_t* pointer */
+#define MOTOR_CMD_GET_COUNTER _MIOC(9) /* Arg: int32_t* pointer */
+#define MOTOR_CMD_RES_COUNTER _MIOC(10) /* Arg: None */
+#define MOTOR_CMD_IS_RUNNING  _MIOC(11) /* Arg: uint32_t* pointer */
 
 /* RUN command parameter
  * 
@@ -76,9 +79,8 @@ typedef enum
 #define MOTOR_MAX_SPEED     10000
 struct motor_run_param_t
 {
-    bool        is_cw;  /* True if truning clockwise, fasle if counter-clockwise. */
     uint32_t    speed;  /* Speed of rotation (step/second) */
-    uint32_t    step;   /* Number of steps */
+    int32_t     step;   /* Number of relative steps (plus or minus from current) */
 };
 
 /* Public function */

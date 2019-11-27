@@ -102,6 +102,6 @@ ifeq ($(CONFIG_STM32F7_TIM6),y)
 CSRCS += home.c
 endif
 
-CSRCS += motor.c mpu9250.c
+CSRCS += motor.c mpu9250-simple.c
 
 include $(TOPDIR)/boards/Board.mk
