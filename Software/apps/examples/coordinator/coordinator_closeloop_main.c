@@ -81,9 +81,10 @@ The encoder equiped with the motot is configured to have the same value.
 Therefore, we can imply that 1 QE pulse equal to 1 motor step. */
 #define STEP_PER_REV      14000L     /* Total motor steps per rev */
 #define ANGLE_TO_STEP_FACTOR   ((float)STEP_PER_REV / (2.0f * F_PI))
-#define MAX_MOTOR_SPEED     10000L    /* Maximum step/second */
+#define MIN_ANGLE         ((float)(-F_PI / 2.0f))
+#define MAX_ANGLE         ((float)(F_PI / 2.0f))
 
-#define CONFIG_QUANTUM_STEP_MS  (40L) /* Interval of cloosed-loop control in us. (40ms) */
+#define CONFIG_QUANTUM_STEP_MS  (100L) /* Interval of cloosed-loop control in us. (40ms) */
 #define CONFIG_QUANTUM_STEP     ((uint32_t)(CONFIG_QUANTUM_STEP_MS * 1000L)) /* Inteval in us */
 #define CONFIG_COMPLETION_TIME  (CONFIG_QUANTUM_STEP_MS - 5L) /* The time that all movement should finish */
 #define MAX_MOTOR_STEP_PER_Q    (MAX_MOTOR_SPEED * CONFIG_COMPLETION_TIME / 1000L)
@@ -137,7 +138,6 @@ static int fdIMU = 0;
 static int fdHomeSensor = 0;
 static int fdTimer = 0;
 
-vector_t current_end_pos[6];
 pthread_t xMotorThread[6];
 pthread_t xHomeManager;
 
@@ -222,34 +222,50 @@ static void rounding_pos( vector_t* v )
  ****************************************************************************/
 static void move_robot( vector_t newpos[] )
 {
+    int i;
     vector_t t_pos;
-    float f;
-    int32_t abs_step;
+    float f[6];
 
     /* Iterate through all 6 joints */
-    for( int i = 0; i < 6; i++ )
+    for( i = 0; i < 6; i++ )
     {
+        //_info("Point %d move to: %f|%f|%f\n", i, newpos[i].x, newpos[i].y, newpos[i].z);
+
         /* Adjust the coordinate to conform with inverse kinematic frame */
         shift_to_motor_frame( &t_pos, &(newpos[i]), i );
         
         /* Convert position into bisep angles. Angle can be + or - */
-        f = inverse_kinematic( &(t_pos), ((i%2==0)?true:false) );
-        abs_step = (int32_t)(f * ANGLE_TO_STEP_FACTOR);
+        f[i] = inverse_kinematic( &(t_pos), ((i%2==0)?true:false) );
+    }
 
+    /* Verify that all angles are in the valid range [-pi/2 - pi/2] 
+     * If any angle is invalid, we abort the movement.
+     */
+    for( i = 0; i < 6; i++ )
+    {
+        if( f[i] < MIN_ANGLE || f[i] > MAX_ANGLE )
+        {
+            _warn("Joint %d is out of range\n", i);
+            return;
+        }
+    }
+
+    for( i = 0; i < 6; i++ )
+    {
         /* Send the angle to motor thread */
         DEBUGASSERT( sem_wait( &(motor_param[i].theta_sem) ) == OK );
-        motor_param[i].theta = abs_step;
+        motor_param[i].theta = (int32_t)(f[i] * ANGLE_TO_STEP_FACTOR);
         DEBUGASSERT( sem_post( &(motor_param[i].theta_sem) ) == OK );
     }
 }
 
 /*-----------------------------------------------------------------------------------
- * Calculate the new position of each end-effector joints to counter 
- * the current orientation "derived from gravity vector" and position "p"
+ * Calculate the new position of each end-effector joints.
+ * The calculation assumes that:
+ *   - IMU is placed at the base of the platform, the reference of the system
  *----------------------------------------------------------------------------------*/
-void gen_compensate_pos( vector_t newpos[], vector_t currentpos[], vector_t* tilt, vector_t* disp )
+void gen_compensate_pos( vector_t newpos[], vector_t* tilt, vector_t* disp )
 {
-    float f;
     rot_matrix_t gr;
     float sin_x, cos_x, sin_y, cos_y, sin_z, cos_z;
 
@@ -274,61 +290,20 @@ void gen_compensate_pos( vector_t newpos[], vector_t currentpos[], vector_t* til
 
     /* Initialize result coordinates with initial coordinates then rotate
         those coordinates with respected to the compensation matrix. */
+    get_init_ee_pos( newpos );
     for( int i = 0; i < 6; i++ )
     {
         /* Compensate angle */
-        newpos[i].x = currentpos[i].x;
-        newpos[i].y = currentpos[i].y;
-        newpos[i].z = currentpos[i].z;
         vector_rotate_m( &(newpos[i]), gr );
 
         /* Compensate displacement */
-        /* If the displacement is zero, then slowly move back to home position */
-        if( disp->x > 0.1f || disp->x < -0.1f )
-        {
-            newpos[i].x -= disp->x;
-        }
-        else
-        {
-            f = newpos[i].x - currentpos[i].x;
-            if( f > 0.1f || f < -0.1f )
-            {
-                newpos[i].x -= (f * 0.1f);
-            }
-        }
-        
-        if( disp->y > 0.1f || disp->y < -0.1f )
-        {
-            newpos[i].y -= disp->y;
-        }
-        else
-        {
-            f = newpos[i].y - currentpos[i].y;
-            if( f > 0.1f || f < -0.1f )
-            {
-                newpos[i].y -= (f * 0.1f);
-            }
-        }
+        newpos[i].x -= disp->x;
+        newpos[i].y -= disp->y;
+        newpos[i].z -= disp->z;
 
-        if( disp->z > 0.1f || disp->z < 0.1f )
-        {
-            newpos[i].z -= disp->z;
-        }
-        else
-        {
-            f = newpos[i].z - currentpos[i].z;
-            if( f > 0.1f || f < -0.1f )
-            {
-                newpos[i].z -= (f * 0.1f);
-            }
-        }
-
-        /* Rounding the decomal points */
-        //rounding_pos( &(newpos[i]) );
-
-        _info("Translate pos %d from: %f|%f|%f to %f|%f|%f\n", i,
-           currentpos[i].x, currentpos[i].y, currentpos[i].z, 
-           newpos[i].x, newpos[i].y, newpos[i].z);
+        // if(i == 5) // Track only point 5
+        // _info("Translate pos %d to %f|%f|%f\n", i,
+        //     newpos[i].x, newpos[i].y, newpos[i].z);
     }
 }
 
@@ -367,58 +342,14 @@ static void main_loop(int signo, FAR siginfo_t *siginfo, FAR void *context)
     rounding_pos( &displacement );
     rounding_pos( &tilt );
 
-    _info("Tilt = [%f|%f|%f], D=[%f|%f|%f]\n", tilt.x, tilt.y, tilt.z, displacement.x, displacement.y, displacement.z);
-    /* Generate compensated vectors */
-    //_info("From data: g = %f|%f|%f and disp = %f|%f|%f\n", gravity.x, gravity.y, gravity.z,
-    //displacement.x, displacement.y, displacement.z);
-    
-    gen_compensate_pos(new_pos, current_end_pos, &tilt, &displacement);
+    //_info("Tilt = [%f|%f|%f], D=[%f|%f|%f]\n", tilt.x, tilt.y, tilt.z, displacement.x, displacement.y, displacement.z);
+
+    /* Generate compensated vectors */    
+    gen_compensate_pos(new_pos, &tilt, &displacement);
 
     /* Don't forget to remove this comment */
     move_robot(new_pos);
-
-    /* Update position */
-    for(int i = 0;i < 6; i++)
-    {
-        current_end_pos[i].x = new_pos[i].x;
-        current_end_pos[i].y = new_pos[i].y;
-        current_end_pos[i].z = new_pos[i].z;
-    }
 }
-
-/* The thread that continuously check home sensor and reset the corresponding QE */
-// void* home_thread(void* arg)
-// {
-//     uint8_t home_stat;
-
-//     UNUSED(arg);
-//     while(1)
-//     {
-//         if( fdHomeSensor != 0 )
-//         {
-//             if( read( fdHomeSensor, &home_stat, 1 ) == 1 )
-//             {
-//                 if( home_stat != 0x3F )
-//                 {
-//                     /* Some home button trigged (active low) */
-//                     if( (home_stat & 0x01) == 0)
-//                         QE_RESET( motor_param[0].iQEFile );
-//                     if( (home_stat & 0x02) == 0)
-//                         QE_RESET( motor_param[1].iQEFile );
-//                     if( (home_stat & 0x04) == 0)
-//                         QE_RESET( motor_param[2].iQEFile );
-//                     if( (home_stat & 0x08) == 0)
-//                         QE_RESET( motor_param[3].iQEFile );
-//                     if( (home_stat & 0x10) == 0)
-//                         QE_RESET( motor_param[4].iQEFile );
-//                     if( (home_stat & 0x20) == 0)
-//                         QE_RESET( motor_param[5].iQEFile );
-//                 }
-//             }
-//         }
-//         usleep(1000);
-//     }
-// }
 
 /****************************************************************************
  * coordinator_main
@@ -433,12 +364,9 @@ int coordinator_main(int argc, char *argv[])
     struct timer_notify_s notify;
     struct sigaction act;
 
-    usleep(7000000);    /* Sleep 7 second for all hardware to initialized */
-
     init_motor_param();
 
     /* Create threads that manage all motor movement */
-    // DEBUGASSERT( pthread_create( &xHomeManager, NULL, home_thread, NULL) == OK );
     for(int i = 0; i < 6; i++)
     {
         DEBUGASSERT( pthread_create( &(xMotorThread[i]), NULL, motor_thread, (void*)(&(motor_param[i])) ) == OK );
@@ -448,10 +376,12 @@ int coordinator_main(int argc, char *argv[])
     fdTimer = open("/dev/timer", O_RDONLY);
     if (fdTimer < 0)
     {
-      _err( "Cannot open timer device: %d\n", errno);
+        _err( "Cannot open timer device: %d\n", errno);
         usleep(3000000);
         SystemReset();
     }
+
+    usleep(5000000);    /* Sleep 5 second waiting for all hardware initialization */
 
     /* Set the timer interval */
     while (ioctl(fdTimer, TCIOC_SETTIMEOUT, CONFIG_QUANTUM_STEP) < 0)   /* Set timer to CONFIG_QUANTUM_STEP */
@@ -460,9 +390,6 @@ int coordinator_main(int argc, char *argv[])
     }
 
     init_geometry();
-    get_init_ee_pos( current_end_pos );
-
-    usleep(100000);
 
     /* Attach a signal handler to catch the notifications.  NOTE that using
     * signal handler is very slow.  A much more efficient thing to do is to

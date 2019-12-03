@@ -256,6 +256,7 @@ struct motor_priv_s motor_priv[6] =
 
 #define motor_get_pfm_count(motor)  (motor->pfm->ops->get_count(motor->pfm))
 #define motor_stop_pfm(motor)       (motor->pfm->ops->stop(motor->pfm))
+#define motor_is_idle(motor)        (motor->pfm->ops->is_idle(motor->pfm))
 #define motor_start_pfm(motor,p,c)  (motor->pfm->ops->start(motor->pfm,p,c))
 
 /************************************************************************************
@@ -704,7 +705,7 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
           if(motor_run_param->speed >= MOTOR_MIN_SPEED &&
              motor_run_param->speed <= MOTOR_MAX_SPEED)
           {
-            _info("Run motor %u with speed %u and steps %d\n", motor->cfg->motor_id, motor_run_param->speed, motor_run_param->step);
+            //_info("Run motor %u with speed %u and steps %d\n", motor->cfg->motor_id, motor_run_param->speed, motor_run_param->step);
 
             if( motor->is_start )
             {
@@ -734,7 +735,7 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
           }
           else
           {
-            _err("Unsupport RUN param with speed=%u\n", motor_run_param->speed);
+            _err("Unsupport RUN param with step=%d speed=%u\n", motor_run_param->step, motor_run_param->speed);
             ret = -ENOTSUP;
           }
         }
@@ -769,7 +770,7 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
         break;
 
       case MOTOR_CMD_GET_STATE:
-        *( (uint32_t*)arg ) = (uint32_t)(motor->state);
+        *( (motor_state_t*)arg ) = motor->state;
         ret = OK;
         break;
 
@@ -806,7 +807,7 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
         break;
 
       case MOTOR_CMD_IS_RUNNING:
-        if(!(motor->is_start))
+        if(motor_is_idle(motor))
           *( (uint32_t*)arg ) = 0;
         else
           *( (uint32_t*)arg ) = 1;

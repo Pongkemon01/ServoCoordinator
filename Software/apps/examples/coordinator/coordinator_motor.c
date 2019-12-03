@@ -81,7 +81,6 @@ to a 20:1 reducer gear. Hence, the full output resolution is 200000 pulse/rev.
 The encoder equiped with the motot is configured to have the same value.
 Therefore, we can imply that 1 QE pulse equal to 1 motor step. */
 #define STEP_PER_REV      14000L     /* Total motor steps per rev */
-#define MAX_MOTOR_SPEED     10000L    /* Maximum step/second */
 
 #define DELTA_T            20000UL  /* Loop time */
 
@@ -89,8 +88,8 @@ Therefore, we can imply that 1 QE pulse equal to 1 motor step. */
 // and pretend that the internal counting is real.
 
 /* PID coefficients */
-#define KP      (3.5f)
-#define KI      (1.5f)
+#define KP      (2.5f)
+#define KI      (0.5f)
 #define KD      (2.0f)
 #define INT_LIM (1000.0f)
 #define D_LPFA  (0.2846f)
@@ -142,22 +141,19 @@ typedef struct
 }motor_thread_param_t;
 
 /****************************************************************************
- * Private data
- ****************************************************************************/
-static motor_thread_param_t* param;
-static struct motor_run_param_t  m_param;
-static motor_state_t state;
-
-/****************************************************************************
  * Private function
  ****************************************************************************/
-static bool run_motor( int32_t theta, uint32_t speed )
+static bool run_motor( motor_thread_param_t* param, int32_t rel_step, uint32_t speed )
 {
+    struct motor_run_param_t  m_param;
+    motor_state_t state;
+
     /* Command the motor */
-    m_param.step = theta;
+    m_param.step = rel_step;
     m_param.speed = speed;
 
     /* Check wheter motor is ready */
+    //_info("Run motor %d with step %d speed %d\n", param->id, m_param.step, m_param.speed);
     MOTOR_GET_STATE( param->iMotorFile, &state );
     if( state != MOTOR_READY )
     {
@@ -191,6 +187,7 @@ static bool run_motor( int32_t theta, uint32_t speed )
  ****************************************************************************/
 void* motor_thread( void* arg )
 {
+    motor_thread_param_t* param;
     int32_t set_point_pos, cur_pos;
     uint8_t home_mask, home_stat;
     uint32_t is_running;
@@ -203,58 +200,59 @@ void* motor_thread( void* arg )
     param = (motor_thread_param_t*)arg;
     DEBUGASSERT(param->id <= 5);
 
-    _info("Start motor thread for motor %d\n", param->id);
-    ITerm = 0;
-    DTerm = 0;
-    prev_cur_pos = 0;
-    cur_pos = 0;
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     home_mask = ((uint8_t)(1) << (param->id));
     MOTOR_SV_ON( param->iMotorFile );
+    _info("Start motor thread for motor %d with home mask %u\n", param->id, home_mask);
 
     /* Reset motor position to home */
     // 1. Rotate positive direction (ccw) until home sensor trigged.
     if( read( param->iHomeFile, &home_stat, 1 ) == 1 )
     {
-        rel_step = 0;
         /* Home status: 0 = released, 1 = pressed */
-        while( (rel_step <= 14400) && ((home_stat & home_mask) == 0) )
+        for(rel_step = 0; (rel_step < 13) && ((home_stat & home_mask) == 0); rel_step++ )
         {
-            rel_step += 1200;
-            if( run_motor( rel_step, 3600UL ) == false )
+            if( run_motor( param, 1200, 3600UL ) == false )
                 break;
             do
             {
                 usleep(1);  /* wait 1 quantum */
+                if( read( param->iHomeFile, &home_stat, 1 ) == 1 )
+                {
+                    if((home_stat & home_mask) != 0)
+                    {
+                        MOTOR_STOP( param->iMotorFile );    /* Found Home */
+                        break;
+                    }
+                }
                 MOTOR_IS_RUNNING( param->iMotorFile, &is_running );
             }while( is_running != 0 );
-
-            if( read( param->iHomeFile, &home_stat, 1 ) != 1 )
-                break;
         }
 
         if((home_stat & home_mask) != 0)
         {
             // 2. Rotate negative direction (cw) slowly until home sensor released.
-            while( ( rel_step > 0 ) && ((home_stat & home_mask) != 0) )
+            for(rel_step = 0; ( rel_step < 36 ) && ((home_stat & home_mask) != 0); rel_step++ )
             {
-                rel_step -= 100;
-
-                if( run_motor( rel_step, 1000UL ) == false )
+                if( run_motor( param, -100, 1000UL ) == false )
                     break;
                 do
                 {
                     usleep(1);  /* wait 1 quantum */
+                    if( read( param->iHomeFile, &home_stat, 1 ) == 1 )
+                    {
+                        if((home_stat & home_mask) == 0)
+                        {
+                            MOTOR_STOP( param->iMotorFile );    /* Home Released */
+                            break;
+                        }
+                    }
+
                     MOTOR_IS_RUNNING( param->iMotorFile, &is_running );
                 }while( is_running != 0 );
-
-                if( read( param->iHomeFile, &home_stat, 1 ) != 1 )
-                    break;
             }
 
-            // 3. Rotate negative direction (cw) for 1200 steps (approx.)
-            rel_step -= 1200;
-            if( run_motor( rel_step , 3600UL ) )
+            // 3. Rotate negative direction (cw) for 1100 steps (approx.)
+            if( run_motor( param, -1100 , 3600UL ) )
             {
                 do
                 {
@@ -274,6 +272,11 @@ void* motor_thread( void* arg )
     }
 
     // 4. Reset all counter at the current point
+    ITerm = 0;
+    DTerm = 0;
+    prev_cur_pos = 0;
+    cur_pos = 0;
+    MOTOR_STOP( param->iMotorFile );
     MOTOR_RES_COUNTER( param->iMotorFile );
     QE_RESET( param->iQEFile );
 
@@ -281,7 +284,7 @@ void* motor_thread( void* arg )
 
     while(1)
     {
-        /* Translate Theta from radian to motor steps */
+        /* Theta (i.e.,the desired angle) is unit in motor absolute steps */
         DEBUGASSERT( sem_wait( &(param->theta_sem) ) == OK );
         set_point_pos = param->theta;
         DEBUGASSERT( sem_post( &(param->theta_sem) ) == OK );
@@ -325,19 +328,30 @@ void* motor_thread( void* arg )
                 rel_step = -400;
         
         speed = (uint32_t)fabs(u);
-        if( speed > MAX_MOTOR_SPEED )
-            speed = MAX_MOTOR_SPEED;
+        if( speed > MOTOR_MAX_SPEED )
+            speed = MOTOR_MAX_SPEED;
+
+        /* Modifier for too slow movement */
+        if( speed < MOTOR_MIN_SPEED )
+        {
+            if( rel_step < 0 )
+                rel_step = -speed;
+            else
+                rel_step = speed;
+            speed = MOTOR_MIN_SPEED;
+        }
 
         if( speed > 0 && rel_step != 0 )
         {
             //_info("Set point %ld, current %ld, error %ld, speed %u\n", set_point_pos, cur_pos, rel_step, speed);
-            run_motor( rel_step, speed );
+            run_motor( param, rel_step, speed );
         }
 
         usleep(DELTA_T);  /* Sleep for 20ms */
     }
 
     /* We should not reach here */
+    _err( "Motor thread for motor %d terminated!!\n", param->id );
     MOTOR_SV_OFF( param->iMotorFile );
     return(0);
 }

@@ -103,7 +103,7 @@ print(" - Rotational joint 4 = ", base[3,:])
 print(" - Rotational joint 5 = ", base[4,:])
 print(" - Rotational joint 6 = ", base[5,:])
 print()
-print("The coordinates of all spherical joints with respected to the center of the end effector are:")
+print("The coordinates of all end-effector spherical joints with respected to the platform coordinate are:")
 print(" - Spherical joint 1 = ", endeff[0,:])
 print(" - Spherical joint 2 = ", endeff[1,:])
 print(" - Spherical joint 3 = ", endeff[2,:])
@@ -159,6 +159,13 @@ for i in range(6):
 print("-----------------------------------------------------------------------------------")
 print()
 
+print("Debug part")
+tp = np.array(( -89.779778,-109.574081,-297.284485 ))
+tp_s = tp - base[5,:]
+tp_sr = rotated_joints(5, tp_s)
+print(tp_s)
+print(tp_sr)
+print(inverse_kinematic( tp_sr[0], tp_sr[1], tp_sr[2] ))
 # plt_base = base[:,0:2]
 # plt_eff = endeff[:,0:2]
 # plt.plot(plt_base[:,0], plt_base[:,1])

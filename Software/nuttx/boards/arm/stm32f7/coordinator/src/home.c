@@ -226,7 +226,7 @@ static ssize_t home_read(FAR struct file *filep, FAR char *buffer, size_t buflen
 
   v = 0;
 
-  for(int i=0;i <= 5;i++)
+  for(int i=5;i >= 0;i--)
   {
     v <<= 1;
     if(!(s_home_data[i].b_home_status))

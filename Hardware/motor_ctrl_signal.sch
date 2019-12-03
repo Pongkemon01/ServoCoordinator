@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:coordinator-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -6,7 +7,7 @@ encoding utf-8
 Sheet 3 6
 Title "6DOF Parallel Robot"
 Date "2019-September-26"
-Rev "2.0.1"
+Rev "2.1.0"
 Comp "Kasetsart University"
 Comment1 "Faculty of Engineering"
 Comment2 "Department of Computer Engineering"
@@ -14,11 +15,11 @@ Comment3 "Asst.Prof.Akrapong Patchararungruang, Ph.D."
 Comment4 ""
 $EndDescr
 $Comp
-L Isolator:TLP290-4 U7
+L Isolator:TLP291-4 U7
 U 1 1 5D575929
 P 2500 1100
 F 0 "U7" H 2500 1425 50  0000 C CNN
-F 1 "TLP292-4" H 2500 1334 50  0000 C CNN
+F 1 "TLP293-4" H 2500 1334 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 900 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 1100 50  0001 L CNN
 	1    2500 1100
@@ -55,11 +56,11 @@ M1_SRV_ON
 Text GLabel 2900 1000 2    50   Input ~ 0
 M1_SRV_ON_EXT
 $Comp
-L Isolator:TLP290-4 U7
+L Isolator:TLP291-4 U7
 U 2 1 5D57E29B
 P 2500 2050
 F 0 "U7" H 2500 2375 50  0000 C CNN
-F 1 "TLP292-4" H 2500 2284 50  0000 C CNN
+F 1 "TLP293-4" H 2500 2284 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 1850 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 2050 50  0001 L CNN
 	2    2500 2050
@@ -85,11 +86,11 @@ M1_ALRM_RES
 Text GLabel 2900 1950 2    50   Input ~ 0
 M1_ALRM_RES_EXT
 $Comp
-L Isolator:TLP290-4 U7
+L Isolator:TLP291-4 U7
 U 3 1 5D580302
 P 2500 3000
 F 0 "U7" H 2500 3325 50  0000 C CNN
-F 1 "TLP292-4" H 2500 3234 50  0000 C CNN
+F 1 "TLP293-4" H 2500 3234 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 2800 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 3000 50  0001 L CNN
 	3    2500 3000
@@ -115,11 +116,11 @@ M1_DEV_CLR
 Text GLabel 2900 2900 2    50   Input ~ 0
 M1_DEV_CLR_EXT
 $Comp
-L Isolator:TLP290-4 U8
+L Isolator:TLP291-4 U8
 U 3 1 5D591B6D
 P 5800 1100
 F 0 "U8" H 5800 1425 50  0000 C CNN
-F 1 "TLP292-4" H 5800 1334 50  0000 C CNN
+F 1 "TLP293-4" H 5800 1334 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5600 900 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5800 1100 50  0001 L CNN
 	3    5800 1100
@@ -145,11 +146,11 @@ M2_SRV_ON
 Text GLabel 6200 1000 2    50   Input ~ 0
 M2_SRV_ON_EXT
 $Comp
-L Isolator:TLP290-4 U8
+L Isolator:TLP291-4 U8
 U 4 1 5D591B8A
 P 5800 2050
 F 0 "U8" H 5800 2375 50  0000 C CNN
-F 1 "TLP292-4" H 5800 2284 50  0000 C CNN
+F 1 "TLP293-4" H 5800 2284 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5600 1850 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5800 2050 50  0001 L CNN
 	4    5800 2050
@@ -175,11 +176,11 @@ M2_ALRM_RES
 Text GLabel 6200 1950 2    50   Input ~ 0
 M2_ALRM_RES_EXT
 $Comp
-L Isolator:TLP290-4 U9
+L Isolator:TLP291-4 U9
 U 1 1 5D591BA7
 P 5800 3000
 F 0 "U9" H 5800 3325 50  0000 C CNN
-F 1 "TLP292-4" H 5800 3234 50  0000 C CNN
+F 1 "TLP293-4" H 5800 3234 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5600 2800 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5800 3000 50  0001 L CNN
 	1    5800 3000
@@ -205,11 +206,11 @@ M2_DEV_CLR
 Text GLabel 6200 2900 2    50   Input ~ 0
 M2_DEV_CLR_EXT
 $Comp
-L Isolator:TLP290-4 U10
+L Isolator:TLP291-4 U10
 U 1 1 5D59E815
 P 9050 1100
 F 0 "U10" H 9050 1425 50  0000 C CNN
-F 1 "TLP292-4" H 9050 1334 50  0000 C CNN
+F 1 "TLP293-4" H 9050 1334 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 8850 900 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9050 1100 50  0001 L CNN
 	1    9050 1100
@@ -235,11 +236,11 @@ M3_SRV_ON
 Text GLabel 9450 1000 2    50   Input ~ 0
 M3_SRV_ON_EXT
 $Comp
-L Isolator:TLP290-4 U10
+L Isolator:TLP291-4 U10
 U 2 1 5D59E832
 P 9050 2050
 F 0 "U10" H 9050 2375 50  0000 C CNN
-F 1 "TLP292-4" H 9050 2284 50  0000 C CNN
+F 1 "TLP293-4" H 9050 2284 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 8850 1850 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9050 2050 50  0001 L CNN
 	2    9050 2050
@@ -265,11 +266,11 @@ M3_ALRM_RES
 Text GLabel 9450 1950 2    50   Input ~ 0
 M3_ALRM_RES_EXT
 $Comp
-L Isolator:TLP290-4 U10
+L Isolator:TLP291-4 U10
 U 3 1 5D59E84F
 P 9050 3000
 F 0 "U10" H 9050 3325 50  0000 C CNN
-F 1 "TLP292-4" H 9050 3234 50  0000 C CNN
+F 1 "TLP293-4" H 9050 3234 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 8850 2800 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9050 3000 50  0001 L CNN
 	3    9050 3000
@@ -295,11 +296,11 @@ M3_DEV_CLR
 Text GLabel 9450 2900 2    50   Input ~ 0
 M3_DEV_CLR_EXT
 $Comp
-L Isolator:TLP290-4 U11
+L Isolator:TLP291-4 U11
 U 3 1 5D5ABA07
 P 2500 4100
 F 0 "U11" H 2500 4425 50  0000 C CNN
-F 1 "TLP292-4" H 2500 4334 50  0000 C CNN
+F 1 "TLP293-4" H 2500 4334 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 3900 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 4100 50  0001 L CNN
 	3    2500 4100
@@ -325,11 +326,11 @@ M4_SRV_ON
 Text GLabel 2900 4000 2    50   Input ~ 0
 M4_SRV_ON_EXT
 $Comp
-L Isolator:TLP290-4 U11
+L Isolator:TLP291-4 U11
 U 4 1 5D5ABA24
 P 2500 5050
 F 0 "U11" H 2500 5375 50  0000 C CNN
-F 1 "TLP292-4" H 2500 5284 50  0000 C CNN
+F 1 "TLP293-4" H 2500 5284 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 4850 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 5050 50  0001 L CNN
 	4    2500 5050
@@ -355,11 +356,11 @@ M4_ALRM_RES
 Text GLabel 2900 4950 2    50   Input ~ 0
 M4_ALRM_RES_EXT
 $Comp
-L Isolator:TLP290-4 U12
+L Isolator:TLP291-4 U12
 U 1 1 5D5ABA41
 P 2500 6000
 F 0 "U12" H 2500 6325 50  0000 C CNN
-F 1 "TLP292-4" H 2500 6234 50  0000 C CNN
+F 1 "TLP293-4" H 2500 6234 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 2300 5800 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 2500 6000 50  0001 L CNN
 	1    2500 6000
@@ -385,11 +386,11 @@ M4_DEV_CLR
 Text GLabel 2900 5900 2    50   Input ~ 0
 M4_DEV_CLR_EXT
 $Comp
-L Isolator:TLP290-4 U13
+L Isolator:TLP291-4 U13
 U 1 1 5D5B0010
 P 5800 4050
 F 0 "U13" H 5800 4375 50  0000 C CNN
-F 1 "TLP292-4" H 5800 4284 50  0000 C CNN
+F 1 "TLP293-4" H 5800 4284 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5600 3850 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5800 4050 50  0001 L CNN
 	1    5800 4050
@@ -415,11 +416,11 @@ M5_SRV_ON
 Text GLabel 6200 3950 2    50   Input ~ 0
 M5_SRV_ON_EXT
 $Comp
-L Isolator:TLP290-4 U13
+L Isolator:TLP291-4 U13
 U 2 1 5D5B002D
 P 5800 5000
 F 0 "U13" H 5800 5325 50  0000 C CNN
-F 1 "TLP292-4" H 5800 5234 50  0000 C CNN
+F 1 "TLP293-4" H 5800 5234 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5600 4800 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5800 5000 50  0001 L CNN
 	2    5800 5000
@@ -445,11 +446,11 @@ M5_ALRM_RES
 Text GLabel 6200 4900 2    50   Input ~ 0
 M5_ALRM_RES_EXT
 $Comp
-L Isolator:TLP290-4 U13
+L Isolator:TLP291-4 U13
 U 3 1 5D5B004A
 P 5800 5950
 F 0 "U13" H 5800 6275 50  0000 C CNN
-F 1 "TLP292-4" H 5800 6184 50  0000 C CNN
+F 1 "TLP293-4" H 5800 6184 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 5600 5750 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 5800 5950 50  0001 L CNN
 	3    5800 5950
@@ -475,11 +476,11 @@ M5_DEV_CLR
 Text GLabel 6200 5850 2    50   Input ~ 0
 M5_DEV_CLR_EXT
 $Comp
-L Isolator:TLP290-4 U14
+L Isolator:TLP291-4 U14
 U 3 1 5D5C2C00
 P 9100 4050
 F 0 "U14" H 9100 4375 50  0000 C CNN
-F 1 "TLP292-4" H 9100 4284 50  0000 C CNN
+F 1 "TLP293-4" H 9100 4284 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 8900 3850 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9100 4050 50  0001 L CNN
 	3    9100 4050
@@ -505,11 +506,11 @@ M6_SRV_ON
 Text GLabel 9500 3950 2    50   Input ~ 0
 M6_SRV_ON_EXT
 $Comp
-L Isolator:TLP290-4 U14
+L Isolator:TLP291-4 U14
 U 4 1 5D5C2C1D
 P 9100 5000
 F 0 "U14" H 9100 5325 50  0000 C CNN
-F 1 "TLP292-4" H 9100 5234 50  0000 C CNN
+F 1 "TLP293-4" H 9100 5234 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 8900 4800 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9100 5000 50  0001 L CNN
 	4    9100 5000
@@ -535,11 +536,11 @@ M6_ALRM_RES
 Text GLabel 9500 4900 2    50   Input ~ 0
 M6_ALRM_RES_EXT
 $Comp
-L Isolator:TLP290-4 U15
+L Isolator:TLP291-4 U15
 U 1 1 5D5C2C3A
 P 9100 5950
 F 0 "U15" H 9100 6275 50  0000 C CNN
-F 1 "TLP292-4" H 9100 6184 50  0000 C CNN
+F 1 "TLP293-4" H 9100 6184 50  0000 C CNN
 F 2 "Package_SO:SOIC-16_4.55x10.3mm_P1.27mm" H 8900 5750 50  0001 L CIN
 F 3 "https://toshiba.semicon-storage.com/info/docget.jsp?did=12858&prodName=TLP291-4" H 9100 5950 50  0001 L CNN
 	1    9100 5950

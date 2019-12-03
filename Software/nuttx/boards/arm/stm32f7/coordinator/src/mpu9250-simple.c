@@ -436,7 +436,7 @@ static void complement_filter( float ax, float ay, float az, float gx, float gy,
     xTiltAngle.x = xTiltAngle.x + ( (1.0f - COMP_FILTER_BIAS) * err_angle );
 
     xTiltAngle.y = xTiltAngle.y + (gy * delta_s);
-    err_angle = atanf( ax * InvSqrt( (ay*ay) + (az*az) ) ) - xTiltAngle.y;
+    err_angle = atanf( -ax * InvSqrt( (ay*ay) + (az*az) ) ) - xTiltAngle.y;
     xTiltAngle.y = xTiltAngle.y + ( (1.0f - COMP_FILTER_BIAS) * err_angle );
 
     xTiltAngle.z = COMP_FILTER_BIAS * ( xTiltAngle.z + (gz * delta_s) ); /* Take only gyro for yaw */
@@ -448,17 +448,7 @@ static void complement_filter( float ax, float ay, float az, float gx, float gy,
 static void complement_filter( float ax, float ay, float az, float gx, float gy, float gz )
 {
    xTiltAngle.x = ( COMP_FILTER_BIAS * ( xTiltAngle.x + (gx * delta_s) ) ) + ( (1.0f - COMP_FILTER_BIAS) * atanf( ay * InvSqrt( (ax*ax) + (az*az) ) ) );
-   xTiltAngle.y = ( COMP_FILTER_BIAS * ( xTiltAngle.y + (gy * delta_s) ) ) + ( (1.0f - COMP_FILTER_BIAS) * atanf( ax * InvSqrt( (ay*ay) + (az*az) ) ) );
-   xTiltAngle.z = COMP_FILTER_BIAS * ( xTiltAngle.z + (gz * delta_s) ); /* Take only gyro for yaw */
-}
-#endif
-
-#if (FILTER_TYPE == 3)
-/* Complementary filter that fuses Gyro with Accel sensors to get the tilt angle */
-static void complement_filter( float ax, float ay, float az, float gx, float gy, float gz )
-{
-   xTiltAngle.x = COMP_FILTER_BIAS * ( xTiltAngle.x + (gx * delta_s) ) + (1.0f - COMP_FILTER_BIAS) * atan2f( ay, az );
-   xTiltAngle.y = COMP_FILTER_BIAS * ( xTiltAngle.y + (gy * delta_s) ) + (1.0f - COMP_FILTER_BIAS) * atan2f( ax, az );
+   xTiltAngle.y = ( COMP_FILTER_BIAS * ( xTiltAngle.y + (gy * delta_s) ) ) + ( (1.0f - COMP_FILTER_BIAS) * atanf( -ax * InvSqrt( (ay*ay) + (az*az) ) ) );
    xTiltAngle.z = COMP_FILTER_BIAS * ( xTiltAngle.z + (gz * delta_s) ); /* Take only gyro for yaw */
 }
 #endif
@@ -780,7 +770,7 @@ static void UpdateData(FAR void *arg)
 
     /* Apply comlement filter with NED system */
     complement_filter( t_acc.x, t_acc.y, t_acc.z, gx, gy, gz );
-   //_info("a=[%f|%f|%f] - g=[%f|%f|%f] - t=[%f|%f|%f]\n",t_acc.x,t_acc.y,t_acc.z,gx,gy,gz,xTiltAngle.x,xTiltAngle.y,xTiltAngle.z);
+    //_info("a=[%f|%f|%f] - g=[%f|%f|%f] - t=[%f|%f|%f]\n",t_acc.x,t_acc.y,t_acc.z,gx,gy,gz,xTiltAngle.x,xTiltAngle.y,xTiltAngle.z);
 
     /* Extract real gravity from tilt angle according to
      * the calculation from :

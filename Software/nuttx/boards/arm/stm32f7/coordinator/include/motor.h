@@ -76,7 +76,7 @@ typedef enum
  *   - Maximum speed is 10000 steps per second
  */
 #define MOTOR_MIN_SPEED     5
-#define MOTOR_MAX_SPEED     10000
+#define MOTOR_MAX_SPEED     3600
 struct motor_run_param_t
 {
     uint32_t    speed;  /* Speed of rotation (step/second) */

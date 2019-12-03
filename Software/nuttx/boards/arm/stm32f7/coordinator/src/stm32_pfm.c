@@ -313,7 +313,7 @@ static int stm32_pfm_interrupt(int irq, FAR void *context, FAR void *arg)
     stm32_pfm_disableint( dev );
     dev->pxLowLevelPWM->ops->stop( dev->pxLowLevelPWM );
     dev->xState = STM32_PFM_STATE_IDLE;
-    _info("FInish PFM\n");
+    //_info("FInish PFM\n");
   }
   else
   {
@@ -453,7 +453,7 @@ static uint32_t stm32_pfm_stop(FAR struct stm32_pfm_dev_s *dev)
   leave_critical_section(flags);
   pfm->xState = STM32_PFM_STATE_IDLE;
 
-  _info("Stop PFM\n");
+  //_info("Stop PFM\n");
 
   return( pfm->u32ActualCount );
 }
