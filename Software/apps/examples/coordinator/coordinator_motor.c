@@ -69,7 +69,8 @@
 #define MOTOR_GET_STATE(fd,ret) MOTOR_CMD(fd,MOTOR_CMD_GET_STATE,ret)
 #define MOTOR_GET_CTRL(fd,ret)  MOTOR_CMD(fd,MOTOR_CMD_GET_STATUS,ret)
 #define MOTOR_GET_COUNTER(fd,ret) MOTOR_CMD(fd,MOTOR_CMD_GET_COUNTER,ret)
-#define MOTOR_RES_COUNTER(fd)   MOTOR_CMD(fd,MOTOR_CMD_RES_COUNTER,0)
+#define MOTOR_RES_COUNTER(fd)    MOTOR_CMD(fd,MOTOR_CMD_RES_COUNTER,0)
+#define MOTOR_SET_COUNTER(fd,s)  MOTOR_CMD(fd,MOTOR_CMD_SET_COUNTER,s)
 #define MOTOR_IS_RUNNING(fd,ret) MOTOR_CMD(fd,MOTOR_CMD_IS_RUNNING,ret)
 
 #define QE_CMD(fd,cmd,arg)      (ioctl(fd, cmd, (unsigned long)arg))
@@ -84,12 +85,14 @@ Therefore, we can imply that 1 QE pulse equal to 1 motor step. */
 
 #define DELTA_T            20000UL  /* Loop time */
 
+#define HOME_OFFSET        (-3000L)    /* Step offset between home sensor and horizontal point */
+
 // The encoder is not reliable enough!!! We should count every thing
 // and pretend that the internal counting is real.
 
 /* PID coefficients */
-#define KP      (2.5f)
-#define KI      (0.5f)
+#define KP      (2.0f)
+#define KI      (0.7f)
 #define KD      (2.0f)
 #define INT_LIM (1000.0f)
 #define D_LPFA  (0.2846f)
@@ -142,6 +145,8 @@ typedef struct
 
 /****************************************************************************
  * Private function
+ * Negative rel_step means CW.
+ * Positive rel_step means CCW.
  ****************************************************************************/
 static bool run_motor( motor_thread_param_t* param, int32_t rel_step, uint32_t speed )
 {
@@ -205,13 +210,13 @@ void* motor_thread( void* arg )
     _info("Start motor thread for motor %d with home mask %u\n", param->id, home_mask);
 
     /* Reset motor position to home */
-    // 1. Rotate positive direction (ccw) until home sensor trigged.
+    // 1. Rotate positive direction (cw) until home sensor trigged.
     if( read( param->iHomeFile, &home_stat, 1 ) == 1 )
     {
         /* Home status: 0 = released, 1 = pressed */
         for(rel_step = 0; (rel_step < 13) && ((home_stat & home_mask) == 0); rel_step++ )
         {
-            if( run_motor( param, 1200, 3600UL ) == false )
+            if( run_motor( param, -1200, 1000UL ) == false )
                 break;
             do
             {
@@ -230,10 +235,10 @@ void* motor_thread( void* arg )
 
         if((home_stat & home_mask) != 0)
         {
-            // 2. Rotate negative direction (cw) slowly until home sensor released.
+            // 2. Rotate negative direction (ccw) slowly until home sensor released.
             for(rel_step = 0; ( rel_step < 36 ) && ((home_stat & home_mask) != 0); rel_step++ )
             {
-                if( run_motor( param, -100, 1000UL ) == false )
+                if( run_motor( param, 100, 1000UL ) == false )
                     break;
                 do
                 {
@@ -251,8 +256,8 @@ void* motor_thread( void* arg )
                 }while( is_running != 0 );
             }
 
-            // 3. Rotate negative direction (cw) for 1100 steps (approx.)
-            if( run_motor( param, -1100 , 3600UL ) )
+            // 3. Rotate negative direction (ccw) for 3000 steps (approx.)
+            if( run_motor( param, -HOME_OFFSET , 1000UL ) )
             {
                 do
                 {
@@ -294,7 +299,21 @@ void* motor_thread( void* arg )
         if( is_running != 0 )
             MOTOR_STOP( param->iMotorFile );
         MOTOR_GET_COUNTER( param->iMotorFile, &cur_pos );
-    
+
+        /* Compensate drift by checking for home sensor */
+        if( read( param->iHomeFile, &home_stat, 1 ) == 1 )
+        {
+            if( (home_stat & home_mask) != 0 )
+            {
+                /* If home is trigged, the motor is at home sensor position. Then, reset the position. */
+                if( abs(cur_pos - HOME_OFFSET) > 500 )
+                {
+                    MOTOR_SET_COUNTER( param->iMotorFile, HOME_OFFSET );
+                    cur_pos = HOME_OFFSET;
+                }
+            }
+        }
+
         /* Compute difference between current and setpoint */
         rel_step = ( set_point_pos - cur_pos ) % STEP_PER_REV; /* We move only within 1 rev */
         err = (float)rel_step;

@@ -819,6 +819,11 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
         ret = OK;
         break;
 
+      case MOTOR_CMD_SET_COUNTER:
+        motor->step_count = *( (int32_t*)arg );
+        ret = OK;
+        break;
+
       /* Any unrecognized IOCTL commands might be platform-specific ioctl commands */
 
       default:

@@ -84,7 +84,7 @@ Therefore, we can imply that 1 QE pulse equal to 1 motor step. */
 #define MIN_ANGLE         ((float)(-F_PI / 2.0f))
 #define MAX_ANGLE         ((float)(F_PI / 2.0f))
 
-#define CONFIG_QUANTUM_STEP_MS  (100L) /* Interval of cloosed-loop control in us. (40ms) */
+#define CONFIG_QUANTUM_STEP_MS  (40L) /* Interval of cloosed-loop control in us. (40ms) */
 #define CONFIG_QUANTUM_STEP     ((uint32_t)(CONFIG_QUANTUM_STEP_MS * 1000L)) /* Inteval in us */
 #define CONFIG_COMPLETION_TIME  (CONFIG_QUANTUM_STEP_MS - 5L) /* The time that all movement should finish */
 #define MAX_MOTOR_STEP_PER_Q    (MAX_MOTOR_SPEED * CONFIG_COMPLETION_TIME / 1000L)
@@ -207,14 +207,15 @@ static void init_motor_param(void)
     }
 }
 
-#define ROUND_1_1(_x)    ((float)( (int)(_x * 10.0f) ) * 0.1f)
-#define ROUND_1(_x)      (roundf(_x * 10.0f) * 0.1f)
-#define ROUND_2(_x)      (roundf(_x * 100.0f) * 0.01f)
+#define ROUND_1_1(_x)   ((float)( (int)(_x * 10.0f) ) * 0.1f)
+#define ROUND_1(_x)     (roundf(_x * 10.0f) * 0.1f)
+#define ROUND_2(_x)     (roundf(_x * 100.0f) * 0.01f)
+#define ROUND_2_2(_x)   ((float)( (int)(_x * 100.0f) ) * 0.01f)
 static void rounding_pos( vector_t* v )
 {
-    v->x = ROUND_2( v->x );
-    v->y = ROUND_2( v->y );
-    v->z = ROUND_2( v->z );
+    v->x = ROUND_2_2( v->x );
+    v->y = ROUND_2_2( v->y );
+    v->z = ROUND_2_2( v->z );
 }
 
 /****************************************************************************
@@ -245,7 +246,7 @@ static void move_robot( vector_t newpos[] )
     {
         if( f[i] < MIN_ANGLE || f[i] > MAX_ANGLE )
         {
-            _warn("Joint %d is out of range\n", i);
+            _warn("Joint %d is out of range\n", (i+1));
             return;
         }
     }
@@ -318,6 +319,7 @@ static void main_loop(int signo, FAR siginfo_t *siginfo, FAR void *context)
     vector_t displacement;
     vector_t tilt;
     vector_t new_pos[6];
+    static int t_count = 25;
 
     /* Get linear displacement */
     if( IMU_GET_LIN_DISP(f) != OK )
@@ -332,7 +334,7 @@ static void main_loop(int signo, FAR siginfo_t *siginfo, FAR void *context)
     /* Get Tilt */
     if( IMU_GET_TILT(f) != OK )
     {
-        _err("Failed to get linear displacement from IMU\n");
+        _err("Failed to get tilt from IMU\n");
         return;
     }
     tilt.x = f[0];
@@ -341,6 +343,13 @@ static void main_loop(int signo, FAR siginfo_t *siginfo, FAR void *context)
 
     rounding_pos( &displacement );
     rounding_pos( &tilt );
+    if(t_count != 0)
+        t_count = t_count - 1;
+    else
+    {
+        t_count = 25;
+        _info( "Tilt = %f | %f | %f, disp = %f | %f | %f\n", tilt.x, tilt.y, tilt.z, displacement.x, displacement.y, displacement.z );
+    }
 
     //_info("Tilt = [%f|%f|%f], D=[%f|%f|%f]\n", tilt.x, tilt.y, tilt.z, displacement.x, displacement.y, displacement.z);
 
@@ -381,7 +390,7 @@ int coordinator_main(int argc, char *argv[])
         SystemReset();
     }
 
-    usleep(5000000);    /* Sleep 5 second waiting for all hardware initialization */
+    usleep(10000000UL);    /* Sleep 8 second waiting for all hardware initialization */
 
     /* Set the timer interval */
     while (ioctl(fdTimer, TCIOC_SETTIMEOUT, CONFIG_QUANTUM_STEP) < 0)   /* Set timer to CONFIG_QUANTUM_STEP */

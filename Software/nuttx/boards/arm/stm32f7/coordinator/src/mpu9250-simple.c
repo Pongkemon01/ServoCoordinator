@@ -70,7 +70,7 @@
  ************************************************************************************/
 #define MPU_WORK_QUEUE          HPWORK
 
-#define I2C_SPEED               250000  /* I2C Clock speed */
+#define I2C_SPEED               100000  /* I2C Clock speed */
 
 #define MPU9250_ADDRESS         (0x68)  /* AD0 = 0 */
 #define AK8963_ADDRESS          (0x0C)  /* Address for direct access */

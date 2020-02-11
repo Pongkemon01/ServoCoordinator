@@ -67,6 +67,7 @@ typedef enum
 #define MOTOR_CMD_GET_COUNTER _MIOC(9) /* Arg: int32_t* pointer */
 #define MOTOR_CMD_RES_COUNTER _MIOC(10) /* Arg: None */
 #define MOTOR_CMD_IS_RUNNING  _MIOC(11) /* Arg: uint32_t* pointer */
+#define MOTOR_CMD_SET_COUNTER _MIOC(12) /* Arg: int32_t* pointer */
 
 /* RUN command parameter
  * 
