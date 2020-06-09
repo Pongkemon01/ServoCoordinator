@@ -1,5 +1,5 @@
 /************************************************************************************
- * configs/coordinator/stm32_pfm.c
+ * configs/coordinator/mpu9250-simple.c
  *
  *   Copyright (C) 2019 Uros Platise. All rights reserved.
  *   Author: Akrapong Patchararungruang (akrapong.p@ku.th)
@@ -411,39 +411,6 @@ static float InvSqrt( float x )
     return conv.f;
 }
 
-#define FILTER_TYPE 2   /* Type of complementary filter to use. 1 or 2 or.... */
-
-#if (FILTER_TYPE == 1)
-/* Another implementation of complementary filter from:
- * http://scolton.blogspot.com/2012/09/fun-with-complementary-filter-multiwii.html
- * which based on the implementation #3 in:
- * http://scolton.blogspot.com/2012/08/kk20-firmware-mod-unleash-complementary.html
- * The pseudo code of the implementation #3 for an angle is:
- *
- *      filtered_angle = filtered_angle + gyro_rate*dt;
- *      error_angle = acc_angle - filtered_angle;
- *      filtered_angle = filtered_angle + (1-A)*error_angle;
- *
- * where A is the COMP_FILTER_BIAS.
-
- */
-static void complement_filter( float ax, float ay, float az, float gx, float gy, float gz )
-{
-    float err_angle;
-
-    xTiltAngle.x = xTiltAngle.x + (gx * delta_s);
-    err_angle = atanf( ay * InvSqrt( (ax*ax) + (az*az) ) ) - xTiltAngle.x;
-    xTiltAngle.x = xTiltAngle.x + ( (1.0f - COMP_FILTER_BIAS) * err_angle );
-
-    xTiltAngle.y = xTiltAngle.y + (gy * delta_s);
-    err_angle = atanf( -ax * InvSqrt( (ay*ay) + (az*az) ) ) - xTiltAngle.y;
-    xTiltAngle.y = xTiltAngle.y + ( (1.0f - COMP_FILTER_BIAS) * err_angle );
-
-    xTiltAngle.z = COMP_FILTER_BIAS * ( xTiltAngle.z + (gz * delta_s) ); /* Take only gyro for yaw */
-}
-#endif
-
-#if (FILTER_TYPE == 2)
 /* Complementary filter that fuses Gyro with Accel sensors to get the tilt angle */
 static void complement_filter( float ax, float ay, float az, float gx, float gy, float gz )
 {
@@ -451,7 +418,6 @@ static void complement_filter( float ax, float ay, float az, float gx, float gy,
    xTiltAngle.y = ( COMP_FILTER_BIAS * ( xTiltAngle.y + (gy * delta_s) ) ) + ( (1.0f - COMP_FILTER_BIAS) * atanf( -ax * InvSqrt( (ay*ay) + (az*az) ) ) );
    xTiltAngle.z = COMP_FILTER_BIAS * ( xTiltAngle.z + (gz * delta_s) ); /* Take only gyro for yaw */
 }
-#endif
 
 /************************************************************************************
  * Funtion : MPUWriteBytes and COMWriteBytes
@@ -742,10 +708,6 @@ static void UpdateData(FAR void *arg)
     /* Currently, we leave out the bias */
 
     /* Now we'll calculate the accleration value into actual g's */
-    /*ax = (float)rawAcelTempGy[0]*A_FACTOR - fAccelBias[0];  // get actual g value, this depends on scale being set
-    ay = (float)rawAcelTempGy[1]*A_FACTOR - fAccelBias[1];   
-    az = (float)rawAcelTempGy[2]*A_FACTOR - fAccelBias[2];  
-    */
 
     /* Get acceleration in G (9.8N = 1G) */
     ax = (float)rawAcelTempGy[0] * A_FACTOR;  /* get actual g value, this depends on scale being set */

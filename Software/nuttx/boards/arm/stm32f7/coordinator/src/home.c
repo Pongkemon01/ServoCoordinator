@@ -34,6 +34,13 @@
  ************************************************************************************/
 
 /************************************************************************************
+ * Driver for home sensor. Each motor is equiped with a home sensor located at
+ * the lowest arm position. Each sensor operates as a on/off switch with normally off
+ * convension. This driver periodically read the status of physical switches,
+ * debounce them, and keep the current statuses for application module.  
+ ************************************************************************************/
+
+/************************************************************************************
  * Included Files
  ************************************************************************************/
 
@@ -73,13 +80,14 @@
  ************************************************************************************/
 struct s_home_data_t
 {
-    uint8_t u8_debounce_tmp;
-    bool    b_home_status;
+    uint8_t u8_debounce_tmp;    // Temporary data for debouncing
+    bool    b_home_status;      // Current switch status
 };
 
 /************************************************************************************
  * Private Data
  ************************************************************************************/
+// Operating data of each switch with corresponding initialization
 static struct s_home_data_t s_home_data[6] =
 {
     { .u8_debounce_tmp = 0, .b_home_status = false },
@@ -90,19 +98,21 @@ static struct s_home_data_t s_home_data[6] =
     { .u8_debounce_tmp = 0, .b_home_status = false }
 };
 
+// GPIO number attached to each Home switch
 static const uint32_t u32_home_gpio[6] =
 {
     GPIO_HOME_0, GPIO_HOME_1, GPIO_HOME_2, GPIO_HOME_3, GPIO_HOME_4, GPIO_HOME_5
 };
 
+// Periodic worker queue instance
 static struct work_s worker;
 
 /************************************************************************************
  * Name: tim_event
  *
  * Description:
- *   Service routine to handle timer event.
- *     arg : pointer to the particular motor structure.
+ *   Service routine periodically called by periodic-worker queue.
+ *     arg : pointer to the particular motor structure. (Predefined in initialization)
  *
  ************************************************************************************/
 static void tim_event(FAR void *arg)
@@ -110,6 +120,14 @@ static void tim_event(FAR void *arg)
     int i;
 
     UNUSED(arg);
+
+    /* 
+     Debouncing process is simple. This routine reads each switch status
+     and keep it in a temporary variable as a bit (0 = open, 1 = close).
+     If a particular switch status has been persisted for 8 previous reading
+     (i.e., the value in its temporary variable is either 0 (all 0) or 0xFF 
+     (all 1)), the actual switch status is changed to follow the reading.
+     */
 
     /* Read GPIO and feed to debouncing filter */
     for(i = 0;i < 6;i++)
@@ -133,6 +151,7 @@ static void tim_event(FAR void *arg)
         }
     }
 
+    /* The periodic task must re-schedule itself into the system worker queue *./
     /* Re-enable timer event */
     if(work_queue(TASK_QUEUE, &worker, tim_event, NULL, DEBOUNCE_DELAY) != OK)
     {
@@ -141,7 +160,7 @@ static void tim_event(FAR void *arg)
 }
 
 /************************************************************************************
- * Driver interface
+ * Driver interface to compliant with POSIX open/close/read/write/ioctl file operation
  ************************************************************************************/
 
 /****************************************************************************
@@ -219,25 +238,26 @@ static int home_close(FAR struct file *filep)
 
 static ssize_t home_read(FAR struct file *filep, FAR char *buffer, size_t buflen)
 {
-  char v;
+    char v;
 
-  UNUSED(filep);
-  UNUSED(buflen);
+    UNUSED(filep);
+    UNUSED(buflen);
 
-  v = 0;
+    v = 0;
 
-  for(int i=5;i >= 0;i--)
-  {
-    v <<= 1;
-    if(!(s_home_data[i].b_home_status))
+    // Convert statuses of separated switch into a bit field
+    for(int i=5;i >= 0;i--)
     {
-      v |= 1;
+        v <<= 1;
+        if(!(s_home_data[i].b_home_status))
+        {
+        v |= 1;
+        }
     }
-  }
 
-  *buffer = v;
+    *buffer = v;
 
-  return 1;
+    return 1;
 }
 
 /************************************************************************************

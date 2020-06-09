@@ -51,10 +51,6 @@
  * Pubic Functions
  ************************************************************************************/
 
-/* This module utilizes Timer6 (a basic timer) */
-#ifdef CONFIG_STM32F7_TIM6
 int home_initialize(void);
-#endif
-
 
 #endif /* ARCH_ARM_BOARD_COORDINATOR_HOME_H */

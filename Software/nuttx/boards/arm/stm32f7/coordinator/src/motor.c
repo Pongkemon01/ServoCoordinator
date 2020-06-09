@@ -34,6 +34,30 @@
  ************************************************************************************/
 
 /************************************************************************************
+ * Driver for motor. There are 6 motors in this system. Each motor utilizes the same
+ * driver module. Each motor is drived by a NIDEC-SANKYO S-FLAG servo driver.
+ * The driver operates in "position mode" with its interal feedback loop.
+ * External motor control should be perform in open-loop fashion because adding more
+ * control loop is considered redundant and makes the overall system unstable through
+ * out the operation load. The control signals used to interface with the S-FLAG are:
+ *   - CMD_PLS - (output to driver) Pulse command to specify the rotational distance
+ *   - CMD_DIR - (output to driver) Rotational direction (clock-wise/counter clock-wise)
+ *   - SVON - (output to driver) Enable motor driver
+ *   - RESET - (output to driver) Pulse to reset errors
+ *   - PCLR - (output to driver) Deviation counter clear
+ *   - ALM - (input from driver) Alarm status
+ *   - POSIN - (input from driver) Positioning completed
+ * All above signals except CMD_PLS are controlled directly from this driver via
+ * GPIOs. The CMD_PLS signals are controlled separately by PFM driver, which is
+ * an internal driver in the kernel space (See stm32_pfm.c and stm32_pfm.h).
+ * Each motor also has 2 LEDs (Red and Green) to indicates the status as:
+ *    - Red-on, Green-on - Motor is not ready or uninitialized
+ *    - Red-off, Green-on - Motor is initialized and ready
+ *    - Red-on, Green-off - Motor alarm
+ *    - Red-off, Green-off - Driver is uninitailized
+ ************************************************************************************/
+
+/************************************************************************************
  * Included Files
  ************************************************************************************/
 
@@ -92,6 +116,7 @@ struct motor_priv_s
  * Private Data
  ************************************************************************************/
 
+// GPIO assignment for each motor signal
 struct motor_cfg_s motor_cfg[6] = 
 {
 
@@ -169,6 +194,7 @@ struct motor_cfg_s motor_cfg[6] =
 
 };
 
+// Motor internal data (including the previous defined GPIO configuration)
 struct motor_priv_s motor_priv[6] =
 {
 
@@ -238,7 +264,6 @@ struct motor_priv_s motor_priv[6] =
 #define motor_setpin(pin)           stm32_gpiowrite(pin,true)
 #define motor_respin(pin)           stm32_gpiowrite(pin,false)
 
-/*#define motor_emergency_stat()      stm32_gpioread(GPIO_EMERGENGY_STOP)*/
 #define motor_emergency_stat()      (false)
 #define motor_alarm_stat(cfg)       stm32_gpioread(cfg->alrm_pin)
 #define motor_complete_stat(cfg)    stm32_gpioread(cfg->cmplt_pin)
@@ -328,6 +353,23 @@ static int motor_init_gpio(FAR struct motor_cfg_s* cfg)
  ************************************************************************************/
 
 /* State transition functions */
+/* The driver has 4 states:
+ *  - Uninitialized - The motor is not yet initialized
+ *  - Unavailable - The motor has been initialized but is in "stop" mode
+ *  - Alarm - The ALM signal from S-FLAG is set
+ *  - Ready - The motor is ready to operate
+ * At power-on, the driver is started within the state "Unintialized". Then, if all 
+ * initialization steps are success, the state changes to "Ready". The ALRM signal
+ * and EMERGENCY switch are hooked to GPIOs with initerrupt-on-change mode.
+ * If the ALRM of a motor is asserted, the corresponding motor driver goes into "Alarm".
+ * If the EMERGENCY switch is pushed (on), all motor drivers gos into "Unavailable".
+ * The Alarm state can be cleared through the software, which, if success, put the
+ * corresponding motor back to "Ready" state. However, the "Unavailable" state must
+ * be cleared by releasing the EMERGENCY button. Clearing Unavailable state puts the
+ * driver into "Uninitialzed" state that requires the full initialization steps again.
+ * 
+ * Transitioning from a state into another requires some operations. The following 
+ * funtions are the operations needed to perform before entering each particular state.
 /***********/
 static int motor_enter_uninit(FAR struct motor_priv_s* priv)
 {
@@ -394,8 +436,8 @@ static int motor_enter_unavailable(FAR struct motor_priv_s* priv)
 /***********/
 static int motor_enter_alarm(FAR struct motor_priv_s* priv)
 {
-   irqstate_t flags;
- DEBUGASSERT(priv != NULL);
+  irqstate_t flags;
+  DEBUGASSERT(priv != NULL);
   uint32_t l;
   
   _info("Enter alarm : %d\n", priv->cfg->motor_id);
@@ -477,13 +519,11 @@ static int motor_enter_ready(FAR struct motor_priv_s* priv)
 }
 
 /* Other basic functions */
-
-
 /************************************************************************************
  * Name: motor_emergency
  *
  * Description:
- *   Service routine to handle change from Emergency button.
+ *   Service routine to handle status of Emergency button.
  *
  ************************************************************************************/
 static int motor_emergency(int irq, FAR void *context, FAR void *arg)
@@ -677,7 +717,6 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
 
   motor = inode->i_private;
   DEBUGASSERT(motor != NULL);
-//  _info("cmd: %d arg: %ld\n", cmd, arg);
 
   /* Handle built-in ioctl commands */
 
@@ -854,17 +893,15 @@ int motor_initialize()
   for(int i = 0;i < 6;i++)
   {
     _info("Initialize motor ID %d:..", i);
-    /* 1. Init semaphore */ 
-    //nxsem_init(&(motor_priv[i].exclsem), 0, 1);  // Binary sem
 
-    /* 2. Init GPIO */
+    /* 1. Init GPIO */
     if( motor_init_gpio(motor_priv[i].cfg) != OK )
     {
       _err("Failed to init GPIO\n");
       continue;  /* Skip this motor */
     }
 
-    /* 3. Allocate pfm */
+    /* 2. Allocate pfm driver */
     motor_priv[i].pfm = stm32_pfm_init((motor_priv[i].cfg)->motor_id);
 
     if(motor_priv[i].pfm != NULL)
