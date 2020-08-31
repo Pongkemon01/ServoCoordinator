@@ -460,7 +460,11 @@ static int ReadMPU9250Data( int16_t* destination )
     destination[3] = (int16_t)(((uint16_t)rawData[6] << 8U) | ((uint16_t)rawData[7])) - ci16ReadBias[3] ;   
     destination[4] = (int16_t)(((uint16_t)rawData[8] << 8U) | ((uint16_t)rawData[9])) - ci16ReadBias[4] ;  
     destination[5] = (int16_t)(((uint16_t)rawData[10] << 8U) | ((uint16_t)rawData[11])) - ci16ReadBias[5] ;  
-    destination[6] = (int16_t)(((uint16_t)rawData[12] << 8U) | ((uint16_t)rawData[13])) - ci16ReadBias[6] ; 
+    destination[6] = (int16_t)(((uint16_t)rawData[12] << 8U) | ((uint16_t)rawData[13])) - ci16ReadBias[6] ;
+
+	// Logging
+	_info( ":I;%lu;d0=%d;d1=%d;d2=%d;d3=%d;d4=%d;d5=%d;d6=%d\n", clock(), destination[0],
+		destination[1], destination[2], destination[3], destination[4], destination[5], destination[6] );
 
     return OK;
 }
@@ -671,7 +675,7 @@ static void UpdateData(FAR void *arg)
     if( i2c_bus == NULL )
     {
         /* I2C bus has lose, Re-initialize it */
-        _info( "Reinitialize i2c\n" );
+        //_info( "Reinitialize i2c\n" );
         if( ( i2c_bus = stm32_i2cbus_initialize(I2C_CHANNEL) ) == NULL )
         {
             _err("Failed to init i2c\n");
@@ -697,7 +701,8 @@ static void UpdateData(FAR void *arg)
     retval = ReadMPU9250Data( rawAcelTempGy );
     if( retval != OK )
     {
-        _err("Failed to read MPU9250. Reset i2c\n");
+        //_err("Failed to read MPU9250. Reset i2c\n");
+		_err( ":I;%lu;readfailed\n", clock() );
         i2c_bus->ops->reset(i2c_bus);
         (void)stm32_i2cbus_uninitialize( i2c_bus );
         i2c_bus = NULL;

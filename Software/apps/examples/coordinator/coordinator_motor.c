@@ -108,7 +108,7 @@ float f32KD = KD;
  * Private Functions
  ************************************************************************************/
 /* Helper function to represent "millis" function in Arduino system */
-static uint32_t millis(void)
+/* static uint32_t millis(void)
 {
     struct timespec tp;
 
@@ -118,7 +118,7 @@ static uint32_t millis(void)
     }
 
     return ( ( ( (uint32_t)tp.tv_sec ) * 1000U ) + ( (uint32_t)tp.tv_nsec / 1000000U ) );
-}
+} */
 
 /****************************************************************************
  * motor_thread: the thread that manage a specified motor position.
@@ -206,6 +206,7 @@ void* motor_thread( void* arg )
     DEBUGASSERT(param->id <= 5);
 
     home_mask = ((uint8_t)(1) << (param->id));
+    MOTOR_CLR_ALARM( param->iMotorFile );
     MOTOR_SV_ON( param->iMotorFile );
     _info("Start motor thread for motor %d with home mask %u\n", param->id, home_mask);
 
@@ -297,8 +298,14 @@ void* motor_thread( void* arg )
         /* Read current position from motor */
         MOTOR_IS_RUNNING( param->iMotorFile, &is_running );
         if( is_running != 0 )
+		{
             MOTOR_STOP( param->iMotorFile );
+			_info( ":T;%lu;m=%lu;stop\n", clock(), param->id );
+		}
         MOTOR_GET_COUNTER( param->iMotorFile, &cur_pos );
+        
+        /* Clear alarm if exists */
+        MOTOR_CLR_ALARM( param->iMotorFile );
 
         /* Compensate drift by checking for home sensor */
         if( read( param->iHomeFile, &home_stat, 1 ) == 1 )
@@ -306,6 +313,7 @@ void* motor_thread( void* arg )
             if( (home_stat & home_mask) != 0 )
             {
                 /* If home is trigged, the motor is at home sensor position. Then, reset the position. */
+				_info( ":T;%lu;m=%lu;home\n", clock(), param->id );
                 if( abs(cur_pos - HOME_OFFSET) > 500 )
                 {
                     MOTOR_SET_COUNTER( param->iMotorFile, HOME_OFFSET );
@@ -360,6 +368,7 @@ void* motor_thread( void* arg )
             speed = MOTOR_MIN_SPEED;
         }
 
+		_info( ":T;%lu;m=%lu;set=%ld;cur=%ld;stp=%lu;spd=%lu\n", clock(), param->id, set_point_pos, cur_pos, rel_step, speed );
         if( speed > 0 && rel_step != 0 )
         {
             //_info("Set point %ld, current %ld, error %ld, speed %u\n", set_point_pos, cur_pos, rel_step, speed);

@@ -56,6 +56,15 @@
 #endif
 #endif
 
+/* Type conversion for logging */
+typedef union
+{
+    float float_data;
+    uint32_t uint32_data;
+}Float_to_Uint32_t;
+
+#define f2u32(x)    (((Float_to_Uint32_t)x).uint32_data)
+
 /* #include "hardware/stm32_pinmap.h" */
 
 /************************************************************************************

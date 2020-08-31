@@ -48,6 +48,7 @@
 #include <semaphore.h>
 #include <errno.h>
 #include <debug.h>
+#include <time.h>
 
 #include <arch/board/board.h>
 #include <nuttx/drivers/pwm.h>
@@ -152,6 +153,7 @@ typedef enum
 struct stm32_pfm_priv_s
 {
   struct stm32_pfm_ops_s  *ops;
+  uint8_t                 id;     /* PFM id for logging */
   uint32_t                base;   /* Base address of the specified timer device */
   stm32_pfm_state_t       xState;
   FAR struct pwm_lowerhalf_s  *pxLowLevelPWM;
@@ -345,6 +347,7 @@ struct stm32_pfm_ops_s stm32_pfm_ops =
 #ifdef CONFIG_STM32F7_PFM1
 struct stm32_pfm_priv_s stm32_pfm1_priv =
 {
+  .id             = 0,
   .ops            = &stm32_pfm_ops,
   .base           = STM32_TIM9_BASE,
   .xState         = STM32_PFM_STATE_IDLE,
@@ -357,6 +360,7 @@ struct stm32_pfm_priv_s stm32_pfm1_priv =
 #ifdef CONFIG_STM32F7_PFM2
 struct stm32_pfm_priv_s stm32_pfm2_priv =
 {
+  .id             = 1,
   .ops            = &stm32_pfm_ops,
   .base           = STM32_TIM10_BASE,
   .xState         = STM32_PFM_STATE_IDLE,
@@ -369,6 +373,7 @@ struct stm32_pfm_priv_s stm32_pfm2_priv =
 #ifdef CONFIG_STM32F7_PFM3
 struct stm32_pfm_priv_s stm32_pfm3_priv =
 {
+  .id             = 2,
   .ops            = &stm32_pfm_ops,
   .base           = STM32_TIM11_BASE,
   .xState         = STM32_PFM_STATE_IDLE,
@@ -381,6 +386,7 @@ struct stm32_pfm_priv_s stm32_pfm3_priv =
 #ifdef CONFIG_STM32F7_PFM4
 struct stm32_pfm_priv_s stm32_pfm4_priv =
 {
+  .id             = 3,
   .ops            = &stm32_pfm_ops,
   .base           = STM32_TIM12_BASE,
   .xState         = STM32_PFM_STATE_IDLE,
@@ -393,6 +399,7 @@ struct stm32_pfm_priv_s stm32_pfm4_priv =
 #ifdef CONFIG_STM32F7_PFM5
 struct stm32_pfm_priv_s stm32_pfm5_priv =
 {
+  .id             = 4,
   .ops            = &stm32_pfm_ops,
   .base           = STM32_TIM13_BASE,
   .xState         = STM32_PFM_STATE_IDLE,
@@ -405,6 +412,7 @@ struct stm32_pfm_priv_s stm32_pfm5_priv =
 #ifdef CONFIG_STM32F7_PFM6
 struct stm32_pfm_priv_s stm32_pfm6_priv =
 {
+  .id             = 5,
   .ops            = &stm32_pfm_ops,
   .base           = STM32_TIM14_BASE,
   .xState         = STM32_PFM_STATE_IDLE,
@@ -453,7 +461,7 @@ static uint32_t stm32_pfm_stop(FAR struct stm32_pfm_dev_s *dev)
   leave_critical_section(flags);
   pfm->xState = STM32_PFM_STATE_IDLE;
 
-  //_info("Stop PFM\n");
+  // _info( ":P;%lu;%u;stop=%lu\n", clock(), pfm->id, pfm->u32ActualCount );
 
   return( pfm->u32ActualCount );
 }
@@ -467,6 +475,7 @@ static uint32_t stm32_pfm_stop(FAR struct stm32_pfm_dev_s *dev)
 static uint32_t stm32_pfm_get_count(FAR struct stm32_pfm_dev_s *dev)
 {
   FAR struct stm32_pfm_priv_s *pfm = (FAR struct stm32_pfm_priv_s *)(dev);
+  //_info( ":P;%lu;%u;read=%lu\n", clock(), pfm->id, pfm->u32ActualCount );
   return( pfm->u32ActualCount );
 }
 
@@ -489,6 +498,8 @@ static void stm32_pfm_start(FAR struct stm32_pfm_dev_s *dev,
   FAR struct stm32_pfm_priv_s *pfm = (FAR struct stm32_pfm_priv_s *)(dev);
 
   DEBUGASSERT(pfm != NULL);
+
+  //_info( ":P;%lu;%u;start;f=%lu;c=%lu\n", clock(), pfm->id, frequency, total_cycle );
 
   pwm_info.frequency = frequency;
 

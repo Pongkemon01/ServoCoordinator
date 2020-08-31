@@ -50,6 +50,7 @@
 #include <debug.h>
 #include <signal.h>
 #include <semaphore.h>
+#include <time.h>
 
 #include <nuttx/timers/timer.h>
 #include <nuttx/sensors/qencoder.h>
@@ -84,7 +85,7 @@ Therefore, we can imply that 1 QE pulse equal to 1 motor step. */
 #define MIN_ANGLE         ((float)(-F_PI / 2.0f))
 #define MAX_ANGLE         ((float)(F_PI / 2.0f))
 
-#define CONFIG_QUANTUM_STEP_MS  (40L) /* Interval of cloosed-loop control in us. (40ms) */
+#define CONFIG_QUANTUM_STEP_MS  (40L) /* Interval of cloosed-loop control in ms. (40ms) */
 #define CONFIG_QUANTUM_STEP     ((uint32_t)(CONFIG_QUANTUM_STEP_MS * 1000L)) /* Inteval in us */
 #define CONFIG_COMPLETION_TIME  (CONFIG_QUANTUM_STEP_MS - 5L) /* The time that all movement should finish */
 #define MAX_MOTOR_STEP_PER_Q    (MAX_MOTOR_SPEED * CONFIG_COMPLETION_TIME / 1000L)
@@ -343,19 +344,30 @@ static void main_loop(int signo, FAR siginfo_t *siginfo, FAR void *context)
 
     rounding_pos( &displacement );
     rounding_pos( &tilt );
-    if(t_count != 0)
+    /*if(t_count != 0)
         t_count = t_count - 1;
     else
     {
         t_count = 25;
         _info( "Tilt = %f | %f | %f, disp = %f | %f | %f\n", tilt.x, tilt.y, tilt.z, displacement.x, displacement.y, displacement.z );
-    }
+    }*/
 
     //_info("Tilt = [%f|%f|%f], D=[%f|%f|%f]\n", tilt.x, tilt.y, tilt.z, displacement.x, displacement.y, displacement.z);
 
     /* Generate compensated vectors */    
     gen_compensate_pos(new_pos, &tilt, &displacement);
 
+    _info( ":C;%lu;P;%08X;%08X;%08X;%08X;%08X;%08X\n", clock(),
+        (uint32_t)(tilt.x), (uint32_t)(tilt.y), (uint32_t)(tilt.z), 
+        (uint32_t)(displacement.x), (uint32_t)(displacement.y), (uint32_t)(displacement.z) );
+    _info( ":C;%lu;N;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X\n", clock(),
+        (uint32_t)(new_pos[0].x), (uint32_t)(new_pos[0].y), (uint32_t)(new_pos[0].z),
+        (uint32_t)(new_pos[1].x), (uint32_t)(new_pos[1].y), (uint32_t)(new_pos[1].z),
+        (uint32_t)(new_pos[2].x), (uint32_t)(new_pos[2].y), (uint32_t)(new_pos[2].z),
+        (uint32_t)(new_pos[3].x), (uint32_t)(new_pos[3].y), (uint32_t)(new_pos[3].z),
+        (uint32_t)(new_pos[4].x), (uint32_t)(new_pos[4].y), (uint32_t)(new_pos[4].z),
+        (uint32_t)(new_pos[5].x), (uint32_t)(new_pos[5].y), (uint32_t)(new_pos[5].z)
+        );
     /* Don't forget to remove this comment */
     move_robot(new_pos);
 }
@@ -413,7 +425,7 @@ int coordinator_main(int argc, char *argv[])
 
     while (sigaction(CONFIG_COORDINATOR_TIMER_SIGNO, &act, NULL) != OK)
     {
-        _err( "ERROR: Fsigaction failed: %d\n", errno);
+        _err( "ERROR: Sigaction failed: %d\n", errno);
     }
 
     /* Register a callback for notifications using the configured signal.

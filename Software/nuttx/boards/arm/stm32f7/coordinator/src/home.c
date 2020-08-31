@@ -58,6 +58,7 @@
 #include <semaphore.h>
 #include <errno.h>
 #include <debug.h>
+#include <time.h>
 
 #include <arch/board/board.h>
 
@@ -136,6 +137,12 @@ static void tim_event(FAR void *arg)
         if(stm32_gpioread(u32_home_gpio[i]))
             s_home_data[i].u8_debounce_tmp |= 1;
     }
+
+    /* Send logging */
+    _info( ":H;%lu;%02X;%02X;%02X;%02X;%02X;%02X\n", clock(), s_home_data[0].u8_debounce_tmp, 
+        s_home_data[1].u8_debounce_tmp, s_home_data[2].u8_debounce_tmp, 
+        s_home_data[3].u8_debounce_tmp, s_home_data[4].u8_debounce_tmp, 
+        s_home_data[5].u8_debounce_tmp );
 
     /* Process status after debouncing */
     for(i = 0;i < 6;i++)
@@ -251,7 +258,7 @@ static ssize_t home_read(FAR struct file *filep, FAR char *buffer, size_t buflen
         v <<= 1;
         if(!(s_home_data[i].b_home_status))
         {
-        v |= 1;
+			v |= 1;
         }
     }
 

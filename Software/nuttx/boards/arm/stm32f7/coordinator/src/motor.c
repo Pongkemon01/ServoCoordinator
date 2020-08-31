@@ -74,6 +74,7 @@
 #include <semaphore.h>
 #include <errno.h>
 #include <debug.h>
+#include <time.h>
 
 #include <arch/board/board.h>
 
@@ -378,7 +379,7 @@ static int motor_enter_uninit(FAR struct motor_priv_s* priv)
 
   DEBUGASSERT(priv != NULL);
 
-  _info("Enter uninit\n");
+  _info(":M;%lu;%u;uninit\n", clock(), priv->cfg->motor_id);
   motor_servo_off(priv->cfg);
   if(priv->state == MOTOR_READY)
   {
@@ -409,7 +410,7 @@ static int motor_enter_unavailable(FAR struct motor_priv_s* priv)
   DEBUGASSERT(priv != NULL);
   uint32_t  l;
   
-  _info("Enter unavailable\n");
+  _info(":M;%lu;%u;unavail\n", clock(), priv->cfg->motor_id);
   motor_servo_off(priv->cfg);
   if(priv->state == MOTOR_READY)
   {
@@ -440,7 +441,7 @@ static int motor_enter_alarm(FAR struct motor_priv_s* priv)
   DEBUGASSERT(priv != NULL);
   uint32_t l;
   
-  _info("Enter alarm : %d\n", priv->cfg->motor_id);
+  _info(":M;%lu;%u;alarm\n", clock(), priv->cfg->motor_id);
   motor_servo_off(priv->cfg);
   if(priv->state == MOTOR_READY)
   {
@@ -484,7 +485,7 @@ static int motor_enter_ready(FAR struct motor_priv_s* priv)
   }
 
   /* Only the motor with UNITIT state can reach here */
-  _info("Enter ready\n");
+  _info(":M;%lu;%u;ready\n", clock(), priv->cfg->motor_id);
 
   /* Config GPIO pins */
   retval = motor_init_gpio(priv->cfg);
@@ -536,7 +537,7 @@ static int motor_emergency(int irq, FAR void *context, FAR void *arg)
 
   if(motor_emergency_stat())
   {
-    _alert("EMERGENCY ASSERT!!!\n");
+    _alert( ":M;%lu;A;EMERGENCY ASSERT!!!\n", clock() );
     /* Emergency button armed. Stop all motor and turn on all LEDs */
     for(i = 0;i < 6;i++)
     {
@@ -545,7 +546,7 @@ static int motor_emergency(int irq, FAR void *context, FAR void *arg)
   }
   else
   {
-    _info("Emergency released\n");
+    // _info( ":M;%lu;A;Emergency released\n", clock() );
     /* Emergency button unarmed. Release all unavailable motor */
     for(i = 0;i < 6;i++)
     {
@@ -727,13 +728,14 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
         break;
 
       case MOTOR_CMD_SVOFF:
-        //_info("MOTOR %u OFF\n", motor->cfg->motor_id);
+        //_info( ":M;%u;OFF\n", motor->cfg->motor_id);
         motor_servo_off(motor->cfg);
         ret = OK;
         break;
 
       case MOTOR_CMD_SVON:
-        //_info("MOTOR %u ON\n", motor->cfg->motor_id);
+        //_info( ":M;%u;ON\n", motor->cfg->motor_id);
+        //_info( "Motor ON %u\n", motor->cfg->motor_id);
         motor_servo_on(motor->cfg);
         ret = OK;
         break;
@@ -741,6 +743,7 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
       case MOTOR_CMD_RUN:
         {
           FAR struct motor_run_param_t *motor_run_param = (FAR struct motor_run_param_t *)arg;
+          //_info( ":M;%u;spd=%lu;stp=%ld\n", motor->cfg->motor_id, motor_run_param->speed, motor_run_param->step );
           if(motor_run_param->speed >= MOTOR_MIN_SPEED &&
              motor_run_param->speed <= MOTOR_MAX_SPEED)
           {
@@ -774,13 +777,15 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
           }
           else
           {
-            _err("Unsupport RUN param with step=%d speed=%u\n", motor_run_param->step, motor_run_param->speed);
+            //_err("Unsupport RUN param with step=%d speed=%u\n", motor_run_param->step, motor_run_param->speed);
+            //_info( ":M;%lu;%u;overflow;spd=%ld;stp=%ld\n", clock(), motor->cfg->motor_id, motor_run_param->step, motor_run_param->speed );
             ret = -ENOTSUP;
           }
         }
         break;
 
       case MOTOR_CMD_STOP:
+        //_info( ":M;%u;STOP\n", motor->cfg->motor_id );
         l = motor_stop_pfm(motor);
         if(motor->is_cw)
           motor->step_count -= l;
@@ -791,6 +796,7 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
         break;
 
       case MOTOR_CMD_CLR_ALARM:
+        //_info( ":M;%u;CLR_ALARM\n", motor->cfg->motor_id );
         if(motor->state == MOTOR_ALARM)
         {
           motor_alarm_res(motor->cfg);
@@ -798,7 +804,8 @@ static int motor_ioctl(FAR struct file *filep, int cmd, unsigned long arg)
           usleep(2500);
           if(motor_alarm_stat(motor->cfg))
           {
-            _err("Alarm signal persists on motor %d\n", motor->cfg->motor_id);
+            //_err("Alarm signal persists on motor %u\n", motor->cfg->motor_id);
+            _err( ":M;%lu;%u;CLR_FAILED\n", clock(), motor->cfg->motor_id );
             ret = -EPERM;
           }
           else
@@ -933,7 +940,7 @@ int motor_initialize()
   /* Finally, check the emergency signal */
   if(motor_emergency_stat())
   {
-    _alert("EMERGENCY ASSERT!!!\n");
+    _alert(":M;A;EMERGENCY ASSERT!!!\n");
     /* Emergency button armed. Stop all motor and turn on all LEDs */
     for(int i = 0;i < 6;i++)
     {
