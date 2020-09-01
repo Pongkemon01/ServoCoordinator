@@ -140,7 +140,6 @@ static int fdHomeSensor = 0;
 static int fdTimer = 0;
 
 pthread_t xMotorThread[6];
-pthread_t xHomeManager;
 
 /****************************************************************************
  * Open all devices and initialize all motor parameters. 
@@ -312,6 +311,15 @@ void gen_compensate_pos( vector_t newpos[], vector_t* tilt, vector_t* disp )
 /****************************************************************************
  * main_loop
  ****************************************************************************/
+/* Type conversion for logging */
+typedef union
+{
+    float float_data;
+    uint32_t uint32_data;
+}Float_to_Uint32_t;
+
+/* Data used to convert float to uint32_t raw representation */
+static Float_to_Uint32_t tilt_data[3], disp_data[3], pos_data[6][3];
 
 static void main_loop(int signo, FAR siginfo_t *siginfo, FAR void *context)
 {
@@ -357,17 +365,51 @@ static void main_loop(int signo, FAR siginfo_t *siginfo, FAR void *context)
     /* Generate compensated vectors */    
     gen_compensate_pos(new_pos, &tilt, &displacement);
 
+    /* Gen log data */
+    tilt_data[0].float_data = tilt.x;
+    tilt_data[1].float_data = tilt.y;
+    tilt_data[2].float_data = tilt.z;
+    
+    disp_data[0].float_data = displacement.x;
+    disp_data[1].float_data = displacement.y;
+    disp_data[2].float_data = displacement.z;
+    
+    pos_data[0][0].float_data = new_pos[0].x;
+    pos_data[0][1].float_data = new_pos[0].y;
+    pos_data[0][2].float_data = new_pos[0].z;
+    
+    pos_data[1][0].float_data = new_pos[1].x;
+    pos_data[1][1].float_data = new_pos[1].y;
+    pos_data[1][2].float_data = new_pos[1].z;
+    
+    pos_data[2][0].float_data = new_pos[2].x;
+    pos_data[2][1].float_data = new_pos[2].y;
+    pos_data[2][2].float_data = new_pos[2].z;
+    
+    pos_data[3][0].float_data = new_pos[3].x;
+    pos_data[3][1].float_data = new_pos[3].y;
+    pos_data[3][2].float_data = new_pos[3].z;
+    
+    pos_data[4][0].float_data = new_pos[4].x;
+    pos_data[4][1].float_data = new_pos[4].y;
+    pos_data[4][2].float_data = new_pos[4].z;
+    
+    pos_data[5][0].float_data = new_pos[5].x;
+    pos_data[5][1].float_data = new_pos[5].y;
+    pos_data[5][2].float_data = new_pos[5].z;
+   
+
     _info( ":C;%lu;P;%08X;%08X;%08X;%08X;%08X;%08X\n", clock(),
-        (uint32_t)(tilt.x), (uint32_t)(tilt.y), (uint32_t)(tilt.z), 
-        (uint32_t)(displacement.x), (uint32_t)(displacement.y), (uint32_t)(displacement.z) );
-    _info( ":C;%lu;N;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X\n", clock(),
-        (uint32_t)(new_pos[0].x), (uint32_t)(new_pos[0].y), (uint32_t)(new_pos[0].z),
-        (uint32_t)(new_pos[1].x), (uint32_t)(new_pos[1].y), (uint32_t)(new_pos[1].z),
-        (uint32_t)(new_pos[2].x), (uint32_t)(new_pos[2].y), (uint32_t)(new_pos[2].z),
-        (uint32_t)(new_pos[3].x), (uint32_t)(new_pos[3].y), (uint32_t)(new_pos[3].z),
-        (uint32_t)(new_pos[4].x), (uint32_t)(new_pos[4].y), (uint32_t)(new_pos[4].z),
-        (uint32_t)(new_pos[5].x), (uint32_t)(new_pos[5].y), (uint32_t)(new_pos[5].z)
-        );
+        tilt_data[0].uint32_data, tilt_data[1].uint32_data, tilt_data[2].uint32_data, 
+        disp_data[0].uint32_data, disp_data[1].uint32_data, disp_data[2].uint32_data );
+    /*_info( ":C;%lu;N;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X;%08X\n", clock(),
+        pos_data[0][0].uint32_data, pos_data[0][1].uint32_data, pos_data[0][2].uint32_data, 
+        pos_data[1][0].uint32_data, pos_data[1][1].uint32_data, pos_data[1][2].uint32_data, 
+        pos_data[2][0].uint32_data, pos_data[2][1].uint32_data, pos_data[2][2].uint32_data, 
+        pos_data[3][0].uint32_data, pos_data[3][1].uint32_data, pos_data[3][2].uint32_data, 
+        pos_data[4][0].uint32_data, pos_data[4][1].uint32_data, pos_data[4][2].uint32_data, 
+        pos_data[5][0].uint32_data, pos_data[5][1].uint32_data, pos_data[5][2].uint32_data 
+        );&/
     /* Don't forget to remove this comment */
     move_robot(new_pos);
 }
@@ -384,6 +426,7 @@ int coordinator_main(int argc, char *argv[])
 {
     struct timer_notify_s notify;
     struct sigaction act;
+    static const char* ThreadName[] = { "Motor-1", "Motor-2", "Motor-3", "Motor-4", "Motor-5", "Motor-6" };
 
     init_motor_param();
 
@@ -391,6 +434,7 @@ int coordinator_main(int argc, char *argv[])
     for(int i = 0; i < 6; i++)
     {
         DEBUGASSERT( pthread_create( &(xMotorThread[i]), NULL, motor_thread, (void*)(&(motor_param[i])) ) == OK );
+        DEBUGASSERT( pthread_setname_np( xMotorThread[i], ThreadName[i] ) == OK );
     }
 
     /* Open timer device */
